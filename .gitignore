@@ -1,0 +1,12 @@
+node_modules/
+dist/
+data/*.csv
+data/*.tmp
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+/overview.png
+/storage.png
+/mobile.png

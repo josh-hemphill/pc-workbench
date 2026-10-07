@@ -1,0 +1,13 @@
+{
+  "name": "pc-workbench", "private": true, "version": "0.1.0", "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n api,web \"tsx watch server/index.ts\" \"vite --host 127.0.0.1\"",
+    "build": "vue-tsc --noEmit && vite build",
+    "start": "tsx server/index.ts",
+    "test": "tsx --test tests/*.test.ts",
+    "import:pcpartpicker": "tsx tools/pcpartpicker.ts"
+  },
+  "dependencies": { "vue": "^3.5.22", "vuetify": "^3.10.5", "@mdi/js": "^7.4.47", "express": "^5.1.0", "csv-parse": "^6.1.0", "csv-stringify": "^6.6.0", "zod": "^4.1.11" },
+  "devDependencies": { "vite": "^7.1.9", "@vitejs/plugin-vue": "^6.0.1", "typescript": "^5.9.3", "vue-tsc": "^3.1.1", "tsx": "^4.20.6", "concurrently": "^9.2.1", "@types/express": "^5.0.3", "@types/node": "^24.7.0" },
+  "packageManager": "pnpm@11.19.0"
+}

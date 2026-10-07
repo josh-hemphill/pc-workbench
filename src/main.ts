@@ -1,0 +1,10 @@
+import { createApp } from 'vue';
+import { createVuetify } from 'vuetify';
+import * as components from 'vuetify/components';
+import * as directives from 'vuetify/directives';
+import 'vuetify/styles';
+import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
+import App from './App.vue';
+import './style.css';
+const vuetify=createVuetify({components,directives,icons:{defaultSet:'mdi',aliases,sets:{mdi}},theme:{defaultTheme:'bench',themes:{bench:{dark:false,colors:{primary:'#365a43',secondary:'#738371',background:'#f6f7f4',surface:'#ffffff',error:'#a64038',warning:'#a47b22',success:'#365a43'}}}},defaults:{VBtn:{rounded:'lg',elevation:0},VTextField:{variant:'outlined',density:'compact',hideDetails:'auto'},VSelect:{variant:'outlined',density:'compact',hideDetails:'auto'},VTextarea:{variant:'outlined',density:'compact',hideDetails:'auto'},VCard:{elevation:0,rounded:'lg'}}});
+createApp(App).use(vuetify).mount('#app');
