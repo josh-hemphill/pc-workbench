@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import type { SoftwareSettings, Component } from '../shared/types';
+const props=defineProps<{software:SoftwareSettings;components?:Component[]}>();
+function version(kind:'drivers'|'firmware',id:string,value:string){(props.software[kind]??={})[id]=value;if(!value)delete props.software[kind]![id];}
+</script>
+<template><section class="my-5"><h3>Software & firmware</h3><div class="form-grid mt-4"><v-text-field v-model="software.os" label="Operating system / image version" /><v-text-field v-model="software.image" label="OS image identifier / checksum" /><v-text-field v-model="software.equipmentSoftware" label="Equipment application version" /><v-text-field v-model="software.equipmentConfiguration" label="Equipment configuration identifier / revision" /><v-text-field v-model="software.bios" label="BIOS / UEFI version" /></div><div v-for="part in components" :key="part.id" class="form-grid"><v-text-field :model-value="software.drivers?.[part.id]" :label="`${part.name} driver version`" @update:model-value="v=>version('drivers',part.id,v)" /><v-text-field :model-value="software.firmware?.[part.id]" :label="`${part.name} firmware version`" @update:model-value="v=>version('firmware',part.id,v)" /></div></section></template>

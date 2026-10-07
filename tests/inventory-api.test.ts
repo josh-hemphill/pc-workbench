@@ -12,7 +12,7 @@ test('inventory HTTP workflows are durable and reject overspending or unaudited 
   const server = createApp(dir).listen(0, '127.0.0.1');
   await new Promise<void>(resolve => server.once('listening', resolve));
   const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-  const req = (url: string, method = 'GET', body?: unknown) => fetch(base + url, { method, headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body) });
+  const req=async(url:string,method='GET',body?:unknown,headers:Record<string,string>={})=>{const state=await fetch(base+'/api/state');const revision=state.headers.get('X-Workspace-Revision')!;return fetch(base+url,{method,headers:{'Content-Type':'application/json','If-Match':revision,...headers},body:body===undefined?undefined:JSON.stringify(body)});};
   try {
     const stock = { id: 'api-lot', componentId: 'ram', tracking: 'bulk', quantity: 5, serial: '', assetTag: 'API-LOT', location: 'Shelf', condition: 'Serviceable', notes: '', allocations: [], history: [] };
     const received = await (await req('/api/inventory/api-lot', 'PUT', stock)).json(); assert.equal(received.history[0].action, 'receive');
