@@ -16,8 +16,23 @@ export interface System { id: string; name: string; location: string; descriptio
 export interface Placement { id: string; componentId: string; quantity: number; slotId: string; role: 'boot'|'data'|'general'; mount: 'auto'|'internal'|'front-hot-swap'|'rear-sled'; group: string }
 export interface StoragePlan { raid: 'none'|'mirror'|'raid5'|'raid6'|'raid10'; bootMirror: boolean }
 export interface Configuration { id: string; name: string; description: string; systemId: string; status: 'Draft'|'In review'|'Approved'; updatedAt: string; placements: Placement[]; storage: StoragePlan; notes: string }
-export interface InventoryPC { id: string; name: string; serial: string; location: string; configurationId: string; notes: string }
-export interface Database { components: Component[]; systems: System[]; configurations: Configuration[]; pcs: InventoryPC[] }
+export interface PCBuildSettings { systemId: string; storage: StoragePlan; notes: string }
+export interface InventoryPC { id: string; name: string; serial: string; location: string; configurationId: string; notes: string; buildSettings: PCBuildSettings | null }
+export interface StockAllocation {
+  id: string; pcId: string; quantity: number; state: 'reserved'|'installed';
+  plannedPlacementId: string; slotId: string; role: Placement['role']; mount: Placement['mount'];
+  notes: string; createdAt: string; updatedAt: string;
+}
+export interface StockEvent {
+  id: string; at: string; action: 'receive'|'adjust'|'edit'|'reserve'|'install'|'release'|'remove'|'configure'|'transfer-in'|'transfer-out';
+  quantity: number; pcId: string; pcName: string; allocationId: string; notes: string;
+}
+export interface StockRecord {
+  id: string; componentId: string; tracking: 'serialized'|'bulk'; serial: string; assetTag: string;
+  quantity: number; location: string; condition: 'Serviceable'|'Quarantined'|'Retired'; notes: string;
+  allocations: StockAllocation[]; history: StockEvent[];
+}
+export interface Database { components: Component[]; systems: System[]; configurations: Configuration[]; pcs: InventoryPC[]; inventory: StockRecord[] }
 export interface Finding { severity: 'error'|'warning'|'pass'; title: string; detail: string }
 export interface Resource { name: string; used: number; available: number; unit?: string }
 export interface Report { findings: Finding[]; resources: Resource[]; status: 'Compatible'|'Needs review'|'Conflicts'; usableDataGb: number; bootGb: number; slotAssignments: Record<string,string> }

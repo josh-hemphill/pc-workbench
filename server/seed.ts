@@ -22,7 +22,7 @@ export const seed:Database={
  systems:[
   {id:'microscope',name:'Microscopy & acquisition',location:'Imaging lab · bench 02',description:'Camera acquisition, stage motion and environmental control.',connections:[{id:'camera',name:'Scientific camera',usbA:1,usbC:0,ethernet:0,notes:'Dedicated USB 3 bus recommended'},{id:'stage',name:'Motorized stage',usbA:1,usbC:0,ethernet:1,notes:'Check isolated control network'},{id:'environment',name:'Environmental controller',usbA:1,usbC:0,ethernet:1,notes:''}]},
   {id:'test-rig',name:'Materials test rig',location:'Engineering lab · rig 04',description:'DAQ, load frame, thermal chamber and legacy trigger synchronization.',connections:[{id:'frame',name:'Load frame',usbA:2,usbC:0,ethernet:1,notes:''},{id:'thermal',name:'Thermal chamber',usbA:1,usbC:0,ethernet:1,notes:''},{id:'sensors',name:'USB sensor array',usbA:3,usbC:1,ethernet:0,notes:'Verify bus bandwidth and power'}]}
- ], configurations:[],pcs:[]
+ ], configurations:[],pcs:[],inventory:[]
 };
 const placements=(entries:[string,number?,string?,string?][])=>entries.map(([componentId,quantity=1,role='general',mount='auto'],i)=>({id:`line-${i}`,componentId,quantity,slotId:'',role,mount,group:''})) as Configuration['placements'];
 seed.configurations=[
@@ -30,4 +30,4 @@ seed.configurations=[
  {id:'controller',name:'Instrument controller',description:'Compact system for the materials test rig.',systemId:'test-rig',status:'Draft',updatedAt:'2026-10-06T15:00:00Z',placements:placements([['case-compact'],['board-compact'],['cpu'],['ram'],['legacy'],['nvme',1,'boot'],['ssd',1,'data','internal'],['psu'],['cooler']]),storage:{raid:'none',bootMirror:false},notes:'Example: exposes a conventional PCI incompatibility and missing instrument ports.'},
  {id:'archive',name:'Acquisition archive',description:'Rear NVMe sled and front serviceable data mirror.',systemId:'microscope',status:'Draft',updatedAt:'2026-10-05T11:00:00Z',placements:placements([['case-tower'],['board-atx'],['cpu'],['ram',2],['sled'],['nic'],['nvme',2,'boot','rear-sled'],['ssd',2,'data','front-hot-swap'],['psu'],['cooler']]),storage:{raid:'mirror',bootMirror:true},notes:'Example: verify bifurcation and boot support for the rear sled.'}
 ];
-seed.pcs=[{id:'pc-01',name:'IMG-WS-01',serial:'EXAMPLE-001',location:'Imaging lab',configurationId:'imaging',notes:'Illustrative inventory record'}];
+seed.pcs=[{id:'pc-01',name:'IMG-WS-01',serial:'EXAMPLE-001',location:'Imaging lab',configurationId:'imaging',notes:'Illustrative inventory record. Installed parts must be recorded separately.',buildSettings:{systemId:'microscope',storage:{raid:'mirror',bootMirror:true},notes:'Example planned boot and data mirrors'}}];
