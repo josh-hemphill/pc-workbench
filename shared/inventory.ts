@@ -145,7 +145,7 @@ export function overdueReservations(db: Database, at = Date.now()) {
 export function fleetPicklist(db: Database) {
   const pool = new Map<string, number>();
   for (const s of db.inventory) pool.set(s.componentId, (pool.get(s.componentId) || 0) + stockCounts(s).available);
-  return db.pcs.filter(pc => pc.lifecycle !== 'Retired').flatMap(pc => {
+  return db.pcs.filter(pc => pc.lifecycle !== 'Retired' && pc.lifecycle !== 'Parts only').flatMap(pc => {
     const cfg = db.configurations.find(c => c.id === pc.configurationId);
     if (!cfg) return [];
     return stockReadiness(cfg, db, pc.id).map(r => {

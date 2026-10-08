@@ -40,6 +40,7 @@ export function applyStockOperation(original: StockRecord, input: unknown, db: D
     const pc = db.pcs.find(p => p.id === action.pcId);
     if (!pc) throw Error('PC not found. Register the machine before allocating components.');
     if (pc.lifecycle === 'Retired') throw Error('Retired PCs cannot receive allocations.');
+    if (pc.lifecycle === 'Parts only') throw Error('Parts-only PCs cannot receive allocations. Return the PC to Building before adding parts.');
     const template = db.configurations.find(c => c.id === pc.configurationId);
     const planned = template?.placements.find(p => p.id === action.plannedPlacementId);
     if (action.plannedPlacementId && (!planned || planned.componentId !== stock.componentId)) throw Error('Selected planned placement does not match this stock and PC configuration.');
@@ -71,6 +72,9 @@ export function applyStockOperation(original: StockRecord, input: unknown, db: D
       if (action.quantity > allocation.quantity) throw Error('Quantity exceeds this allocation.');
       if (action.action === 'install-reserved') {
         if (allocation.state !== 'reserved') throw Error('Only a reservation can be installed.');
+        const pc=db.pcs.find(p=>p.id===allocation.pcId);
+        if(!pc)throw Error('PC not found. Register the machine before allocating components.');
+        if(pc.lifecycle==='Parts only'||pc.lifecycle==='Retired')throw Error('Parts-only or retired PCs cannot install reservations. Return the PC to Building first.');
         if (stock.condition !== 'Serviceable') throw Error('Quarantined or retired stock cannot be installed.');
         let installed = allocation;
         if (action.quantity < allocation.quantity) {
