@@ -26,11 +26,17 @@ export interface Placement { id: string; componentId: string; quantity: number; 
 export type Raid = 'none'|'mirror'|'raid5'|'raid6'|'raid10';
 export interface StorageGroup { id: string; name: string; raid: Raid; controllerPlacementId?: string; notes?: string }
 export interface StoragePlan { raid: Raid; bootMirror: boolean; groups?: StorageGroup[] }
-export interface Configuration { approvalHistory?: {revision:number;at:string;configuration:Pick<Configuration,'id'|'name'|'description'|'systemId'|'status'|'updatedAt'|'placements'|'storage'|'notes'|'software'|'portMappings'>;components:Component[];system:System|null}[]; revision?: number; approvalSnapshot?: {at:string;components:Component[];system:System|null}; id: string; name: string; description: string; systemId: string; status: 'Draft'|'In review'|'Approved'; updatedAt: string; placements: Placement[]; storage: StoragePlan; notes: string; software?: SoftwareSettings; portMappings?: PortMapping[] }
-export interface PCBuildSettings { systemId: string; storage: StoragePlan; notes: string; software?: SoftwareSettings; portMappings?: PortMapping[] }
+export interface EngineeringConstraints { minMemoryGb?:number; minDataGb?:number; minBootGb?:number; minScientificCards?:number; requiredComponents?:{componentId:string;quantity:number}[] }
+/** Published revisions are append-only; physical installations pin one revision. */
+export interface RequirementVersion { revision:number;at:string;name:string;description:string;connections:Connection[];constraints?:EngineeringConstraints;software?:SoftwareSettings;storage?:StoragePlan }
+export interface RequirementsSet { id:string;name:string;description:string;versions:RequirementVersion[] }
+export interface InstallationLocation { id:string;name:string;kind:'Site'|'Room'|'Bench'|'System';parentId:string;requirementSetId:string;requirementRevision:number;targetConfigurationId:string;notes:string;requirementSnapshot?:RequirementVersion }
+export interface Configuration { requirementSetId?:string;requirementRevision?:number;requirementSnapshot?:RequirementVersion; approvalHistory?: {revision:number;at:string;configuration:Pick<Configuration,'id'|'name'|'description'|'systemId'|'status'|'updatedAt'|'placements'|'storage'|'notes'|'software'|'portMappings'|'requirementSetId'|'requirementRevision'|'requirementSnapshot'>;components:Component[];system:System|null}[]; revision?: number; approvalSnapshot?: {at:string;components:Component[];system:System|null}; id: string; name: string; description: string; systemId: string; status: 'Draft'|'In review'|'Approved'; updatedAt: string; placements: Placement[]; storage: StoragePlan; notes: string; software?: SoftwareSettings; portMappings?: PortMapping[] }
+export interface PCBuildSettings { requirementSetId?:string;requirementRevision?:number;requirementSnapshot?:RequirementVersion; systemId: string; storage: StoragePlan; notes: string; software?: SoftwareSettings; portMappings?: PortMapping[] }
 export interface InstalledStockIdentity { stockId:string;componentId:string;serial:string;assetTag:string;allocationId:string;quantity:number;role:Placement['role'];mount:Placement['mount'];slotId:string;group?:string;targetId?:string }
-export interface CommissionedSnapshot { at:string;configuration:Configuration;components:Component[];system:System|null;installedStock?:InstalledStockIdentity[] }
-export interface InventoryPC { id: string; name: string; serial: string; location: string; configurationId: string; notes: string; buildSettings: PCBuildSettings | null; lifecycle?: 'Planning'|'Building'|'Commissioned'|'In service'|'Maintenance'|'Retired'; software?: SoftwareSettings; commissioning?: {at:string;by:string;checks:string[];notes:string}; timeline?: {id:string;at:string;kind:string;summary:string;actor:string}[]; snapshots?: CommissionedSnapshot[]; snapshot?: CommissionedSnapshot }
+export interface InstallationSnapshot { locationId:string;path:string;requirementSetId:string;requirementRevision:number;targetConfigurationId:string;requirementSnapshot?:RequirementVersion }
+export interface CommissionedSnapshot { installation?:InstallationSnapshot; at:string;configuration:Configuration;components:Component[];system:System|null;installedStock?:InstalledStockIdentity[] }
+export interface InventoryPC { installationLocationId?:string; id: string; name: string; serial: string; location: string; configurationId: string; notes: string; buildSettings: PCBuildSettings | null; lifecycle?: 'Planning'|'Building'|'Commissioned'|'In service'|'Maintenance'|'Retired'; software?: SoftwareSettings; commissioning?: {at:string;by:string;checks:string[];notes:string}; timeline?: {id:string;at:string;kind:string;summary:string;actor:string}[]; snapshots?: CommissionedSnapshot[]; snapshot?: CommissionedSnapshot }
 export interface StockAllocation {
   id: string; pcId: string; quantity: number; state: 'reserved'|'installed';
   plannedPlacementId: string; slotId: string; role: Placement['role']; mount: Placement['mount'];
@@ -47,7 +53,7 @@ export interface StockRecord {
   supplier?: string; purchaseOrder?: string; repairReference?: string; supplierReturnReference?: string; reorderLevel?: number;
   allocations: StockAllocation[]; history: StockEvent[];
 }
-export interface Database { components: Component[]; systems: System[]; configurations: Configuration[]; pcs: InventoryPC[]; inventory: StockRecord[] }
+export interface Database { requirementsSets:RequirementsSet[];installationLocations:InstallationLocation[]; components: Component[]; systems: System[]; configurations: Configuration[]; pcs: InventoryPC[]; inventory: StockRecord[] }
 export interface Finding { severity: 'error'|'warning'|'pass'; title: string; detail: string }
 export interface Resource { name: string; used: number; available: number; unit?: string }
 export interface Report { findings: Finding[]; resources: Resource[]; status: 'Compatible'|'Needs review'|'Conflicts'; usableDataGb: number; bootGb: number; slotAssignments: Record<string,string>; storageGroups?: {id:string;name:string;raid:Raid;driveCount:number;usableGb:number}[] }

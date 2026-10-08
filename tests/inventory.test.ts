@@ -8,6 +8,8 @@ import { checkInstalledPC, installedConfiguration, pcAllocations, planDifference
 import { Store, decodeCSV, encodeCSV, encodeMovements } from '../server/store';
 import { applyStockAction, adjustStockCount, saveStockRecord, transferBulkStock } from '../server/inventory';
 
+function withRestarted<T>(dir:string,read:(store:Store)=>T):T{const store=new Store(dir);try{return read(store);}finally{store.close();}}
+
 function setup() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bench-inventory-'));
   const store = new Store(dir);
@@ -20,7 +22,7 @@ function setup() {
     const row = applyStockAction(store.db.inventory.find(s => s.id === id)!, input, store.db);
     store.replace('inventory', store.db.inventory.map(s => s.id === id ? row : s)); return row;
   };
-  return { dir, store, create, act, cleanup: () => fs.rmSync(dir, { recursive: true, force: true }) };
+  return { dir, store, create, act, cleanup: () => {store.close();fs.rmSync(dir, { recursive: true, force: true });} };
 }
 
 test('a serialized unit cannot be double-allocated and returns to stock on removal', () => {
@@ -37,7 +39,7 @@ test('a serialized unit cannot be double-allocated and returns to stock on remov
     assert.equal(stockCounts(row).available, 1); assert.equal(row.allocations.length, 0);
     assert.deepEqual(row.history.map(e => e.action), ['receive', 'reserve', 'install', 'remove']);
     assert.equal(row.history[3].pcName, 'IMG-WS-01');
-    assert.equal(new Store(store.dir).db.inventory[0].history.length, 4);
+    assert.equal(withRestarted(store.dir,reopened=>reopened.db).inventory[0].history.length, 4);
   } finally { cleanup(); }
 });
 
@@ -83,7 +85,7 @@ test('duplicate serials, nonserviceable allocations and unsafe deletion preserve
     assert.throws(() => saveStockRecord({ ...quarantined, allocations: [] }, store.db), /Stock changed/);
     act('stock-1', { action: 'release', allocationId: row.allocations[0].id, quantity: 1 });
     row = store.db.inventory[0]; store.replace('inventory', [{ ...row, condition: 'Retired' }]);
-    assert.equal(new Store(store.dir).db.inventory[0].condition, 'Retired');
+    assert.equal(withRestarted(store.dir,reopened=>reopened.db).inventory[0].condition, 'Retired');
   } finally { cleanup(); }
 });
 
@@ -131,12 +133,17 @@ test('inventory CSV round-trips full allocations/history and legacy workspaces g
     create(); act('stock-1', { action: 'install', pcId: 'pc-01', quantity: 1, notes: 'Comma, quote " and\nnew line' });
     assert.deepEqual(decodeCSV('inventory', encodeCSV('inventory', store.db.inventory)), store.db.inventory);
     assert.match(encodeMovements(store.db), /IMG-WS-01/);
-    fs.unlinkSync(path.join(dir, 'inventory.csv'));
-    fs.writeFileSync(path.join(dir, 'pcs.csv'), 'id,name,serial,location,configurationId,notes\npc-01,Legacy PC,,,imaging,Keep this PC\n');
-    const migrated = new Store(dir);
-    assert.deepEqual(migrated.db.inventory, []);
-    assert.equal(migrated.db.pcs[0].name, 'Legacy PC'); assert.equal(migrated.db.pcs[0].buildSettings, null);
-    assert.equal(migrated.db.configurations.length, 3);
+    const legacyDir=fs.mkdtempSync(path.join(os.tmpdir(),'bench-legacy-inventory-'));
+    try {
+      for(const collection of ['components','systems','configurations'] as const)fs.writeFileSync(path.join(legacyDir,`${collection}.csv`),encodeCSV(collection,store.db[collection]));
+      fs.writeFileSync(path.join(legacyDir, 'pcs.csv'), 'id,name,serial,location,configurationId,notes\npc-01,Legacy PC,,,imaging,Keep this PC\n');
+      const migrated = new Store(legacyDir);
+      try {
+        assert.deepEqual(migrated.db.inventory, []);
+        assert.equal(migrated.db.pcs[0].name, 'Legacy PC'); assert.equal(migrated.db.pcs[0].buildSettings, null);
+        assert.equal(migrated.db.configurations.length, 3);
+      } finally {migrated.close();}
+    } finally {fs.rmSync(legacyDir,{recursive:true,force:true});}
   } finally { cleanup(); }
 });
 
@@ -176,7 +183,7 @@ test('bulk lot splits conserve total units and preserve allocated units and link
     const before = encodeCSV('inventory', store.db.inventory);
     ({ source, target } = transferBulkStock(source, { quantity: 1, assetTag: 'RAM-QUARANTINE', location: 'Shelf D', condition: 'Serviceable', notes: 'Duplicate tag' }, store.db));
     assert.throws(() => store.replace('inventory', [source, ...store.db.inventory.filter(s => s.id !== source.id), target]), /Duplicate inventory asset/);
-    assert.equal(encodeCSV('inventory', new Store(store.dir).db.inventory), before);
+    assert.equal(encodeCSV('inventory', withRestarted(store.dir,reopened=>reopened.db).inventory), before);
   } finally { cleanup(); }
 });
 
@@ -186,8 +193,9 @@ test('movement histories larger than the original CSV parser limit remain readab
     const stock = create();
     for (let i=0;i<300;i++) stock.history.push({id:`large-history-${i}`,at:new Date(0).toISOString(),action:'edit',quantity:0,pcId:'',pcName:'',allocationId:'',notes:'x'.repeat(10000)});
     store.replace('inventory',[stock]);
-    const resumed=new Store(store.dir);
-    assert.equal(resumed.db.inventory[0].history.length,301);
-    assert.equal(resumed.db.inventory[0].history.at(-1)!.notes.length,10000);
+    withRestarted(store.dir,resumed=>{
+      assert.equal(resumed.db.inventory[0].history.length,301);
+      assert.equal(resumed.db.inventory[0].history.at(-1)!.notes.length,10000);
+    });
   } finally { cleanup(); }
 });

@@ -1,6 +1,7 @@
 import type { Component, Configuration, Database } from '../shared/types';
 const part=(id:string,name:string,category:Component['category'],specs:Component['specs'],manufacturer='Example specification'):Component=>({id,name,category,manufacturer,specs,source:'Illustrative planning data — replace with verified manufacturer specifications',verified:false});
 export const seed:Database={
+ requirementsSets:[],installationLocations:[],
  components:[
   part('case-tower','Research tower · 6-bay','Chassis',{supportedForms:['ATX','Micro-ATX'],rearSlots:7,maxCardLengthMm:330,maxCardHeightMm:140,maxCoolerHeightMm:170,bays25:2,bays35:2,hotSwapBays:4,lengthMm:510,heightMm:460,widthMm:230}),
   part('case-compact','Compact instrument chassis','Chassis',{supportedForms:['Micro-ATX'],rearSlots:4,maxCardLengthMm:240,maxCardHeightMm:120,maxCoolerHeightMm:130,bays25:2,bays35:1,hotSwapBays:0,lengthMm:360,heightMm:310,widthMm:185}),

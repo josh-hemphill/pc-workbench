@@ -1,5 +1,6 @@
 import type { Configuration, Database, InventoryPC, StockAllocation, StockRecord } from './types';
 import { checkConfiguration } from './compatibility';
+import { checkLocationPC, installationSnapshot } from './installations';
 
 export function stockCounts(stock: StockRecord) {
   const reserved = stock.allocations.filter(a => a.state === 'reserved').reduce((n, a) => n + a.quantity, 0);
@@ -32,6 +33,7 @@ export function installedConfiguration(pc: InventoryPC, db: Database): Configura
       id: a.id, componentId: stock.componentId, quantity: a.quantity, slotId: a.slotId,
       role: a.role, mount: a.mount, group: a.group || '', targetId: a.targetId || '', adapterPlacementId: actualId(a.adapterPlacementId), controllerPlacementId: actualId(a.controllerPlacementId),
     })),
+    requirementSetId:pc.buildSettings?.requirementSetId,requirementRevision:pc.buildSettings?.requirementRevision,requirementSnapshot:pc.buildSettings?.requirementSnapshot,
     storage: pc.buildSettings?.storage ? { ...pc.buildSettings.storage, ...(pc.buildSettings.storage.groups ? {groups:pc.buildSettings.storage.groups.map(g=>({...g,controllerPlacementId:actualId(g.controllerPlacementId)}))}: {}) } : { raid: 'none', bootMirror: false }, notes: pc.buildSettings?.notes || '', software: pc.software || pc.buildSettings?.software, portMappings: pc.buildSettings?.portMappings?.map(actualPort),
   };
 }
@@ -46,6 +48,11 @@ export function checkInstalledPC(pc: InventoryPC, db: Database) {
     if(allocation.state==='installed')for(const binding of [allocation.adapterPlacementId,allocation.controllerPlacementId])if(binding&&!pcAllocations(pc.id,db).some(r=>r.allocation.id===binding)&&pcAllocations(pc.id,db).filter(r=>r.allocation.state==='installed'&&r.allocation.plannedPlacementId===binding).length>1)report.findings.push({severity:'warning',title:'Ambiguous installed provider binding',detail:'Several installed units match the planned adapter/controller. Record the exact allocation ID in Placement before commissioning.'});
   }
   if (commissioningDrift(pc,db)) report.findings.push({severity:'warning',title:'Changed since commissioning',detail:'Installed identities, hardware specifications, equipment settings or software differ from the latest accepted snapshot. Validate the changes and commission a new revision.'});
+  if(pc.installationLocationId) {
+    const location=db.installationLocations?.find(location=>location.id===pc.installationLocationId);
+    if(!location)report.findings.push({severity:'error',title:'Installation location missing',detail:'The assigned physical installation location no longer exists.'});
+    else {const locationReport=checkLocationPC(pc,location,db);for(const finding of locationReport.findings)if(!report.findings.some(previous=>previous.title===finding.title&&previous.detail===finding.detail&&previous.severity===finding.severity))report.findings.push(finding);if(location.requirementSetId)for(const resource of locationReport.resources.filter(resource=>resource.name.startsWith('Required ')||['USB-A ports','USB-C ports','Ethernet ports'].includes(resource.name)))report.resources.push({...resource,name:`Installation ${resource.name}`});}
+  }
   report.status = report.findings.some(f => f.severity === 'error') ? 'Conflicts' : report.findings.some(f => f.severity === 'warning') ? 'Needs review' : 'Compatible';
   return report;
 }
@@ -54,9 +61,10 @@ export function commissioningDrift(pc:InventoryPC,db:Database) {
   if (!pc.snapshot) return false;
   const canonical=(value:unknown):string=>JSON.stringify(value,(_key,item)=>item&&typeof item==='object'&&!Array.isArray(item)?Object.fromEntries(Object.entries(item).sort(([a],[b])=>a.localeCompare(b))):item);
   const actual=installedConfiguration(pc,db);
+  if(canonical(installationSnapshot(pc,db)||null)!==canonical(pc.snapshot.installation||null))return true;
   if (canonical(actual)!==canonical(pc.snapshot.configuration)) return true;
   if (pc.snapshot.components.some(previous=>canonical(previous)!==canonical(db.components.find(c=>c.id===previous.id)))) return true;
-  if (canonical(pc.snapshot.system)!==canonical(db.systems.find(s=>s.id===actual.systemId)||null)) return true;
+  if (!actual.requirementSetId && canonical(pc.snapshot.system)!==canonical(db.systems.find(s=>s.id===actual.systemId)||null)) return true;
   if (pc.snapshot.installedStock) {
     const identities=pcAllocations(pc.id,db).filter(r=>r.allocation.state==='installed').map(({stock,allocation:a})=>({stockId:stock.id,componentId:stock.componentId,serial:stock.serial,assetTag:stock.assetTag,allocationId:a.id,quantity:a.quantity,role:a.role,mount:a.mount,slotId:a.slotId,group:a.group,targetId:a.targetId}));
     if(canonical(identities)!==canonical(pc.snapshot.installedStock))return true;
@@ -122,8 +130,8 @@ export function planDifferences(pc: InventoryPC, db: Database) {
     if (left > 0) differences.push(`${left} × ${db.components.find(c => c.id === row.stock.componentId)?.name || row.stock.componentId} installed outside the planned placement.`);
   }
   const normalize=(value:unknown):unknown=>{if(value===undefined||value==='')return undefined;if(Array.isArray(value)){const list=value.map(normalize);return list.length?list:undefined;}if(value&&typeof value==='object'){const entries=Object.entries(value).sort(([a],[b])=>a.localeCompare(b)).map(([key,val])=>[key,normalize(val)] as const).filter(([,val])=>val!==undefined);return entries.length?Object.fromEntries(entries):undefined;}return value;};
-  const current=installedConfiguration(pc,db),planned=installedConfiguration({...pc,software:template.software,buildSettings:{systemId:template.systemId,storage:template.storage,notes:'',software:template.software,portMappings:template.portMappings}},db);
-  const settings=(cfg:Configuration)=>normalize({systemId:cfg.systemId,storage:cfg.storage,software:cfg.software,portMappings:cfg.portMappings});
+  const current=installedConfiguration(pc,db),planned=installedConfiguration({...pc,software:template.software,buildSettings:{systemId:template.systemId,storage:template.storage,notes:'',software:template.software,portMappings:template.portMappings,requirementSetId:template.requirementSetId,requirementRevision:template.requirementRevision,requirementSnapshot:template.requirementSnapshot}},db);
+  const settings=(cfg:Configuration)=>normalize({systemId:cfg.systemId,storage:cfg.storage,software:cfg.software,portMappings:cfg.portMappings,requirementSetId:cfg.requirementSetId,requirementRevision:cfg.requirementRevision});
   if (!pc.buildSettings || JSON.stringify(settings(current))!==JSON.stringify(settings(planned))) differences.push('Recorded equipment or redundancy settings differ from the template (including storage groups, software or port mappings).');
   return differences;
 }

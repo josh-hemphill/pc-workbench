@@ -1,9 +1,19 @@
-import type { Configuration, Database, Finding, Report, Resource, Component, Placement, StorageGroup } from './types';
+import type { Configuration, Database, Finding, Report, Resource, Component, Placement, StorageGroup, RequirementVersion, PCBuildSettings } from './types';
+
+/** Resolve only an explicitly pinned revision; never silently follow the newest revision. */
+export function resolveRequirementVersion(binding:Pick<PCBuildSettings,'requirementSetId'|'requirementRevision'|'requirementSnapshot'>,db:Database):RequirementVersion|undefined {
+  if(!binding.requirementSetId)return undefined;
+  if(binding.requirementSnapshot?.revision===binding.requirementRevision)return binding.requirementSnapshot;
+  return db.requirementsSets?.find(set=>set.id===binding.requirementSetId)?.versions.find(version=>version.revision===binding.requirementRevision);
+}
 
 /** Deterministic planning checks. Manufacturer-specific lane sharing and firmware are manual checks. */
 export function checkConfiguration(config: Configuration, db: Database): Report {
+  const requirementVersion=resolveRequirementVersion(config,db);
   const findings: Finding[] = [], resources: Resource[] = [], slotAssignments: Record<string,string> = {};
   const add = (severity: Finding['severity'],title:string,detail:string) => findings.push({severity,title,detail});
+  if(config.requirementSetId&&!requirementVersion)add('error','Requirements revision missing','Select an existing published requirements revision; the planner never follows the latest version implicitly.');
+  if(config.requirementSnapshot&&config.requirementSnapshot.revision!==config.requirementRevision)add('error','Requirements snapshot revision mismatch','The captured requirements snapshot does not match the selected revision.');
   const rows: {p:Placement;c:Component}[] = [];
   for(const p of config.placements) { if(!Number.isInteger(p.quantity)||p.quantity<1||p.quantity>32){add('error','Invalid component quantity','Enter a whole number from 1 to 32 for each component.');continue;}const c = db.components.find(c=>c.id===p.componentId); if(c) rows.push({p,c}); else add('error','Missing component',`Catalog entry ${p.componentId} no longer exists.`); }
   for(const row of rows)if(row.c.category==='Drive'&&row.p.mount==='auto'&&row.p.targetId) {
@@ -73,7 +83,7 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
   }
   resource('Rear brackets',cards.reduce((n,r)=>n+(r.c.specs.bracketWidth||1)*r.p.quantity,0),chassis?.specs.rearSlots);
   if(cards.length) add('warning','Lane sharing and firmware review','Check motherboard lane-sharing tables, M.2/SATA disabling rules, scientific card drivers, OS support and required firmware. Declared lanes are assumed simultaneously available.');
-  const system=db.systems.find(s=>s.id===config.systemId);
+  const system=requirementVersion?{id:config.requirementSetId!,name:requirementVersion.name,location:'',description:requirementVersion.description,connections:requirementVersion.connections}:db.systems.find(s=>s.id===config.systemId);
   if(!system) add('warning','No equipment system linked','Link equipment to check USB and Ethernet requirements.');
   else for(const port of ['usbA','usbC','ethernet'] as const) { const used=system.connections.reduce((n,c)=>n+Math.max(c[port],(c.requirements||[]).filter(r=>r.kind===({usbA:'USB-A',usbC:'USB-C',ethernet:'Ethernet'} as const)[port]).reduce((q,r)=>q+r.quantity,0)),0); const kind=({usbA:'USB-A',usbC:'USB-C',ethernet:'Ethernet'} as const)[port]; const suppliers=rows.filter(r=>r.c.category!=='Chassis'); const known=board?.specs[port]!==undefined||board?.specs.ports!==undefined; const available=suppliers.reduce((n,r)=>n+Math.max(r.c.specs[port]||0,r.c.specs.ports?.filter(p=>p.kind===kind).length||0)*r.p.quantity,0); resource(({usbA:'USB-A ports',usbC:'USB-C ports',ethernet:'Ethernet ports'})[port],used,known?available:undefined); }
   const occupiedPorts=new Set<string>();
@@ -190,5 +200,36 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
   }else usableDataGb=capacityGroup('default','Data',config.storage.raid,data);
   if(!config.storage.bootMirror&&boots.length>1)add('warning','Multiple unmirrored boot drives','Confirm intended boot selection or enable a boot mirror.');
   const bootGb=config.storage.bootMirror?(boots.length===2?Math.min(...boots):0):boots.reduce((a,b)=>a+b,0);
+  if(requirementVersion) {
+    const constraints=requirementVersion.constraints;
+    const minimum=(label:string,required:number|undefined,actual:number,unknown=false)=>{
+      if(required===undefined)return;
+      resources.push({name:`Required ${label}`,used:required,available:actual});
+      if(actual<required)add(unknown?'warning':'error',unknown?'Required capacity unconfirmed':'Requirements capacity insufficient',`${requirementVersion.name}: ${required} ${label} required; ${actual} recorded${unknown?'; complete missing component specifications':''}.`);
+    };
+    minimum('memory (GB)',constraints?.minMemoryGb,of('Memory').reduce((n,r)=>n+(r.c.specs.capacityGb||0)*r.p.quantity,0),of('Memory').some(r=>r.c.specs.capacityGb===undefined));
+    minimum('usable data (GB)',constraints?.minDataGb,usableDataGb,data.some(r=>r.c.specs.capacityGb===undefined));
+    minimum('boot capacity (GB)',constraints?.minBootGb,bootGb,boot.some(r=>r.c.specs.capacityGb===undefined));
+    minimum('scientific cards',constraints?.minScientificCards,of('Scientific card').reduce((n,r)=>n+r.p.quantity,0));
+    for(const required of constraints?.requiredComponents||[]) {
+      const count=rows.filter(r=>r.c.id===required.componentId).reduce((n,r)=>n+r.p.quantity,0);
+      if(count<required.quantity)add('error','Required component missing',`${requirementVersion.name}: ${required.quantity} × ${db.components.find(c=>c.id===required.componentId)?.name||required.componentId} required; ${count} selected.`);
+    }
+    const expected=requirementVersion.software;
+    for(const key of ['os','image','bios','equipmentSoftware','equipmentConfiguration'] as const)if(expected?.[key]) {
+      if(!config.software?.[key])add('warning','Required software unrecorded',`${requirementVersion.name}: record ${key} ${expected[key]}.`);
+      else if(config.software[key]!.toLowerCase()!==expected[key]!.toLowerCase())add('error','Requirements software mismatch',`${requirementVersion.name}: ${key} requires ${expected[key]}, recorded ${config.software[key]}.`);
+    }
+    for(const key of ['drivers','firmware'] as const)for(const [componentId,value] of Object.entries(expected?.[key]||{}))if(value) {
+      const actual=config.software?.[key]?.[componentId];
+      if(!actual)add('warning','Required software unrecorded',`${requirementVersion.name}: record ${key} ${value} for ${componentId}.`);
+      else if(actual.toLowerCase()!==value.toLowerCase())add('error','Requirements software mismatch',`${requirementVersion.name}: ${componentId} ${key} requires ${value}; recorded ${actual}.`);
+    }
+    const expectedStorage=requirementVersion.storage;
+    if(expectedStorage) {
+      if(expectedStorage.raid!==config.storage.raid||expectedStorage.bootMirror!==config.storage.bootMirror)add('error','Requirements storage mismatch',`${requirementVersion.name}: default data RAID ${expectedStorage.raid} and boot mirror ${expectedStorage.bootMirror?'enabled':'disabled'} are required.`);
+      for(const group of expectedStorage.groups||[])if(!config.storage.groups?.some(actual=>actual.id===group.id&&actual.raid===group.raid))add('error','Required storage group missing',`${requirementVersion.name}: array ${group.name} (${group.id}) requires ${group.raid}.`);
+    }
+  }
   return {findings,resources,status:findings.some(f=>f.severity==='error')?'Conflicts':findings.some(f=>f.severity==='warning')?'Needs review':'Compatible',usableDataGb,bootGb,slotAssignments,storageGroups};
 }

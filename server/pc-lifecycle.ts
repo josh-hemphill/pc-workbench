@@ -3,6 +3,8 @@ import { z } from 'zod';
 import type { Database, InventoryPC } from '../shared/types';
 import { checkInstalledPC, installedConfiguration, pcAllocations } from '../shared/inventory';
 import { schemas } from './schema';
+import {locationPath,installationSnapshot} from '../shared/installations';
+import {captureRequirementBinding} from './installation-requirements';
 import { applyStockOperation } from './inventory';
 
 function timeline(pc: InventoryPC, kind: string, summary: string, actor = '') {
@@ -11,15 +13,16 @@ function timeline(pc: InventoryPC, kind: string, summary: string, actor = '') {
 
 export function savePCRecord(input: unknown, db: Database): InventoryPC {
   const next = schemas.pcs.parse(input), previous = db.pcs.find(p => p.id === next.id);
+  if(next.buildSettings)next.buildSettings=captureRequirementBinding(next.buildSettings,db);
   for (const key of ['timeline', 'commissioning', 'snapshot', 'snapshots'] as const) {
     if (JSON.stringify(next[key] ?? (key === 'timeline' || key === 'snapshots' ? [] : null)) !== JSON.stringify(previous?.[key] ?? (key === 'timeline' || key === 'snapshots' ? [] : null))) throw Error('PC commissioning and history are managed by lifecycle actions. Reload before saving.');
   }
   if (next.lifecycle === 'Commissioned' && previous?.lifecycle !== 'Commissioned') throw Error('Use Commission PC to capture a validated hardware and software snapshot.');
   if ((next.lifecycle === 'In service') && !next.commissioning) throw Error('Commission this PC before marking it in service.');
   if (next.lifecycle === 'Retired' && pcAllocations(next.id, db).length) throw Error('Remove installed components and release reservations before retiring a PC.');
-  const changed = (['name', 'serial', 'location', 'configurationId', 'notes', 'buildSettings', 'lifecycle', 'software'] as const).filter(k => JSON.stringify(next[k]) !== JSON.stringify(previous?.[k]));
+  const changed = (['name', 'serial', 'location', 'installationLocationId', 'configurationId', 'notes', 'buildSettings', 'lifecycle', 'software'] as const).filter(k => JSON.stringify(next[k]) !== JSON.stringify(previous?.[k]));
   if (!previous) timeline(next, 'register', `Registered ${next.name}.`);
-  else if (changed.length) timeline(next, 'update', changed.map(k => `${k}: ${JSON.stringify(previous[k])} → ${JSON.stringify(next[k])}`).join('; ').slice(0, 10000));
+  else if (changed.length) timeline(next, 'update', changed.map(k => k==='installationLocationId'?`Installation location: ${locationPath(previous.installationLocationId||'',db)||'Unassigned'} → ${locationPath(next.installationLocationId||'',db)||'Unassigned'}`:`${k}: ${JSON.stringify(previous[k])} → ${JSON.stringify(next[k])}`).join('; ').slice(0, 10000));
   return schemas.pcs.parse(next);
 }
 
@@ -35,7 +38,7 @@ export function commissionPCRecord(original: InventoryPC, input: unknown, db: Da
   const pc = structuredClone(original), configuration = installedConfiguration(pc, db), at = new Date().toISOString();
   const ids = new Set(configuration.placements.map(p => p.componentId));
   const installedStock = pcAllocations(pc.id,db).filter(r=>r.allocation.state==='installed').map(({stock,allocation:a})=>({stockId:stock.id,componentId:stock.componentId,serial:stock.serial,assetTag:stock.assetTag,allocationId:a.id,quantity:a.quantity,role:a.role,mount:a.mount,slotId:a.slotId,group:a.group,targetId:a.targetId}));
-  const snapshot = { at, configuration, installedStock, components: structuredClone(db.components.filter(c => ids.has(c.id))), system: structuredClone(db.systems.find(s => s.id === configuration.systemId) || null) };
+  const snapshot = { at, configuration, installedStock, installation:installationSnapshot(pc,db), components: structuredClone(db.components.filter(c => ids.has(c.id))), system: structuredClone(db.systems.find(s => s.id === configuration.systemId) || null) };
   pc.snapshot = snapshot; (pc.snapshots ||= []).push(snapshot);
   pc.commissioning = { at, ...confirmation }; pc.lifecycle = 'Commissioned';
   timeline(pc, 'commission', `Commissioned revision ${pc.snapshots.length}; checks: ${confirmation.checks.join(', ')}. ${confirmation.notes}`, confirmation.by);

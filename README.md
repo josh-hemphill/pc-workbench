@@ -1,10 +1,10 @@
 # Bench — PC configuration workbench
 
-A local, full-stack TypeScript application using Vue 3, Vuetify 3, Vite, Express and pnpm. No account, cloud database or hosted service is required. Engineering data is saved on your dev machine in CSV files.
+A local, full-stack TypeScript application using Vue 3, Vuetify 3, Vite, Express and pnpm. No account, cloud database or hosted service is required. Engineering and inventory data is saved in a local SQLite database using Node.js’s native `node:sqlite` module. Every collection remains importable and exportable as CSV.
 
 ## Run
 
-Use Node.js 22.12+ (Node 24 recommended) and pnpm 11.19.0. If using Corepack, run `corepack enable` first.
+Use Node.js 24+ and pnpm 11.19.0. If using Corepack, run `corepack enable` first.
 
 ```sh
 pnpm install
@@ -18,7 +18,7 @@ pnpm build
 pnpm start
 ```
 
-Open **http://127.0.0.1:3001**. `pnpm test` runs the compatibility, CSV persistence and importer tests. No Python runtime is used.
+Open **http://127.0.0.1:3001**. `pnpm test` runs the compatibility, installation tracking, SQLite migration/transactions, CSV round-trip and importer tests. No Python runtime is used.
 
 The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port (update the Vite proxy if changed in development). `BENCH_DATA_DIR=/absolute/path` changes the storage directory.
 
@@ -37,25 +37,45 @@ The API binds to loopback and rejects nonlocal Host/Origin requests. This is a s
 
 ## Data & CSV
 
-On the first start, example records are written into `data/components.csv`, `data/systems.csv`, `data/configurations.csv`, and `data/pcs.csv`, with an empty `data/inventory.csv`. Existing files are read on later starts. **All example parts are illustrative and unverified; no brand-specific engineering claims are made.** Catalog entries and linked templates never invent physical stock or installation records.
+The authoritative database is **`data/workbench.sqlite`**. SQLite uses WAL mode, full synchronization and database foreign-key checks. A save, stock movement, decommission or whole-workspace restore commits all record changes and references in one transaction; failed writes roll back without replacing live state. Unexpected rollback failure blocks edits until the server restarts. Up to ten automatic JSON recovery snapshots are retained in `data/backups/`.
 
-Existing workspaces upgrade without replacing their records: a missing inventory file is created empty, and legacy PC CSVs without `buildSettings` load with that field set to `null`. Use **Edit PC & settings** to capture or enter settings for existing PCs.
+On the first start, the app validates and migrates existing collection CSV files together into SQLite. Legacy CSV files are preserved, and missing installation-requirement and location collections start empty. A pending legacy restore journal is recovered as the migration source. After initialization, the app reads SQLite and **does not reload legacy CSV files**; use the CSV import interface for later changes. New workspaces contain illustrative sample catalogs/configurations/PCs, with no physical stock or installation locations. All example specifications require verification.
 
-Saving a collection validates all records and references, flushes a temporary CSV, atomically renames it, and retains up to ten automatic whole-workspace recovery snapshots in `data/backups/`. The 10,000-record limit per collection is checked before writing as well as reading. Changes in the UI are saved only when you press Save. CSV imports merge by `id`; matching IDs are updated, absent IDs are kept. Invalid rows and broken references reject the entire collection import. Deletion is blocked for records referenced by other records. Do not edit CSV files while the server is running; restart after external edits.
+The old CSV record limits still apply to imported/exportable records: 10,000 records per collection and 64 MiB per CSV record. Normal saving checks these limits before committing. CSV imports merge by `id`, reject the whole import on invalid rows or references, and preserve absent records. Published requirements revisions are immutable and new revisions append to their history. Deletion is blocked for referenced records. The application is single-user; the workspace lock prevents two servers from sharing its data directory, and revision preconditions protect stale browser edits.
 
 CSV headers:
 
 | File | Columns |
 | --- | --- |
+| requirementsSets.csv | id, name, description, versions |
+| installationLocations.csv | id, name, kind, parentId, requirementSetId, requirementRevision, targetConfigurationId, notes, requirementSnapshot |
 | components.csv | id, name, category, manufacturer, specs, source, verified |
 | systems.csv | id, name, location, description, connections |
-| configurations.csv | id, name, description, systemId, status, updatedAt, placements, storage, notes, software, portMappings, revision, approvalSnapshot, approvalHistory |
-| pcs.csv | id, name, serial, location, configurationId, notes, buildSettings, lifecycle, software, commissioning, timeline, snapshot, snapshots |
+| configurations.csv | id, name, description, systemId, status, updatedAt, placements, storage, notes, software, portMappings, revision, approvalSnapshot, approvalHistory, requirementSetId, requirementRevision, requirementSnapshot |
+| pcs.csv | id, name, serial, location, configurationId, notes, buildSettings, lifecycle, software, commissioning, timeline, snapshot, snapshots, installationLocationId |
 | inventory.csv | id, componentId, tracking, serial, assetTag, quantity, location, condition, notes, supplier, purchaseOrder, reorderLevel, repairReference, supplierReturnReference, allocations, history |
 
-Nested structures, including specifications, connections, placements, storage, build settings, allocations, history and snapshots, contain JSON, with standard CSV quoting. `verified` is `true` or `false`. IDs are stable, unique within a collection, and contain letters, numbers, hyphens or underscores (up to 80 characters). Export a collection to obtain a working template. Import components and systems first, then configurations, then PCs, then inventory. Refer to `shared/types.ts` and `server/schema.ts` for the full typed format and validation constraints. **movements.csv** is an additional flat, export-only inventory ledger for spreadsheets.
+Nested structures, including specifications, connections, placements, storage, build settings, allocations, history and snapshots, contain JSON, with standard CSV quoting. `verified` is `true` or `false`. IDs are stable, unique within a collection, and contain letters, numbers, hyphens or underscores (up to 80 characters). Export a collection to obtain a working template. Import components and systems, then requirements sets and configurations, then installation locations, PCs and inventory. Refer to `shared/types.ts` and `server/schema.ts` for the full typed format and validation constraints. **movements.csv** is an additional flat, export-only inventory ledger for spreadsheets.
 
-The backup is a snapshot of all five collections. In **Data & imports**, choose a JSON backup, validate the replacement counts, then restore it. Every collection and reference is checked together, a safety backup is saved first, and a durable journal protects a multi-file restore interrupted by a crash. If disk durability cannot be confirmed or rollback fails, the server blocks edits with a recovery-required message until restart. Keep independent backup copies outside the application folder. Spreadsheet-safe exports prefix formula-like text with an apostrophe; disable that option for exact CSV round trips.
+The backup contains all seven collections. Legacy backups with the original five collections are supported and get empty requirements/location collections. In **Data & imports**, choose a JSON backup, validate the replacement counts, then restore it. Every collection and reference is checked together, a safety backup is saved first, and a single SQLite transaction protects the entire restore. If SQLite rollback cannot be confirmed, the server blocks edits with a recovery-required message until restart. Keep independent backup copies outside the application folder. Spreadsheet-safe exports prefix formula-like text with an apostrophe; disable that option for exact CSV round trips.
+
+## Installation requirements and physical locations
+
+**Installations → Requirements sets** publishes stable revisions containing equipment connections, minimum RAM/data/boot capacity, scientific card counts or specific component types, software/image requirements and redundancy expectations. Published revisions cannot be edited; publish the next revision for a changed requirement. Configurations choose a set and pin a revision. Mutable equipment-system records remain available for existing workflows, but a pinned requirements revision supplies the stable equipment connection requirements when selected.
+
+**Installations → Installation locations** creates Site → Room → Bench/System hierarchies. Sites and rooms roll up the PCs and parts in descendants. Assign built PCs to Bench or System locations; choose the location’s requirements revision and optional target configuration. The target configuration remains a live planning comparison, while the requirements revision is an immutable engineering baseline. Parent requirements are not silently inherited by child locations.
+
+For example, publish “Microscopy controller” revision 1, link the Imaging configuration to it, create “North lab / Imaging room / Bench 02”, and assign PC-01 to that bench. Its actual installed serialized units and bulk allocations appear in the bench and parent-location part lists. Moving the PC moves those installed-part whereabouts without receiving, reallocating or copying stock. Reservations still belong to stock until installed. Assignment changes are recorded in the PC timeline; commissioning snapshots preserve the assigned location path, requirements revision and actual stock identities. Later publication of revision 2 does not change the pinned installations; explicitly selecting a new revision causes a fresh compatibility check and commissioning drift review.
+
+The location detail shows assigned-PC compatibility findings against its pinned requirements. PC editors can independently capture requirements/storage/port mappings rather than following a mutable template. Unassigned PCs retain their existing free-text location field for legacy records and service notes.
+
+## Accessibility audit
+
+The UI was audited against WCAG 2.2 AA checks using axe-core in Chromium, plus manual keyboard, focus, layout and text checks. The audit covered the main configuration/catalog/inventory/equipment/storage/data/installation screens, representative engineering/stock/batch/requirements/location dialogs, and 390 px and 320 px layouts. Fixes include readable typography, stronger text and control contrast, visible focus, larger control targets, labelled dialogs and icon buttons, a skip link/current-page navigation, guarded Escape and focus return, live status/error messages, scrollable table regions, accessible snapshot panels, and reduced-motion/forced-colors support. The unused sidebar workspace box/gear and promotional block were removed.
+
+The October 2026 audit found zero automated violations across all eight main screens at both mobile widths. Nine additional desktop/mobile dialog cases passed WCAG A/AA and best-practice checks, keyboard focus containment, Escape handling and focus return. Main screens did not overflow the viewport at 320 px or 390 px. A separate browser workflow verified requirements publication, stable revision pinning, hierarchy creation, PC assignment and installed parts following a PC move.
+
+Automated checks cannot establish complete WCAG conformance. A screen-reader and browser/OS matrix has not been exhaustively tested. Keep manufacturer verification and the compatibility warnings visible; status meaning is provided in text as well as color.
 
 ## Physical inventory and built PCs
 
@@ -67,15 +87,15 @@ The backup is a snapshot of all five collections. In **Data & imports**, choose 
 6. Review **Installed compatibility** and **Planned versus installed**. These inspect actual installations and recorded PC settings. Editing a template changes the comparison target but does not change installed hardware or captured settings. Reservations are never treated as installations.
 7. Release unused reservations, or remove installed parts with their destination and disposition: serviceable, quarantine, repair or retired. A partial bulk removal creates a separate returned lot atomically when the condition or destination differs, leaving other allocations unchanged. Bulk allocations support partial install/release/removal. Use **Split / move lot** to transfer unallocated units to a new location or condition (for example, a repair/quarantine lot) without affecting other units. Both records save atomically and get linked movement history. A **Count adjustment** changes total lot quantity with a recorded reason; it cannot reduce stock below allocated quantities. Mark faulty units/lots quarantined; release/remove allocations before retiring stock.
 
-Every receipt, stock metadata edit, count adjustment, reservation, installation, release, removal and placement change appends an event. Allocation balances and history are saved together in a single atomic replacement of `inventory.csv`. A stock record with history cannot be hard-deleted; retiring it preserves traceability. A PC with active allocations cannot be deleted. Historical events retain the PC name even if the PC is later deleted. Catalog types referenced by physical inventory are retained.
+Every receipt, stock metadata edit, count adjustment, reservation, installation, release, removal and placement change appends an event. Allocation balances and history are saved together in one SQLite transaction. A stock record with history cannot be hard-deleted; retiring it preserves traceability. A PC with active allocations cannot be deleted. Historical events retain the PC name even if the PC is later deleted. Catalog types referenced by physical inventory are retained.
 
 Inventory actions validate against the latest server state, so stale allocation attempts cannot double-book units. Ordinary CSV imports preserve an existing stock record’s component identity and tracking mode. They remain trusted transfer operations that can replace imported allocations and history; use whole-workspace restoration when recovering identities. The ledger is not tamper-proof against manual CSV edits. Partial reservation installations record their source allocation ID. Supplier, purchase order and reorder-level fields support procurement planning; this is not an accounting or purchasing integration.
 
-Inventory history is nested in the stock record so multi-lot transfers and balances commit together. Each CSV record is limited to 64 MiB; writes reject oversize records before replacing existing files. Web API request bodies are limited to 10 MB. Restore larger exports as local CSV files with the server stopped. This storage design is intended for local workbench-scale inventory.
+Inventory history is nested in the stock record so multi-lot transfers and balances commit together. Each exportable CSV record is limited to 64 MiB; writes reject oversize records before committing. Web API request bodies are limited to 10 MB. Split oversized transfer files into smaller validated CSV imports; do not edit the live SQLite file or expect preserved legacy CSV files to be reread. This storage design is intended for local workbench-scale inventory.
 
 ## Commissioning and operations
 
-PCs progress through Planning, Building, Commissioned, In service, Maintenance and Retired. **Commission PC** records the operator, validation checklist, date and notes, then captures the installed BOM, catalog specifications, equipment requirements and physical stock identities. Recommissioning keeps previous snapshots. Record the OS image, BIOS, component drivers/firmware, equipment application and configuration revisions. Lifecycle edits are recorded in the PC timeline. Decommissioning releases reservations and removes installed units to the chosen destination/disposition in one workspace transaction.
+PCs progress through Planning, Building, Commissioned, In service, Maintenance and Retired. **Commission PC** records the operator, validation checklist, date and notes, then captures the installed BOM, catalog specifications, equipment requirements and physical stock identities. Recommissioning keeps previous snapshots. Record the OS image, BIOS, component drivers/firmware, equipment application and configuration revisions. Lifecycle edits are recorded in the PC timeline. Decommissioning releases reservations and removes installed units to the chosen destination/disposition in one SQLite transaction.
 
 Approved configurations retain numbered BOM/specification/equipment snapshots; later catalog edits do not rewrite those records. Split multi-quantity card or drive lines into individual lines to record distinct slots or drive targets. Bind drives to a provider, target and controller, and assign data drives to named arrays. Structured equipment requirements map to specific ports on specific component instances. Port mappings and drive bindings are carried from planned placements to actual installations.
 
@@ -85,7 +105,7 @@ Reservations can record an owner, work order, needed-by date and expiry. Expiry 
 
 `GET /api/state` includes a workspace `revision`, also returned in `X-Workspace-Revision`. Send it in `If-Match` for edits, deletes, CSV imports, restoration and commissioning/decommissioning. Missing preconditions return 428; stale preconditions return 409. Inventory movement commands validate against the current balances. Clients should reload after a successful change and review again after a conflict.
 
-`POST /api/restore/preview` accepts `{ "backup": <database> }` and returns validated collection counts and the current revision. `POST /api/restore` accepts the same body with `If-Match`. Restoration replaces every collection, including histories; ordinary CSV imports merge instead. The server acquires `.server-lock.json` and releases it on normal shutdown; stale process locks are recovered at startup. If the lock cannot be verified, stop other servers before attempting manual recovery. Never edit live CSV files.
+`POST /api/restore/preview` accepts `{ "backup": <database> }` and returns validated collection counts and the current revision. `POST /api/restore` accepts the same body with `If-Match`. Restoration replaces every collection, including histories; ordinary CSV imports merge instead. The server acquires `.server-lock.json` and releases it on normal shutdown; stale process locks are recovered at startup. If the lock cannot be verified, stop other servers before attempting manual recovery. Use JSON export for live backups. Do not copy an open SQLite database without its WAL files; stop the server before copying the database itself. Preserved legacy CSV files are migration inputs only; later edits require explicit import.
 
 ## PCPartPicker import
 
@@ -107,6 +127,6 @@ Front hot-swap bays are separate from internal bays. The current storage model s
 
 ## Structure
 
-`src/` contains the Vue/Vuetify UI, including `InventoryWorkspace.vue` for physical stock and built PCs. `server/` handles the API, validation, inventory movements, CSV persistence and sample data. `shared/` contains types, engineering compatibility and stock/readiness/installed-system calculations used by both UI and server. `tools/` contains the offline importer. `tests/` exercises engineering rules, stock accounting, CSV round trips and upgrades from legacy workspaces.
+`src/` contains the Vue/Vuetify UI, including `InventoryWorkspace.vue` for physical stock and built PCs. `server/` handles the API, validation, inventory movements, native SQLite persistence, migration and sample data. `shared/` contains types, engineering compatibility and stock/readiness/installed-system calculations used by both UI and server. `tools/` contains the offline importer. `tests/` exercises engineering rules, stock accounting, CSV round trips and upgrades from legacy workspaces.
 
 Browser WebMCP is optional: where supported, the page registers read-only `list_configurations` and `check_configuration` tools. Ordinary browsers do not require this API.
