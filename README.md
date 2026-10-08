@@ -28,6 +28,8 @@ The API binds to loopback and rejects nonlocal Host/Origin requests. This is a s
 
 Configure a private per-user `config.json` with `dataDir` and an optional `port`. On Windows it lives at `%APPDATA%\pc-workbench\config.json`. `pnpm package:windows` builds a portable Windows x64 desktop executable with an embedded Electron window, Chromium, Node, the server and frontend; its default database is under `%LOCALAPPDATA%\pc-workbench\data`. The window manages server startup and shutdown; no separate browser is needed. CSV import/export remains available. See [settings, packaging and data migration instructions](docs/STANDALONE.md).
 
+A separate [Deno WebView prototype](docs/DENO-PROTOTYPE.md) uses TypeScript and Windows WebView2 without Chromium or a Rust/C#/Go build toolchain. `pnpm prototype:deno:windows` packages it after the matching SEA server is built. The prototype demonstrates working UI, SQLite and CSV integration; native unsaved-close and navigation controls remain blockers to production adoption.
+
 ## Features
 
 - Author, duplicate and save configurations with a bill of materials, workflow status, notes, linked equipment and live compatibility reports.

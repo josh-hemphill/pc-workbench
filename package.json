@@ -12,7 +12,8 @@
     "import:pcpartpicker": "tsx tools/pcpartpicker.ts",
     "package:windows": "pnpm build && node tools/build-standalone.mjs --target win-x64 && node tools/build-desktop.mjs",
     "package:standalone": "pnpm build && node tools/build-standalone.mjs",
-    "package:server:windows": "pnpm build && node tools/build-standalone.mjs --target win-x64"
+    "package:server:windows": "pnpm build && node tools/build-standalone.mjs --target win-x64",
+    "prototype:deno:windows": "node tools/build-deno-desktop.mjs --target win-x64"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
