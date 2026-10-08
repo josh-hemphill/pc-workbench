@@ -13,12 +13,13 @@ h1{font-size:clamp(1.8rem,3vw,2.25rem);letter-spacing:-.04em}h2{font-size:1.4rem
 .v-btn:not(.v-btn--icon){height:auto!important;padding-block:10px!important}.v-btn__content{white-space:normal!important;line-height:1.35}
 .v-btn--icon{min-width:44px!important;min-height:44px!important;width:44px!important;height:44px!important}
 .v-field,.v-field__input,.v-label{font-size:1rem!important}.v-label{opacity:1!important;color:#405247!important}
-.v-field__outline{--v-field-border-opacity:1;color:#738171}.v-field--focused .v-field__outline{color:#284d37}
+.v-field__outline{--v-field-border-opacity:1;color:#738171}.v-field--focused .v-field__outline{color:var(--bench-focus);--v-field-border-width:3px}
 .v-field__input{min-height:48px!important;line-height:1.5!important}input::placeholder,textarea::placeholder{color:#526252!important;opacity:1!important}
 .v-messages,.v-input__details{opacity:1!important;font-size:.875rem!important;color:#465647}
 .v-selection-control__input{width:44px!important;height:44px!important}.v-selection-control .v-label{white-space:normal}
 button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--bench-focus)!important;outline-offset:3px!important}
-.v-field:focus-within{outline:3px solid var(--bench-focus);outline-offset:2px}
+/* Vuetify draws one focus border with a notch for its floating label. */
+.v-field:focus-visible,.v-field__input:focus-visible,.v-field input:focus-visible,.v-field textarea:focus-visible,.v-field select:focus-visible{outline:none!important}
 button,a,[tabindex]{scroll-margin-block:80px}
 .sidebar{width:272px;padding:24px 16px 0;background:#fff;border-color:#cbd4c7;overflow-y:auto}
 .brand{font-size:30px;margin:0 8px 24px;letter-spacing:-1px}.workspace-name{margin-bottom:24px}
