@@ -18,7 +18,7 @@ function checkAdditionalPortCapacity(rows:{p:Placement;c:Component}[],connection
   add:(severity:Finding['severity'],title:string,detail:string)=>void,
   resource:(name:string,used:number,available:number|undefined,unit?:string)=>void) {
   const suppliers=rows.filter(row=>row.c.category!=='Chassis');
-  const potential=suppliers.filter(row=>['Motherboard','Scientific card','Network card','Storage adapter','GPU'].includes(row.c.category)||row.c.specs.ports!==undefined);
+  const potential=suppliers.filter(row=>['Motherboard','Scientific card','Network card','Storage adapter','Bay accessory','GPU'].includes(row.c.category)||row.c.specs.ports!==undefined);
   const catalogComplete=suppliers.some(row=>row.c.specs.ports!==undefined)&&potential.every(row=>row.c.specs.ports!==undefined);
   const pools=suppliers.flatMap(row=>(row.c.specs.ports||[]).filter(port=>additionalKinds.has(port.kind)).map(port=>({row,port,capacity:row.p.quantity,occupied:new Set<number>()})));
   const demands=connections.flatMap(connection=>(connection.requirements||[]).filter(requirement=>additionalKinds.has(requirement.kind)&&requirement.quantity>0).map(requirement=>({connection,requirement,remaining:requirement.quantity})));
@@ -140,7 +140,10 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
   resource('DIMM slots',of('Memory').reduce((n,r)=>n+r.p.quantity,0),board?.specs.dimmSlots);
   resource('Memory',of('Memory').reduce((n,r)=>n+(r.c.specs.capacityGb||0)*r.p.quantity,0),board?.specs.maxMemoryGb,' GB');
   for(const {c} of of('Cooler')) { if(c.specs.supportsSockets&&cpu?.specs.socket&&!c.specs.supportsSockets.includes(cpu.specs.socket)) add('error','Cooler socket mismatch',`${c.name} does not support ${cpu.specs.socket}.`); if(c.specs.heightMm===undefined||chassis?.specs.maxCoolerHeightMm===undefined) add('warning','Cooler clearance unknown',`Verify ${c.name} height against chassis clearance.`); else if(c.specs.heightMm>chassis.specs.maxCoolerHeightMm) add('error','Cooler too tall',`${c.specs.heightMm} mm exceeds ${chassis.specs.maxCoolerHeightMm} mm clearance.`); }
-  const cards=rows.filter(r=>['GPU','Scientific card','Network card','Storage adapter'].includes(r.c.category));
+  const isBayAdapter=(c:Component)=>c.category==='Storage adapter'&&!c.specs.slotBus&&(c.specs.baySize!==undefined||c.specs.driveTargets?.some(t=>t.mount==='front-hot-swap'));
+  const driveProvider=(p:Placement)=>p.adapterPlacementId?rows.find(r=>r.p.id===p.adapterPlacementId):undefined;
+  const adapterMounted=(p:Placement)=>{const provider=driveProvider(p);return provider?.c.category==='Storage adapter'&&(provider.c.specs.driveTargets?.some(t=>t.mount===p.mount)||(p.mount==='rear-sled'&&provider.c.specs.sledDrives!==undefined));};
+  const cards=rows.filter(r=>['GPU','Scientific card','Network card','Storage adapter'].includes(r.c.category)&&!isBayAdapter(r.c));
   const slots=board?.specs.slots||[];
   const instances=cards.flatMap(r=>Array.from({length:r.p.quantity},(_,i)=>({...r,key:`${r.p.id}:${i}`})));
   for(const {c} of cards) { const s=c.specs; if(s.lengthMm===undefined||s.heightMm===undefined||s.slotBus===undefined||s.requiredLanes===undefined||s.slotWidth===undefined||s.bracketWidth===undefined) add('warning','Card specifications incomplete',`Confirm bus, lanes, physical connector, bracket width and dimensions for ${c.name}.`); if(chassis?.specs.maxCardLengthMm===undefined||chassis.specs.maxCardHeightMm===undefined) add('warning','Chassis card clearance unknown',`Enter card length and height clearance for ${chassis?.name||'the chassis'}.`); if(s.lengthMm!==undefined&&chassis?.specs.maxCardLengthMm!==undefined&&s.lengthMm>chassis.specs.maxCardLengthMm) add('error','Card exceeds length clearance',`${c.name}: ${s.lengthMm} mm exceeds ${chassis.specs.maxCardLengthMm} mm.`); if(s.heightMm!==undefined&&chassis?.specs.maxCardHeightMm!==undefined&&s.heightMm>chassis.specs.maxCardHeightMm) add('error','Card exceeds height clearance',`${c.name}: ${s.heightMm} mm exceeds ${chassis.specs.maxCardHeightMm} mm.`); }
@@ -155,7 +158,7 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
         if(rule.maxLanes!==undefined&&active.reduce((n,r)=>n+(r.c.specs.requiredLanes||1),0)>rule.maxLanes)return false;
       }
       const activeRules=(board?.specs.laneRules||[]).filter(rule=>instances.some(r=>rule.slots.includes(slotAssignments[r.key])));
-      const m2Used=rows.filter(r=>r.c.category==='Drive'&&r.c.specs.driveSize==='M.2'&&r.p.mount!=='rear-sled').reduce((n,r)=>n+r.p.quantity,0);
+      const m2Used=rows.filter(r=>r.c.category==='Drive'&&r.c.specs.driveSize==='M.2'&&r.p.mount!=='rear-sled'&&!adapterMounted(r.p)).reduce((n,r)=>n+r.p.quantity,0);
       const sataUsed=rows.filter(r=>r.c.category==='Drive'&&r.c.specs.driveInterface==='SATA'&&!rows.some(controller=>controller.p.id===r.p.controllerPlacementId&&controller.c.category==='Storage adapter')).reduce((n,r)=>n+r.p.quantity,0);
       if(activeRules.length&&board?.specs.m2Slots!==undefined&&m2Used>Math.max(0,board.specs.m2Slots-activeRules.reduce((n,r)=>n+(r.disableM2Slots||0),0)))return false;
       if(activeRules.length&&board?.specs.sataPorts!==undefined&&sataUsed>Math.max(0,board.specs.sataPorts-activeRules.reduce((n,r)=>n+(r.disableSataPorts||0),0)))return false;
@@ -213,20 +216,21 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
   }
   if(system) add('warning','Connection performance review','Verify connector, protocol, pinout, electrical limits, speed, power, isolation, cable/converter wiring, serial framing and shared-bus topology against each instrument specification.');
   const drives=of('Drive'); let internal25=0,internal35=0,front=0,sata=0,m2=0,rear=0;
-  const sleds=of('Storage adapter');
+  const sleds=of('Storage adapter').filter(r=>!isBayAdapter(r.c));
   for(const {p,c} of drives) {
     const s=c.specs;
     if(!s.driveInterface||!s.driveSize||s.capacityGb===undefined) add('warning','Drive specifications incomplete',`Enter interface, size and capacity for ${c.name}.`);
     if(p.mount==='rear-sled') { rear+=p.quantity; if(s.driveInterface!=='NVMe'||s.driveSize!=='M.2') add('error','Rear sled drive mismatch',`${c.name}: this planner's rear sleds accept M.2 NVMe drives.`); }
-    else if(s.driveSize==='M.2') { m2+=p.quantity; if(p.mount==='front-hot-swap') add('error','M.2 front bay unsupported','Front bays are modeled for SATA 2.5/3.5 inch drives. U.2/U.3 needs a separately verified adapter/backplane.'); if(s.m2Length!==undefined&&board?.specs.m2Lengths&&!board.specs.m2Lengths.includes(s.m2Length)) add('error','M.2 length unsupported',`${c.name}: ${s.m2Length} mm is not supported.`); if(s.driveInterface!=='NVMe') add('warning','M.2 protocol review','Board M.2 slots are modeled as NVMe. Verify support for SATA M.2 manually.'); }
-    else if(p.mount==='front-hot-swap') { front+=p.quantity; if(s.driveInterface!=='SATA') add('error','Front bay interface mismatch','Declared front hot-swap bays support SATA drives only.'); }
-    else { if(s.driveSize==='2.5')internal25+=p.quantity; else if(s.driveSize==='3.5')internal35+=p.quantity; }
+    else if(s.driveSize==='M.2') { if(!adapterMounted(p))m2+=p.quantity; if(p.mount==='front-hot-swap') add('error','M.2 front bay unsupported','Front bays are modeled for SATA 2.5/3.5 inch drives. U.2/U.3 needs a separately verified adapter/backplane.'); if(!adapterMounted(p)&&s.m2Length!==undefined&&board?.specs.m2Lengths&&!board.specs.m2Lengths.includes(s.m2Length)) add('error','M.2 length unsupported',`${c.name}: ${s.m2Length} mm is not supported.`); if(!adapterMounted(p)&&s.driveInterface!=='NVMe') add('warning','M.2 protocol review','Board M.2 slots are modeled as NVMe. Verify support for SATA M.2 manually.'); }
+    else if(p.mount==='front-hot-swap') { if(!adapterMounted(p))front+=p.quantity; if(s.driveInterface!=='SATA') add('error','Front bay interface mismatch','Declared front hot-swap bays support SATA drives only.'); }
+    else if(!adapterMounted(p)) { if(s.driveSize==='2.5')internal25+=p.quantity; else if(s.driveSize==='3.5')internal35+=p.quantity; }
     if(s.driveInterface==='SATA')sata+=p.quantity;
   }
   const occupiedTargets=new Set<string>();
   for(const {p,c} of drives) {
     const provider=p.adapterPlacementId?rows.find(r=>r.p.id===p.adapterPlacementId):rows.find(r=>r.c.category===(p.mount==='front-hot-swap'||c.specs.driveSize!=='M.2'?'Chassis':'Motherboard'));
     if(p.adapterPlacementId&&!provider)add('error','Drive adapter missing',`${c.name}: selected target provider no longer exists.`);
+    if(provider&&!['Chassis','Motherboard','Storage adapter'].includes(provider.c.category))add('error','Drive provider invalid',`${c.name}: use an installed chassis, motherboard or storage adapter as the drive target provider.`);
     if(provider&&provider.p.quantity!==1&&(p.targetId||p.adapterPlacementId))add('error','Ambiguous drive adapter instance',`${c.name}: split ${provider.c.name} into individual placements before binding drives.`);
     if(p.targetId) {
       const target=provider?.c.specs.driveTargets?.find(t=>t.id===p.targetId);
@@ -247,7 +251,7 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
       }
     }else if(p.mount==='rear-sled'||p.mount==='front-hot-swap')add('warning','Individual drive target unrecorded',`${c.name}: bind each drive to a specific sled or bay for servicing.`);
     if(p.adapterPlacementId&&provider?.c.category==='Storage adapter') {
-      if(p.mount!=='rear-sled')add('warning','Drive adapter routing review',`${c.name}: selected adapter is recorded but confirm controller routing and mount.`);
+      if(p.mount!=='rear-sled'&&!provider.c.specs.driveTargets?.some(t=>t.id===p.targetId&&t.mount===p.mount))add('warning','Drive adapter routing review',`${c.name}: selected adapter is recorded but confirm controller routing and mount.`);
       if(p.role==='boot'&&provider.c.specs.bootable===false)add('error','Storage adapter cannot boot',`${provider.c.name} does not support boot drives.`);
     }
     if(p.controllerPlacementId) {
@@ -268,7 +272,49 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
   }
   for(const [controllerId,used] of controllerSata) {const controller=rows.find(r=>r.p.id===controllerId)!;resource(`SATA controller ${controller.c.name}`,used,controller.c.specs.sataPorts);}
   for(const [adapterId,used] of adapterDrives) {const adapter=rows.find(r=>r.p.id===adapterId);if(adapter?.c.category==='Storage adapter')resource(`Adapter ${adapter.c.name} drive positions`,used,adapter.c.specs.sledDrives??adapter.c.specs.driveTargets?.length);}
-  resource('Internal 2.5-inch bays',internal25,chassis?.specs.bays25); resource('Internal 3.5-inch bays',internal35,chassis?.specs.bays35); resource('Front hot-swap bays',front,chassis?.specs.hotSwapBays??(chassis?.specs.driveTargets?declaredTargets('Chassis','front-hot-swap'):undefined)); resource('SATA ports',sata,board?.specs.sataPorts===undefined?undefined:Math.max(0,board.specs.sataPorts-disabledSata)); resource('SATA power plugs',drives.filter(r=>r.c.specs.driveInterface==='SATA').reduce((n,r)=>n+r.p.quantity,0),psu?.specs.sataPower); resource('Onboard M.2 slots',m2,board?.specs.m2Slots===undefined?undefined:Math.max(0,board.specs.m2Slots-disabledM2)); resource('Rear sled positions',rear,sleds.reduce((n,r)=>n+(r.c.specs.sledDrives??r.c.specs.driveTargets?.filter(t=>t.mount==='rear-sled').length??0)*r.p.quantity,0));
+  // Bay consumers use existing provider/target bindings, independently of downstream drive targets.
+  const bayConsumers=rows.filter(r=>r.c.category!=='Drive'&&(r.c.specs.baySize!==undefined||r.c.category==='Bay accessory'||isBayAdapter(r.c)));
+  const bayUse=new Map<string,Map<string,number>>(), occupiedBays=new Set<string>();
+  for(const {p} of drives){const provider=p.adapterPlacementId?rows.find(r=>r.p.id===p.adapterPlacementId):rows.find(r=>r.c.category==='Chassis');if(p.targetId&&provider?.c.specs.bayTargets?.some(t=>t.id===p.targetId))occupiedBays.add(JSON.stringify([provider.p.id,p.targetId]));}
+  for(const {p,c} of bayConsumers) {
+    const provider=p.adapterPlacementId?rows.find(r=>r.p.id===p.adapterPlacementId):rows.find(r=>r.c.category==='Chassis');
+    if(!provider||provider.p.id===p.id||!['Chassis','Storage adapter','Bay accessory'].includes(provider.c.category)) {add('error','Bay provider missing',`${c.name}: bind another installed chassis or bay provider.`);continue;}
+    const ancestry=new Set([p.id]);let ancestor:typeof provider|undefined=provider;
+    while(ancestor){if(ancestry.has(ancestor.p.id)){add('error','Bay provider cycle',`${c.name}: bay installation providers cannot contain one another.`);break;}ancestry.add(ancestor.p.id);ancestor=ancestor.p.adapterPlacementId?rows.find(r=>r.p.id===ancestor!.p.adapterPlacementId):undefined;}
+    if(provider.p.quantity!==1&&(p.targetId||p.adapterPlacementId))add('error','Ambiguous bay provider instance',`${c.name}: split ${provider.c.name} into individual placements before binding bays.`);
+    if(!c.specs.baySize){add('warning','Bay installation specifications incomplete',`${c.name}: record required bay size and bay units before verifying physical fit.`);continue;}
+    const units=(c.specs.bayUnits??1)*p.quantity;
+    if(c.specs.bayUnits===undefined)add('warning','Bay consumption unconfirmed',`${c.name}: one bay per component is assumed; verify and record the occupied bay count.`);
+    const use=bayUse.get(provider.p.id)||new Map<string,number>();use.set(c.specs.baySize,(use.get(c.specs.baySize)||0)+units);bayUse.set(provider.p.id,use);
+    if(p.targetId) {
+      const target=provider.c.specs.bayTargets?.find(t=>t.id===p.targetId);
+      if(!target)add('error','Bay target missing',`${c.name}: ${p.targetId} is not a bay on ${provider.c.name}.`);
+      else {
+        const key=JSON.stringify([provider.p.id,target.id]);
+        if(p.quantity!==1||occupiedBays.has(key))add('error','Bay target double booked',`${provider.c.name} / ${target.id}: record one component in each occupied bay.`);
+        occupiedBays.add(key);
+        if(target.size!==c.specs.baySize)add('error','Bay size mismatch',`${c.name} requires ${c.specs.baySize}-inch bays; ${target.id} is ${target.size}-inch.`);
+        if((c.specs.bayUnits??1)>1)add('warning','Multi-bay occupancy review',`${c.name}: ${units} bays are budgeted but only ${target.id} is individually bound. Verify the other occupied bays and physical adjacency.`);
+      }
+    }else add('warning','Individual bay target unrecorded',`${c.name}: select a named bay for servicing and occupancy checks.`);
+  }
+  const bayCapacity=(provider:Component|undefined,size:string)=>{const scalar=size==='2.5'?provider?.specs.bays25:size==='3.5'?provider?.specs.bays35:provider?.specs.bays525;return provider?.specs.bayTargets===undefined?scalar:Math.max(scalar??0,provider.specs.bayTargets.filter(t=>t.size===size).length);};
+  const chassisPlacement=rows.find(r=>r.c.category==='Chassis');
+  const chassisUse=chassisPlacement?bayUse.get(chassisPlacement.p.id):undefined;
+  internal25+=chassisUse?.get('2.5')||0;internal35+=chassisUse?.get('3.5')||0;
+  resource('5.25-inch bays',chassisUse?.get('5.25')||0,bayCapacity(chassis,'5.25'));
+  for(const [providerId,use] of bayUse)if(providerId!==chassisPlacement?.p.id){const provider=rows.find(r=>r.p.id===providerId)!;for(const [size,used] of use)resource(`Bay provider ${provider.c.name} (${providerId}) ${size}-inch bays`,used,bayCapacity(provider.c,size)===undefined?undefined:bayCapacity(provider.c,size)!*provider.p.quantity);}
+  let sataPower=rows.filter(r=>r.c.category!=='Drive').reduce((n,r)=>n+(r.c.specs.sataPowerPlugs||0)*r.p.quantity,0);
+  for(const {p,c} of drives)if(c.specs.driveInterface==='SATA'){
+    const provider=driveProvider(p);
+    const bayAdapter=provider?.c.category==='Storage adapter'&&(provider.c.specs.baySize!==undefined||isBayAdapter(provider.c));
+    const target=provider?.c.specs.driveTargets?.find(t=>t.id===p.targetId);
+    const poweredTarget=target&&target.mount===p.mount&&target.interfaces?.includes('SATA')&&c.specs.driveSize!==undefined&&target.driveSizes?.includes(c.specs.driveSize);
+    if(bayAdapter&&poweredTarget&&provider!.c.specs.sataPowerPlugs!==undefined)continue;
+    sataPower+=p.quantity;
+    if(bayAdapter)add('warning',provider!.c.specs.sataPowerPlugs===undefined?'Bay adapter power inputs unknown':'Bay adapter power routing unconfirmed',`${provider!.c.name}: record SATA power inputs and bind each drive to a compatible cage target; downstream drives are conservatively budgeted individually until then.`);
+  }
+  resource('Internal 2.5-inch bays',internal25,bayCapacity(chassis,'2.5')); resource('Internal 3.5-inch bays',internal35,bayCapacity(chassis,'3.5')); resource('Front hot-swap bays',front,chassis?.specs.hotSwapBays??(chassis?.specs.driveTargets?declaredTargets('Chassis','front-hot-swap'):undefined)); resource('SATA ports',sata,board?.specs.sataPorts===undefined?undefined:Math.max(0,board.specs.sataPorts-disabledSata)); resource('SATA power plugs',sataPower,psu?.specs.sataPower); resource('Onboard M.2 slots',m2,board?.specs.m2Slots===undefined?undefined:Math.max(0,board.specs.m2Slots-disabledM2)); resource('Rear sled positions',rear,sleds.reduce((n,r)=>n+(r.c.specs.sledDrives??r.c.specs.driveTargets?.filter(t=>t.mount==='rear-sled').length??0)*r.p.quantity,0));
   for(const {p,c} of sleds) { const assigned=slots.find(s=>s.id===slotAssignments[`${p.id}:0`]); if(c.specs.requiresBifurcation&&!assigned?.bifurcationModes&&!board?.specs.bifurcation) add(board?.specs.bifurcation===false?'error':'warning','PCIe bifurcation required',`${c.name} requires motherboard firmware support for lane splitting.`); if(rear>0&&!c.specs.sledHotSwap) add('warning','Rear sled is not declared hot-swappable',`${c.name}: shut down before servicing unless the vendor explicitly supports live removal.`); }
   if(front>0)add('warning','Hot-swap backplane review','Verify backplane drive size, controller hot-plug support and power connections. Front bays are counted separately from internal bays.');
   const unknownPower=rows.filter(r=>!['Chassis','PSU'].includes(r.c.category)&&r.c.specs.powerW===undefined);

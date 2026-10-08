@@ -160,7 +160,7 @@ CSV parser errors identify record numbers beginning at `CSV row 2`; multiline fi
 | Field | Contract |
 | --- | --- |
 | `id`, `name` | R identity and catalog display name. |
-| `category` | R: Chassis, Motherboard, CPU, Memory, GPU, Scientific card, Network card, Storage adapter, Drive, PSU, Cooler. |
+| `category` | R: Chassis, Motherboard, CPU, Memory, GPU, Scientific card, Network card, Storage adapter, Bay accessory, Drive, PSU, Cooler. |
 | `manufacturer`, `source` | R text; empty allowed. `source` can cite manufacturer evidence or workbook/sheet. |
 | `specs` | R object; all properties below optional. Unknown keys rejected. |
 | `verified` | R boolean. Use false for unverified Excel specifications. True needs documented verification evidence. |
@@ -370,3 +370,35 @@ For rollback, restore the saved pre-migration JSON through preview/restore with 
 A useful instruction for a migration agent:
 
 > Read docs/MIGRATION.md and the target version's schemas first. Inventory every workbook sheet and preserve source hashes/row references. Produce a mapping, deterministic identity crosswalk, exception report, complete seven-collection candidate, and per-component stock reconciliation. Keep requirements classes, physical locations, planned BOMs and actual installed stock distinct. Preserve text identifiers and unknown specifications. Validate in an isolated workspace, round-trip all CSVs and review engineering reports. Present ambiguous joins/counts and the exact replacement scope before cutover. Preserve a pre-migration backup, commit the accepted candidate using the current revision, then export/reconcile the result. Do not silently discard data, invent commissioning evidence, overwrite live data while investigating, or publish operational source data.
+
+## Bay adapters and mounting accessories
+
+Additional optional component specifications:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `bays525` | integer 0–10,000 | Chassis 5.25-inch mounting capacity |
+| `bayTargets` | array of `{id,size}` | Individually named mounting spaces; size is `2.5`, `3.5`, or `5.25` |
+| `baySize` | `2.5`, `3.5`, or `5.25` | Mounting bay size required by an adapter/accessory |
+| `bayUnits` | integer 1–32 | Mounting spaces consumed per unit; omitted means one |
+| `sataPowerPlugs` | integer 0–10,000 | Actual PSU SATA power connectors used per adapter/accessory unit |
+
+Use category `Storage adapter` for a cage providing `driveTargets`, and `Bay accessory` for devices such as bay speakers. `bayTargets` name mounting spaces, while `driveTargets` name downstream drive positions; do not describe the same physical space as independent capacities in both lists. Chassis aggregate counts and named targets describe the same capacity. An adapter with `baySize` does not consume a PCI/PCIe slot unless `slotBus` is also explicitly set.
+
+Example chassis and cage specifications:
+
+```json
+{
+  "chassis":{"bays525":1,"bayTargets":[{"id":"external_1","size":"5.25"}]},
+  "cage":{"baySize":"5.25","bayUnits":1,"sataPowerPlugs":1,"driveTargets":[
+    {"id":"tray_1","mount":"front-hot-swap","driveSizes":["2.5"],"interfaces":["SATA"],"hotSwap":true,"bootable":true},
+    {"id":"tray_2","mount":"front-hot-swap","driveSizes":["2.5"],"interfaces":["SATA"],"hotSwap":true,"bootable":true}
+  ]}
+}
+```
+
+On the cage placement, set `adapterPlacementId` to the chassis placement ID and `targetId:"external_1"`. Each drive placement uses `adapterPlacementId` equal to the cage placement ID and one of its tray IDs. Use quantity one for individually bound devices and providers. For the example above two SATA drives consume two SATA data links and the cage consumes one PSU SATA power plug. Do not count the trays again as independent chassis front hot-swap capacity. Missing cage power specifications require review; do not invent a known connector count. Declaring zero means no SATA power connectors (record other power needs in notes).
+
+A speaker uses `baySize:"5.25",bayUnits:1` with no drive targets and binds to the chassis in the same way. Cages and accessories count mounting occupancy even when empty. For devices spanning multiple bays, `bayUnits` counts the full footprint, but the single `targetId` reserves only the named anchor; preserve adjacency and additional occupied bay IDs in provenance/notes for manual verification.
+
+Stock allocations reuse these same provider and target fields. Use exact installed allocation IDs where several units match one planned provider; ambiguous references are conflicts. Commissioned configuration snapshots preserve the full topology. Existing CSV headers remain unchanged: the new specifications are nested in `specs`, and bindings stay in existing placement/allocation JSON cells. Suggestions in the editor normalize whitespace and case against catalog values; migration agents must still reconcile synonyms and differing source terminology explicitly before import.

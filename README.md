@@ -145,3 +145,11 @@ Front hot-swap bays are separate from internal bays. The current storage model s
 `src/` contains the Vue/Vuetify UI, including `InventoryWorkspace.vue` for physical stock and built PCs. `server/` handles the API, validation, inventory movements, native SQLite persistence, migration and sample data. `shared/` contains types, engineering compatibility and stock/readiness/installed-system calculations used by both UI and server. `tools/` contains the offline importer. `tests/` exercises engineering rules, stock accounting, CSV round trips and upgrades from legacy workspaces.
 
 Browser WebMCP is optional: where supported, the page registers read-only `list_configurations` and `check_configuration` tools. Ordinary browsers do not require this API.
+
+## Bay adapters and accessories
+
+A bay-mounted **Storage adapter** can consume a chassis mounting bay and provide separate drive targets. A **Bay accessory**, such as a speaker, consumes mounting space without providing storage. Declare chassis 5.25-inch capacity and individual mounting bays; record each adapter/accessory's required bay size and number of bays consumed. Bind it under **Adapter & accessory bay bindings**, then bind each drive to the installed cage's individual drive target.
+
+A dual-drive cage consumes one 5.25-inch bay and provides two independently assigned hot-swap targets. Its two SATA drives consume two data links. Record the cage's actual SATA power plug count, which replaces separate power plugs for its bound drives; an empty passive cage uses no SATA data links. Speaker and cage assignments to the same bay conflict. Multi-bay devices count all consumed spaces, but adjacency and additional named bays need manual verification. Inventory records use the same bindings against actual installed allocations; a planned or reserved cage cannot supply bays to an installed PC.
+
+Component list specifications use multi-select comboboxes with catalog suggestions, including shared socket and board-form vocabularies. Suggestions reuse existing spellings after trimming and case-insensitive matching; you can still enter a new value. These helpers do not infer that different manufacturer identifiers are equivalent. Numeric M.2 lengths remain numeric arrays in CSV/JSON.

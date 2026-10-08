@@ -1,5 +1,5 @@
-export type Category = 'Chassis'|'Motherboard'|'CPU'|'Memory'|'GPU'|'Scientific card'|'Network card'|'Storage adapter'|'Drive'|'PSU'|'Cooler';
-export const categories: Category[] = ['Chassis','Motherboard','CPU','Memory','GPU','Scientific card','Network card','Storage adapter','Drive','PSU','Cooler'];
+export type Category = 'Chassis'|'Motherboard'|'CPU'|'Memory'|'GPU'|'Scientific card'|'Network card'|'Storage adapter'|'Bay accessory'|'Drive'|'PSU'|'Cooler';
+export const categories: Category[] = ['Chassis','Motherboard','CPU','Memory','GPU','Scientific card','Network card','Storage adapter','Bay accessory','Drive','PSU','Cooler'];
 export type Bus = 'PCI'|'PCIe';
 export type PciVoltage = '3.3V'|'5V'|'universal';
 export const portKinds = ['USB-A','USB-C','Ethernet','Serial','Parallel','Custom'] as const;
@@ -9,14 +9,16 @@ export interface PortRequirement { id: string; kind: PortKind; quantity: number;
 export interface PortMapping { connectionId: string; requirementId: string; placementId: string; instance: number; portId: string }
 export interface SoftwareSettings { os?: string; image?: string; equipmentSoftware?: string; equipmentConfiguration?: string; bios?: string; drivers?: Record<string,string>; firmware?: Record<string,string> }
 export interface Slot { id: string; bus: Bus; physical: number; lanes: number; generation: number; position: number; bifurcationModes?: string[]; pciVoltage?: PciVoltage; pciBits?: 32|64 }
+export type BaySize = '2.5'|'3.5'|'5.25';
+export interface BayTarget { id: string; size: BaySize }
 export interface DriveTarget { id: string; mount: Placement['mount']; driveSizes?: string[]; interfaces?: string[]; m2Lengths?: number[]; hotSwap?: boolean; bootable?: boolean }
 export interface LaneRule { id: string; slots: string[]; maxLanes?: number; exclusive?: boolean; disableM2Slots?: number; disableSataPorts?: number }
 export interface Specs {
-  ports?: Port[]; driveTargets?: DriveTarget[]; laneRules?: LaneRule[]; pciVoltage?: PciVoltage; pciBits?: 32|64; bifurcationMode?: string; supportedOS?: string[]; requiredDriver?: string; requiredFirmware?: string; bootable?: boolean; hotPlug?: boolean;
+  bayTargets?: BayTarget[]; baySize?: BaySize; bayUnits?: number; sataPowerPlugs?: number; ports?: Port[]; driveTargets?: DriveTarget[]; laneRules?: LaneRule[]; pciVoltage?: PciVoltage; pciBits?: 32|64; bifurcationMode?: string; supportedOS?: string[]; requiredDriver?: string; requiredFirmware?: string; bootable?: boolean; hotPlug?: boolean;
   socket?: string; formFactor?: string; supportedForms?: string[]; memoryType?: string; dimmSlots?: number; maxMemoryGb?: number; capacityGb?: number;
   slots?: Slot[]; slotBus?: Bus; slotWidth?: number; requiredLanes?: number; minGeneration?: number; bracketWidth?: number;
   lengthMm?: number; heightMm?: number; widthMm?: number; maxCardLengthMm?: number; maxCardHeightMm?: number; maxCoolerHeightMm?: number; rearSlots?: number;
-  bays25?: number; bays35?: number; hotSwapBays?: number; sataPorts?: number; m2Slots?: number; m2Lengths?: number[]; sataPower?: number;
+  bays25?: number; bays35?: number; bays525?: number; hotSwapBays?: number; sataPorts?: number; m2Slots?: number; m2Lengths?: number[]; sataPower?: number;
   usbA?: number; usbC?: number; ethernet?: number; powerW?: number; capacityW?: number; driveInterface?: 'SATA'|'NVMe'; driveSize?: '2.5'|'3.5'|'M.2'; m2Length?: number;
   sledDrives?: number; requiresBifurcation?: boolean; bifurcation?: boolean; sledHotSwap?: boolean; supportsSockets?: string[]; notes?: string;
 }

@@ -59,7 +59,7 @@ export function applyStockOperation(original: StockRecord, input: unknown, db: D
     const allocation = stock.allocations.find(a => a.id === allocationId);
     if (!allocation) throw Error('Allocation not found; it may already have been released or removed.');
     if (action.action === 'configure') {
-      const description=(a:StockAllocation)=>`${a.role}, ${a.mount}, ${a.slotId || 'auto'}, group ${a.group||'default'}, target ${a.targetId||'auto'}, owner ${a.owner||'unassigned'}, work order ${a.workOrder||'none'}, due ${a.dueAt||'none'}, expiry ${a.expiresAt||'none'}`;
+      const description=(a:StockAllocation)=>`${a.role}, ${a.mount}, ${a.slotId || 'auto'}, group ${a.group||'default'}, target ${a.targetId||'auto'}, provider ${a.adapterPlacementId||'auto'}, controller ${a.controllerPlacementId||'auto'}, owner ${a.owner||'unassigned'}, work order ${a.workOrder||'none'}, due ${a.dueAt||'none'}, expiry ${a.expiresAt||'none'}`;
       const previous = description(allocation);
       allocation.role = action.role; allocation.mount = action.mount; allocation.slotId = action.slotId;
       allocation.notes = action.notes; allocation.updatedAt = now;
