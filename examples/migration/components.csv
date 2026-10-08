@@ -1,0 +1,9 @@
+id,name,category,manufacturer,specs,source,verified
+cmp_case,Six-bracket tower,Chassis,Example manufacturer,"{""supportedForms"":[""ATX""],""maxCardLengthMm"":300,""maxCardHeightMm"":140,""rearSlots"":6,""bays35"":2,""hotSwapBays"":2}",Illustrative Excel migration example; unverified,false
+cmp_board,AM5 acquisition motherboard,Motherboard,Example manufacturer,"{""socket"":""AM5"",""formFactor"":""ATX"",""memoryType"":""DDR5"",""dimmSlots"":4,""maxMemoryGb"":128,""slots"":[{""id"":""pcie_1"",""bus"":""PCIe"",""physical"":16,""lanes"":8,""generation"":4,""position"":1}],""sataPorts"":4,""m2Slots"":2,""m2Lengths"":[80],""usbA"":4,""ethernet"":1,""powerW"":40}",Illustrative Excel migration example; unverified,false
+cmp_cpu,Eight-core processor,CPU,Example manufacturer,"{""socket"":""AM5"",""powerW"":80}",Illustrative Excel migration example; unverified,false
+cmp_ram,32 GB DDR5 module,Memory,Example manufacturer,"{""memoryType"":""DDR5"",""capacityGb"":32,""powerW"":8}",Illustrative Excel migration example; unverified,false
+cmp_daq,Scientific acquisition card,Scientific card,Example manufacturer,"{""slotBus"":""PCIe"",""slotWidth"":4,""requiredLanes"":4,""minGeneration"":3,""bracketWidth"":1,""lengthMm"":170,""heightMm"":110,""powerW"":25}",Illustrative Excel migration example; unverified,false
+cmp_boot,1 TB NVMe boot drive,Drive,Example manufacturer,"{""capacityGb"":1000,""powerW"":8,""driveInterface"":""NVMe"",""driveSize"":""M.2"",""m2Length"":80}",Illustrative Excel migration example; unverified,false
+cmp_data,8 TB SATA data drive,Drive,Example manufacturer,"{""capacityGb"":8000,""powerW"":12,""driveInterface"":""SATA"",""driveSize"":""3.5""}",Illustrative Excel migration example; unverified,false
+cmp_psu,550 W power supply,PSU,Example manufacturer,"{""sataPower"":4,""capacityW"":550}",Illustrative Excel migration example; unverified,false

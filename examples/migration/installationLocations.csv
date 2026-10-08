@@ -1,0 +1,4 @@
+id,name,kind,parentId,requirementSetId,requirementRevision,targetConfigurationId,notes,requirementSnapshot
+loc_site,North laboratory,Site,,,0,,Illustrative physical installation.,
+loc_room,Room 12,Room,loc_site,,0,,Illustrative physical installation.,
+loc_bench,Microscope bench 1,Bench,loc_room,req_microscopy,1,cfg_microscopy,Illustrative physical installation.,"{""revision"":1,""at"":""2026-10-07T12:00:00Z"",""name"":""Microscopy migration baseline"",""description"":""Illustrative reusable minimum requirements."",""connections"":[{""id"":""conn_camera"",""name"":""Camera controller"",""usbA"":1,""usbC"":0,""ethernet"":1,""notes"":""Aggregate dedicated connection requirements; manufacturer capabilities need verification.""}],""constraints"":{""minMemoryGb"":64,""minDataGb"":8000,""minBootGb"":1000,""minScientificCards"":1},""storage"":{""raid"":""mirror"",""bootMirror"":true}}"

@@ -1,0 +1,624 @@
+{
+  "components": [
+    {
+      "id": "cmp_case",
+      "name": "Six-bracket tower",
+      "category": "Chassis",
+      "manufacturer": "Example manufacturer",
+      "specs": {
+        "supportedForms": [
+          "ATX"
+        ],
+        "rearSlots": 6,
+        "bays35": 2,
+        "hotSwapBays": 2,
+        "maxCardLengthMm": 300,
+        "maxCardHeightMm": 140
+      },
+      "source": "Illustrative Excel migration example; unverified",
+      "verified": false
+    },
+    {
+      "id": "cmp_board",
+      "name": "AM5 acquisition motherboard",
+      "category": "Motherboard",
+      "manufacturer": "Example manufacturer",
+      "specs": {
+        "socket": "AM5",
+        "formFactor": "ATX",
+        "memoryType": "DDR5",
+        "dimmSlots": 4,
+        "maxMemoryGb": 128,
+        "sataPorts": 4,
+        "m2Slots": 2,
+        "m2Lengths": [
+          80
+        ],
+        "usbA": 4,
+        "ethernet": 1,
+        "powerW": 40,
+        "slots": [
+          {
+            "id": "pcie_1",
+            "bus": "PCIe",
+            "physical": 16,
+            "lanes": 8,
+            "generation": 4,
+            "position": 1
+          }
+        ]
+      },
+      "source": "Illustrative Excel migration example; unverified",
+      "verified": false
+    },
+    {
+      "id": "cmp_cpu",
+      "name": "Eight-core processor",
+      "category": "CPU",
+      "manufacturer": "Example manufacturer",
+      "specs": {
+        "socket": "AM5",
+        "powerW": 80
+      },
+      "source": "Illustrative Excel migration example; unverified",
+      "verified": false
+    },
+    {
+      "id": "cmp_ram",
+      "name": "32 GB DDR5 module",
+      "category": "Memory",
+      "manufacturer": "Example manufacturer",
+      "specs": {
+        "memoryType": "DDR5",
+        "capacityGb": 32,
+        "powerW": 8
+      },
+      "source": "Illustrative Excel migration example; unverified",
+      "verified": false
+    },
+    {
+      "id": "cmp_daq",
+      "name": "Scientific acquisition card",
+      "category": "Scientific card",
+      "manufacturer": "Example manufacturer",
+      "specs": {
+        "slotBus": "PCIe",
+        "slotWidth": 4,
+        "requiredLanes": 4,
+        "minGeneration": 3,
+        "bracketWidth": 1,
+        "lengthMm": 170,
+        "heightMm": 110,
+        "powerW": 25
+      },
+      "source": "Illustrative Excel migration example; unverified",
+      "verified": false
+    },
+    {
+      "id": "cmp_boot",
+      "name": "1 TB NVMe boot drive",
+      "category": "Drive",
+      "manufacturer": "Example manufacturer",
+      "specs": {
+        "capacityGb": 1000,
+        "driveInterface": "NVMe",
+        "driveSize": "M.2",
+        "m2Length": 80,
+        "powerW": 8
+      },
+      "source": "Illustrative Excel migration example; unverified",
+      "verified": false
+    },
+    {
+      "id": "cmp_data",
+      "name": "8 TB SATA data drive",
+      "category": "Drive",
+      "manufacturer": "Example manufacturer",
+      "specs": {
+        "capacityGb": 8000,
+        "driveInterface": "SATA",
+        "driveSize": "3.5",
+        "powerW": 12
+      },
+      "source": "Illustrative Excel migration example; unverified",
+      "verified": false
+    },
+    {
+      "id": "cmp_psu",
+      "name": "550 W power supply",
+      "category": "PSU",
+      "manufacturer": "Example manufacturer",
+      "specs": {
+        "capacityW": 550,
+        "sataPower": 4
+      },
+      "source": "Illustrative Excel migration example; unverified",
+      "verified": false
+    }
+  ],
+  "systems": [],
+  "requirementsSets": [
+    {
+      "id": "req_microscopy",
+      "name": "Microscopy controller",
+      "description": "Reusable requirements class, separate from a physical bench.",
+      "versions": [
+        {
+          "revision": 1,
+          "at": "2026-10-07T12:00:00Z",
+          "name": "Microscopy migration baseline",
+          "description": "Illustrative reusable minimum requirements.",
+          "connections": [
+            {
+              "id": "conn_camera",
+              "name": "Camera controller",
+              "usbA": 1,
+              "usbC": 0,
+              "ethernet": 1,
+              "notes": "Aggregate dedicated connection requirements; manufacturer capabilities need verification."
+            }
+          ],
+          "constraints": {
+            "minMemoryGb": 64,
+            "minDataGb": 8000,
+            "minBootGb": 1000,
+            "minScientificCards": 1
+          },
+          "storage": {
+            "raid": "mirror",
+            "bootMirror": true
+          }
+        }
+      ]
+    }
+  ],
+  "configurations": [
+    {
+      "id": "cfg_microscopy",
+      "name": "Microscopy controller plan",
+      "description": "Illustrative planned BOM.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-07T12:00:00Z",
+      "placements": [
+        {
+          "id": "pl_case",
+          "componentId": "cmp_case",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "pl_board",
+          "componentId": "cmp_board",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "pl_cpu",
+          "componentId": "cmp_cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "pl_ram",
+          "componentId": "cmp_ram",
+          "quantity": 2,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "pl_daq",
+          "componentId": "cmp_daq",
+          "quantity": 1,
+          "slotId": "pcie_1",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "pl_boot",
+          "componentId": "cmp_boot",
+          "quantity": 2,
+          "slotId": "",
+          "role": "boot",
+          "mount": "internal",
+          "group": ""
+        },
+        {
+          "id": "pl_data",
+          "componentId": "cmp_data",
+          "quantity": 2,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": ""
+        },
+        {
+          "id": "pl_psu",
+          "componentId": "cmp_psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        }
+      ],
+      "storage": {
+        "raid": "mirror",
+        "bootMirror": true
+      },
+      "notes": "Verify real component capabilities before approval.",
+      "requirementSetId": "req_microscopy",
+      "requirementRevision": 1,
+      "requirementSnapshot": {
+        "revision": 1,
+        "at": "2026-10-07T12:00:00Z",
+        "name": "Microscopy migration baseline",
+        "description": "Illustrative reusable minimum requirements.",
+        "connections": [
+          {
+            "id": "conn_camera",
+            "name": "Camera controller",
+            "usbA": 1,
+            "usbC": 0,
+            "ethernet": 1,
+            "notes": "Aggregate dedicated connection requirements; manufacturer capabilities need verification."
+          }
+        ],
+        "constraints": {
+          "minMemoryGb": 64,
+          "minDataGb": 8000,
+          "minBootGb": 1000,
+          "minScientificCards": 1
+        },
+        "storage": {
+          "raid": "mirror",
+          "bootMirror": true
+        }
+      }
+    }
+  ],
+  "installationLocations": [
+    {
+      "id": "loc_site",
+      "name": "North laboratory",
+      "kind": "Site",
+      "parentId": "",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "",
+      "notes": "Illustrative physical installation."
+    },
+    {
+      "id": "loc_room",
+      "name": "Room 12",
+      "kind": "Room",
+      "parentId": "loc_site",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "",
+      "notes": "Illustrative physical installation."
+    },
+    {
+      "id": "loc_bench",
+      "name": "Microscope bench 1",
+      "kind": "Bench",
+      "parentId": "loc_room",
+      "requirementSetId": "req_microscopy",
+      "requirementRevision": 1,
+      "targetConfigurationId": "cfg_microscopy",
+      "notes": "Illustrative physical installation.",
+      "requirementSnapshot": {
+        "revision": 1,
+        "at": "2026-10-07T12:00:00Z",
+        "name": "Microscopy migration baseline",
+        "description": "Illustrative reusable minimum requirements.",
+        "connections": [
+          {
+            "id": "conn_camera",
+            "name": "Camera controller",
+            "usbA": 1,
+            "usbC": 0,
+            "ethernet": 1,
+            "notes": "Aggregate dedicated connection requirements; manufacturer capabilities need verification."
+          }
+        ],
+        "constraints": {
+          "minMemoryGb": 64,
+          "minDataGb": 8000,
+          "minBootGb": 1000,
+          "minScientificCards": 1
+        },
+        "storage": {
+          "raid": "mirror",
+          "bootMirror": true
+        }
+      }
+    }
+  ],
+  "pcs": [
+    {
+      "id": "pc_001",
+      "name": "MICRO-PC-01",
+      "serial": "00001234",
+      "location": "Legacy free-text room label",
+      "configurationId": "cfg_microscopy",
+      "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+      "buildSettings": {
+        "systemId": "",
+        "storage": {
+          "raid": "mirror",
+          "bootMirror": true
+        },
+        "notes": "Observed storage and requirements baseline at migration.",
+        "requirementSetId": "req_microscopy",
+        "requirementRevision": 1,
+        "requirementSnapshot": {
+          "revision": 1,
+          "at": "2026-10-07T12:00:00Z",
+          "name": "Microscopy migration baseline",
+          "description": "Illustrative reusable minimum requirements.",
+          "connections": [
+            {
+              "id": "conn_camera",
+              "name": "Camera controller",
+              "usbA": 1,
+              "usbC": 0,
+              "ethernet": 1,
+              "notes": "Aggregate dedicated connection requirements; manufacturer capabilities need verification."
+            }
+          ],
+          "constraints": {
+            "minMemoryGb": 64,
+            "minDataGb": 8000,
+            "minBootGb": 1000,
+            "minScientificCards": 1
+          },
+          "storage": {
+            "raid": "mirror",
+            "bootMirror": true
+          }
+        }
+      },
+      "lifecycle": "Building",
+      "installationLocationId": "loc_bench"
+    }
+  ],
+  "inventory": [
+    {
+      "id": "stk_case",
+      "componentId": "cmp_case",
+      "tracking": "bulk",
+      "serial": "",
+      "assetTag": "EXAMPLE-CASE",
+      "quantity": 1,
+      "location": "Home stock shelf",
+      "condition": "Serviceable",
+      "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+      "allocations": [
+        {
+          "id": "alloc_case",
+          "pcId": "pc_001",
+          "quantity": 1,
+          "state": "installed",
+          "plannedPlacementId": "pl_case",
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": "",
+          "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+          "createdAt": "2026-10-07T12:00:00Z",
+          "updatedAt": "2026-10-07T12:00:00Z"
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "stk_board",
+      "componentId": "cmp_board",
+      "tracking": "bulk",
+      "serial": "",
+      "assetTag": "EXAMPLE-BOARD",
+      "quantity": 1,
+      "location": "Home stock shelf",
+      "condition": "Serviceable",
+      "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+      "allocations": [
+        {
+          "id": "alloc_board",
+          "pcId": "pc_001",
+          "quantity": 1,
+          "state": "installed",
+          "plannedPlacementId": "pl_board",
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": "",
+          "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+          "createdAt": "2026-10-07T12:00:00Z",
+          "updatedAt": "2026-10-07T12:00:00Z"
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "stk_cpu",
+      "componentId": "cmp_cpu",
+      "tracking": "bulk",
+      "serial": "",
+      "assetTag": "EXAMPLE-CPU",
+      "quantity": 1,
+      "location": "Home stock shelf",
+      "condition": "Serviceable",
+      "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+      "allocations": [
+        {
+          "id": "alloc_cpu",
+          "pcId": "pc_001",
+          "quantity": 1,
+          "state": "installed",
+          "plannedPlacementId": "pl_cpu",
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": "",
+          "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+          "createdAt": "2026-10-07T12:00:00Z",
+          "updatedAt": "2026-10-07T12:00:00Z"
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "stk_ram",
+      "componentId": "cmp_ram",
+      "tracking": "bulk",
+      "serial": "",
+      "assetTag": "EXAMPLE-RAM",
+      "quantity": 2,
+      "location": "Home stock shelf",
+      "condition": "Serviceable",
+      "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+      "allocations": [
+        {
+          "id": "alloc_ram",
+          "pcId": "pc_001",
+          "quantity": 2,
+          "state": "installed",
+          "plannedPlacementId": "pl_ram",
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": "",
+          "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+          "createdAt": "2026-10-07T12:00:00Z",
+          "updatedAt": "2026-10-07T12:00:00Z"
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "stk_daq",
+      "componentId": "cmp_daq",
+      "tracking": "serialized",
+      "serial": "00004567",
+      "assetTag": "EXAMPLE-DAQ",
+      "quantity": 1,
+      "location": "Home stock shelf",
+      "condition": "Serviceable",
+      "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+      "allocations": [
+        {
+          "id": "alloc_daq",
+          "pcId": "pc_001",
+          "quantity": 1,
+          "state": "installed",
+          "plannedPlacementId": "pl_daq",
+          "slotId": "pcie_1",
+          "role": "general",
+          "mount": "auto",
+          "group": "",
+          "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+          "createdAt": "2026-10-07T12:00:00Z",
+          "updatedAt": "2026-10-07T12:00:00Z"
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "stk_boot",
+      "componentId": "cmp_boot",
+      "tracking": "bulk",
+      "serial": "",
+      "assetTag": "EXAMPLE-BOOT",
+      "quantity": 2,
+      "location": "Home stock shelf",
+      "condition": "Serviceable",
+      "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+      "allocations": [
+        {
+          "id": "alloc_boot",
+          "pcId": "pc_001",
+          "quantity": 2,
+          "state": "installed",
+          "plannedPlacementId": "pl_boot",
+          "slotId": "",
+          "role": "boot",
+          "mount": "internal",
+          "group": "",
+          "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+          "createdAt": "2026-10-07T12:00:00Z",
+          "updatedAt": "2026-10-07T12:00:00Z"
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "stk_data",
+      "componentId": "cmp_data",
+      "tracking": "bulk",
+      "serial": "",
+      "assetTag": "EXAMPLE-DATA",
+      "quantity": 2,
+      "location": "Home stock shelf",
+      "condition": "Serviceable",
+      "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+      "allocations": [
+        {
+          "id": "alloc_data",
+          "pcId": "pc_001",
+          "quantity": 2,
+          "state": "installed",
+          "plannedPlacementId": "pl_data",
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": "",
+          "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+          "createdAt": "2026-10-07T12:00:00Z",
+          "updatedAt": "2026-10-07T12:00:00Z"
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": "stk_psu",
+      "componentId": "cmp_psu",
+      "tracking": "bulk",
+      "serial": "",
+      "assetTag": "EXAMPLE-PSU",
+      "quantity": 1,
+      "location": "Home stock shelf",
+      "condition": "Serviceable",
+      "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+      "allocations": [
+        {
+          "id": "alloc_psu",
+          "pcId": "pc_001",
+          "quantity": 1,
+          "state": "installed",
+          "plannedPlacementId": "pl_psu",
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": "",
+          "notes": "Illustrative migration opening state; workbook evidence would be cited here. No historical receipt or acceptance is asserted.",
+          "createdAt": "2026-10-07T12:00:00Z",
+          "updatedAt": "2026-10-07T12:00:00Z"
+        }
+      ],
+      "history": []
+    }
+  ]
+}

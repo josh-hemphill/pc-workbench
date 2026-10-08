@@ -37,6 +37,8 @@ The API binds to loopback and rejects nonlocal Host/Origin requests. This is a s
 
 ## Data & CSV
 
+For migrating bespoke Excel workbooks, see the detailed [Excel and data migration specification](docs/MIGRATION.md). It includes field dictionaries, identity and unit rules, import order, API examples, reconciliation checks, and a complete [JSON/CSV example bundle](examples/migration/).
+
 The authoritative database is **`data/workbench.sqlite`**. SQLite uses WAL mode, full synchronization and database foreign-key checks. A save, stock movement, decommission or whole-workspace restore commits all record changes and references in one transaction; failed writes roll back without replacing live state. Unexpected rollback failure blocks edits until the server restarts. Up to ten automatic JSON recovery snapshots are retained in `data/backups/`.
 
 On the first start, the app validates and migrates existing collection CSV files together into SQLite. Legacy CSV files are preserved, and missing installation-requirement and location collections start empty. A pending legacy restore journal is recovered as the migration source. After initialization, the app reads SQLite and **does not reload legacy CSV files**; use the CSV import interface for later changes. New workspaces contain illustrative sample catalogs/configurations/PCs, with no physical stock or installation locations. All example specifications require verification.
