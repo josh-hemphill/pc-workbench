@@ -10,8 +10,9 @@
     "start": "tsx server/index.ts",
     "test": "tsx --test tests/*.test.ts",
     "import:pcpartpicker": "tsx tools/pcpartpicker.ts",
-    "package:windows": "pnpm build && node tools/build-standalone.mjs --target win-x64",
-    "package:standalone": "pnpm build && node tools/build-standalone.mjs"
+    "package:windows": "pnpm build && node tools/build-standalone.mjs --target win-x64 && node tools/build-desktop.mjs",
+    "package:standalone": "pnpm build && node tools/build-standalone.mjs",
+    "package:server:windows": "pnpm build && node tools/build-standalone.mjs --target win-x64"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
@@ -27,6 +28,8 @@
     "@types/node": "^26.6.4",
     "@vitejs/plugin-vue": "^6.0.9",
     "concurrently": "^10.0.5",
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
     "esbuild": "^0.28.2",
     "postject": "1.0.0-alpha.6",
     "tsx": "^4.23.15",

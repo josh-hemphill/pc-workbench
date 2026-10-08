@@ -24,9 +24,9 @@ Open **http://127.0.0.1:3001**. `pnpm test` runs the compatibility, installation
 
 The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port (update the Vite proxy if changed in development). `BENCH_DATA_DIR=/absolute/path` changes the storage directory.
 
-## User settings and Windows standalone executable
+## User settings and Windows desktop executable
 
-Configure a private per-user `config.json` with `dataDir` and an optional `port`. On Windows it lives at `%APPDATA%\pc-workbench\config.json`. `pnpm package:windows` builds a Windows x64 executable containing Node, the server and frontend; its default database is under `%LOCALAPPDATA%\pc-workbench\data`. CSV import/export remains available. See [settings, packaging and data migration instructions](docs/STANDALONE.md).
+Configure a private per-user `config.json` with `dataDir` and an optional `port`. On Windows it lives at `%APPDATA%\pc-workbench\config.json`. `pnpm package:windows` builds a portable Windows x64 desktop executable with an embedded Electron window, Chromium, Node, the server and frontend; its default database is under `%LOCALAPPDATA%\pc-workbench\data`. The window manages server startup and shutdown; no separate browser is needed. CSV import/export remains available. See [settings, packaging and data migration instructions](docs/STANDALONE.md).
 
 ## Features
 

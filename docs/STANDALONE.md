@@ -1,4 +1,4 @@
-# Per-user settings and standalone executables
+# Per-user settings and desktop executables
 
 The same settings file works with the source checkout and the standalone application. It is stored in the current user's profile, outside the repository and executable. Settings are read at startup; restart after changes. The application never serves this file over HTTP.
 
@@ -28,7 +28,11 @@ Equivalent JSON (backslashes must be escaped):
 
 `dataDir` is required; `port` is optional and defaults to 3001. A relative data directory resolves against the settings file's directory. `~/` refers to the current user's home. Environment variable names inside JSON are not interpolated; use a literal path or generate the file with PowerShell.
 
-Launch `pc-workbench-win-x64.exe`, then open the printed localhost URL in a browser. Node, SQLite support, server dependencies and the built frontend are included; users need neither Node nor pnpm. Keep the console open while using the application. Ctrl+C stops the server and closes the database. The executable binds only to `127.0.0.1`, preserves local-origin restrictions, and uses the existing workspace lock and revision checks.
+Launch `pc-workbench-desktop-win-x64.exe`. It opens the application in an Electron desktop window and starts its local server automatically, with no separate browser or console window. Chromium, Electron, Node, native SQLite support, server dependencies and the built frontend are included; users need neither Node, pnpm nor WebView2. Closing the last window shuts down the server and closes SQLite. Unsaved drafts prompt before closing. A second launch focuses the existing window. The server binds only to `127.0.0.1`, preserves local-origin restrictions, and uses the existing workspace lock and revision checks.
+
+The portable launcher extracts its bundled runtime into a temporary directory while running. Settings and data stay in the configured user directories. The sandboxed renderer has no Node integration, preload bridge or operating-system permissions. External pages cannot replace the application window. To open an HTTPS manufacturer/documentation link, right-click it and choose **Open link in browser**; popup windows are blocked.
+
+The separate `pc-workbench-win-x64.exe` is still available as a headless server. It prints a localhost URL to open in your browser and stops with Ctrl+C. `pnpm package:server:windows` builds only this server; `pnpm package:windows` builds the full desktop package.
 
 Replace the executable to update the program. Settings and data stay in their separate directories. The executable is unsigned; signing Windows distributions requires your own signing certificate.
 
@@ -65,8 +69,8 @@ pnpm install --frozen-lockfile
 pnpm package:windows
 ```
 
-Output: `bin/pc-workbench-win-x64.exe`, a `.sha256` checksum and a `.build.json` manifest. Generated binaries and packaging intermediates are ignored by Git. A Windows cross-build downloads the official Node binary matching the build host's exact Node version and checks its SHA-256 against Node's published checksum list. Network access is needed for that download. A native Windows x64 build reuses the running Node binary. The frontend is embedded as Node SEA assets, and Node's native SQLite module remains a runtime builtin.
+Output: `bin/pc-workbench-desktop-win-x64.exe`, a `.sha256` checksum and a `.build.json` manifest. The manifest records the embedded server checksum and Electron version. The server executable is also retained at `bin/pc-workbench-win-x64.exe`. Generated binaries and packaging intermediates are ignored by Git. A Windows cross-build downloads the official Node binary matching the build host's exact Node version and checks its SHA-256 against Node's published checksum list. Network access is needed for that download and for Electron/NSIS packaging tools. A native Windows x64 build reuses the running Node binary. The frontend is embedded as Node SEA assets, and Node's native SQLite module remains a runtime builtin.
 
-`pnpm package:standalone` builds for the current host. SEA snapshots and code caches are disabled so the Windows x64 bundle can be prepared on a matching-version Linux build host. Other cross-platform builds are not supported. macOS host builds additionally require `codesign` for ad-hoc signing.
+`pnpm package:standalone` builds the headless server for the current host. SEA snapshots and code caches are disabled so the Windows x64 bundle can be prepared on a matching-version Linux build host. Other cross-platform builds are not supported. macOS host builds additionally require `codesign` for ad-hoc signing.
 
-The SEA packaging interface is experimental in Node 24. Linux smoke tests verify the bundled server, embedded frontend, SQLite writes/restarts and CSV export. A Windows executable built on Linux must also receive a Windows launch test before distribution; a PE-format/injection check cannot establish Windows runtime behavior.
+The SEA packaging interface is experimental in Node 24. Linux smoke tests verify the bundled server, embedded frontend, SQLite writes/restarts, CSV export, JSON readiness, private shutdown commands, parent disconnection and startup failures. Desktop policy tests verify local navigation, external-link restrictions and confirmed child-process shutdown. A Windows executable built on Linux must also receive a Windows launch test before distribution; a PE-format/injection check cannot establish Windows runtime behavior.
