@@ -54,3 +54,6 @@ button,a,[tabindex]{scroll-margin-block:80px}
 @media(forced-colors:active){.nav-item.active{border:2px solid Highlight}.v-field__outline{color:CanvasText}.workflow-badge,.category-tag,.health-badge{border:1px solid CanvasText}.v-btn{border:1px solid ButtonText}}
 summary{cursor:pointer;min-height:44px;padding:10px 6px;line-height:1.5;overflow-wrap:anywhere}summary:focus-visible{outline:3px solid var(--bench-focus);outline-offset:3px}
 .v-selection-control .v-icon{opacity:1}.v-dialog .v-alert{overflow-wrap:anywhere}
+
+.port-summary{flex-wrap:wrap}.port-summary>div{min-width:90px}.connection-row>span{max-width:40%;overflow-wrap:anywhere}
+@media(max-width:700px){.topbar{flex-wrap:wrap;gap:8px}.topbar>div:first-child{min-width:0;flex-wrap:wrap}.topbar>div:first-child span{overflow-wrap:anywhere}.topbar .local-status{display:flex;flex-wrap:wrap}}

@@ -2,9 +2,10 @@ export type Category = 'Chassis'|'Motherboard'|'CPU'|'Memory'|'GPU'|'Scientific 
 export const categories: Category[] = ['Chassis','Motherboard','CPU','Memory','GPU','Scientific card','Network card','Storage adapter','Drive','PSU','Cooler'];
 export type Bus = 'PCI'|'PCIe';
 export type PciVoltage = '3.3V'|'5V'|'universal';
-export type PortKind = 'USB-A'|'USB-C'|'Ethernet';
-export interface Port { id: string; kind: PortKind; protocol?: string; speedMbps?: number; powerW?: number; isolated?: boolean }
-export interface PortRequirement { id: string; kind: PortKind; quantity: number; protocol?: string; minSpeedMbps?: number; minPowerW?: number; isolated?: boolean }
+export const portKinds = ['USB-A','USB-C','Ethernet','Serial','Parallel','Custom'] as const;
+export type PortKind = typeof portKinds[number];
+export interface Port { id: string; kind: PortKind; connector?: string; pinout?: string; customType?: string; protocol?: string; speedMbps?: number; powerW?: number; isolated?: boolean }
+export interface PortRequirement { id: string; kind: PortKind; quantity: number; connector?: string; pinout?: string; customType?: string; protocol?: string; minSpeedMbps?: number; minPowerW?: number; isolated?: boolean }
 export interface PortMapping { connectionId: string; requirementId: string; placementId: string; instance: number; portId: string }
 export interface SoftwareSettings { os?: string; image?: string; equipmentSoftware?: string; equipmentConfiguration?: string; bios?: string; drivers?: Record<string,string>; firmware?: Record<string,string> }
 export interface Slot { id: string; bus: Bus; physical: number; lanes: number; generation: number; position: number; bifurcationModes?: string[]; pciVoltage?: PciVoltage; pciBits?: 32|64 }

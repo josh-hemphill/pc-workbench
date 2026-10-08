@@ -29,7 +29,7 @@ The API binds to loopback and rejects nonlocal Host/Origin requests. This is a s
 - Author, duplicate and save configurations with a bill of materials, workflow status, notes, linked equipment and live compatibility reports.
 - Catalog chassis, motherboards, CPUs, memory, GPUs, specialized scientific PCI/PCIe cards, network cards, storage adapters, drives, PSUs and coolers.
 - Record physical dimensions, CPU sockets, memory support, individual slots with physical connector width / electrical lanes / generation / rear position, port counts, bays and power capacity. Blank specifications are unknown; zero is a known absence.
-- Check physical fit, card allocation (including adjacent bracket blockage and pinned assignments), USB-A / USB-C / Ethernet counts and storage resources.
+- Check physical fit, card allocation (including adjacent bracket blockage and pinned assignments), USB-A / USB-C / Ethernet counts, structured Serial / Parallel / named Custom interfaces, and storage resources.
 - Plan independent data drives, two-drive mirrors, RAID 5, RAID 6 and RAID 10, plus separate mirrored boot pairs. Named data arrays calculate independently; ungrouped data drives use the default redundancy setting. Usable capacity uses the smallest drive, in decimal GB/TB, before filesystem/RAID metadata overhead.
 - Model separate internal bays, front SATA hot-swap bays, onboard M.2 NVMe slots and rear M.2 NVMe PCIe sleds. Sled slots and lanes count against the same motherboard resources as scientific cards. Passive sleds can require bifurcation.
 - Track serialized component units with serial/asset numbers and bulk lots with counted quantities, home locations, serviceable/quarantined/repair/retired condition and movement history.
@@ -80,6 +80,17 @@ The UI was audited against WCAG 2.2 AA checks using axe-core in Chromium, plus m
 The October 2026 audit found zero automated violations across all eight main screens at both mobile widths. Nine additional desktop/mobile dialog cases passed WCAG A/AA and best-practice checks, keyboard focus containment, Escape handling and focus return. Main screens did not overflow the viewport at 320 px or 390 px. A separate browser workflow verified requirements publication, stable revision pinning, hierarchy creation, PC assignment and installed parts following a PC move.
 
 Automated checks cannot establish complete WCAG conformance. A screen-reader and browser/OS matrix has not been exhaustively tested. Keep manufacturer verification and the compatibility warnings visible; status meaning is provided in text as well as color.
+
+## Scientific and legacy equipment connections
+
+Equipment Systems and published requirements revisions support **Serial**, **Parallel**, and named **Custom** interfaces alongside USB and Ethernet. Examples include RS-232/RS-485, IEEE 1284 parallel, GPIB, CAN and vendor trigger I/O.
+
+1. In the provider component's **Physical ports**, add each actual endpoint and select its interface type. Record the PC-side connector, protocol and pinout, plus known speed/power/isolation capabilities. Custom interfaces require a name.
+2. In an Equipment System or requirements revision, add a device and use **Structured instrument requirements** to specify its interfaces and quantities. Use the required PC-side connector and wiring standard; leave USB/Ethernet counts at zero if unused.
+3. In the PC configuration's **Instrument-to-port mapping**, select the device requirement and the exact component instance/port. Pinned requirements revisions appear here as well as legacy Equipment Systems.
+4. Review capacity, interface/connector/protocol/pinout mismatches, double bookings, and unknown capabilities. Installed-PC checks use the actually installed provider parts; plans alone do not add ports to a built machine.
+
+A DB9 RS-232 port does not satisfy RS-485 merely because the connector looks the same. Different named custom interfaces remain distinct. Required capabilities missing from the catalog produce review findings. Cable conversion, serial framing and shared-bus topology remain manual checks; document them in equipment notes. See the [migration specification](docs/MIGRATION.md#serial-parallel-and-custom-migration-example) for JSON/CSV examples. Existing CSV columns are unchanged; the new fields live inside the existing JSON port/requirements cells.
 
 ## Physical inventory and built PCs
 

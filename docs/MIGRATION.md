@@ -186,7 +186,7 @@ Specification dictionary:
 
 Each slot requires `{id,bus,physical,lanes,generation,position}`. Width/lanes are 1–16, generation 1–7, position 1–32; slot IDs and positions must be unique within the component. Optional `bifurcationModes` is an array of strings, and `pciVoltage`/`pciBits` use the enums above. At most 32 slots. Example: `{"id":"pcie_1","bus":"PCIe","physical":16,"lanes":8,"generation":4,"position":1}`.
 
-Each port requires `{id,kind}` where kind is USB-A, USB-C or Ethernet; optional `{protocol,speedMbps,powerW,isolated}` records capabilities. Numeric speed/power must be nonnegative. IDs unique within the component; at most 1,000 ports. Aggregate port counts and explicit port records describe the same capacity; do not add them together as separate ports.
+Each port requires `{id,kind}` where kind is USB-A, USB-C, Ethernet, Serial, Parallel or Custom; optional `{customType,connector,pinout,protocol,speedMbps,powerW,isolated}` records interface identity and capabilities. Custom requires a nonblank `customType`, for example GPIB, CAN or vendor trigger I/O. `connector` names the PC-side physical endpoint (e.g. DB9); `pinout` identifies its wiring standard. Numeric speed/power must be nonnegative. IDs unique within the component; at most 1,000 ports. Aggregate port counts and explicit port records describe the same capacity; do not add them together as separate ports.
 
 Each drive target requires `{id,mount}`; optional `{driveSizes,interfaces,m2Lengths,hotSwap,bootable}`. IDs unique within the component; at most 1,000 targets. Mount is auto/internal/front-hot-swap/rear-sled. Use individual targets to model bay restrictions and occupancy, with consistent interface/size labels.
 
@@ -196,7 +196,28 @@ Each lane rule requires `{id,slots}`; optional `{maxLanes,exclusive,disableM2Slo
 
 R system fields: `{id,name,location,description,connections}`. Location is free text, not an installation node reference. Each connection requires `{id,name,usbA,usbC,ethernet,notes}`; counts are integers 0–10,000. IDs unique within the connection array, maximum 200 connections.
 
-Optional `requirements` adds structured port requirements: `{id,kind,quantity}` plus optional `{protocol,minSpeedMbps,minPowerW,isolated}`. Quantity is 0–10,000, minimum speed/power nonnegative, IDs unique within the connection, maximum 1,000 requirements. Aggregate USB/Ethernet counts and structured requirements describe the same equipment need; avoid counting both twice when calculating the migration source total.
+Optional `requirements` adds structured port requirements: `{id,kind,quantity}` plus optional `{customType,connector,pinout,protocol,minSpeedMbps,minPowerW,isolated}`. Kind uses the six port kinds above; Custom requires a nonblank `customType`. Connector and pinout describe the required PC-side endpoint. Serial/Parallel/Custom demands use this structured array, not new aggregate CSV columns. Quantity is 0–10,000, minimum speed/power nonnegative, IDs unique within the connection, maximum 1,000 requirements. Interface names, specified connectors/pinouts and protocols are matched after trimming/case normalization; explicit mismatches are conflicts and unrecorded capabilities require review. Use precise, consistent standards (RS-232 versus RS-485); identical DB9 connectors do not prove electrical compatibility. Aggregate USB/Ethernet counts and structured requirements describe the same equipment need; avoid counting both twice when calculating the migration source total.
+
+### Serial, parallel and custom migration example
+
+A serial host port in `components[].specs.ports`:
+
+```json
+{"id":"com1","kind":"Serial","connector":"DB9","pinout":"DTE","protocol":"RS-232","speedMbps":0.1152,"isolated":true}
+```
+
+The equipment connection keeps required legacy counts at zero and expresses the actual interface in `requirements`:
+
+```json
+{
+  "id":"stage","name":"Motion stage","usbA":0,"usbC":0,"ethernet":0,"notes":"Verify cable wiring and instrument settings.",
+  "requirements":[{"id":"stage_serial","kind":"Serial","quantity":1,"connector":"DB9","pinout":"DTE","protocol":"RS-232","minSpeedMbps":0.1152,"isolated":true}]
+}
+```
+
+Map that requirement to the component placement and port ID with a zero-based instance. A parallel connection can use `kind:"Parallel"`, `connector:"DB25"`, `protocol:"IEEE 1284"`. A named custom interface can use `kind:"Custom", customType:"GPIB"`; another GPIB port must use the same normalized custom name. Different custom names cannot satisfy each other, even if connector shapes match. Record custom capabilities on the actual provider component, including a scientific card or adapter. Structured demand and available port counts appear in compatibility reports; an unmapped port still needs explicit mapping and verification.
+
+Represent bit rates in Mbps (`115200 bits/s = 0.1152 Mbps`); do not assume baud and bit rate are identical for every protocol. Cable genders, converters, pin-level electrical limits, serial framing (parity/data/stop bits), addresses and multi-drop bus topology are not automatically modeled: preserve them in equipment notes/provenance and verify them separately. Quantity means dedicated PC-side physical endpoints; do not count every device on a shared bus as a separate host port without documenting that topology. No automatic serial-to-USB or custom-interface conversion is inferred.
 
 ### `requirementsSets` and bindings
 

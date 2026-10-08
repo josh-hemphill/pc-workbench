@@ -1,4 +1,106 @@
-import type { Configuration, Database, Finding, Report, Resource, Component, Placement, StorageGroup, RequirementVersion, PCBuildSettings } from './types';
+import type { Configuration, Database, Finding, Report, Resource, Component, Placement, StorageGroup, RequirementVersion, PCBuildSettings, Port, PortRequirement, Connection } from './types';
+
+const normalized=(value:string|undefined)=>value?.trim().toLowerCase()||'';
+const additionalKinds=new Set(['Serial','Parallel','Custom']);
+const connectionKey=(requirement:Pick<PortRequirement,'kind'|'customType'>)=>requirement.kind==='Custom'?`Custom:${normalized(requirement.customType)}`:requirement.kind;
+/** Unknown capabilities remain possible matches, but declared contradictions cannot satisfy demand. */
+function possiblePort(port:Port,requirement:PortRequirement) {
+  if(port.kind!==requirement.kind)return false;
+  if(port.kind==='Custom'&&normalized(port.customType)!==normalized(requirement.customType))return false;
+  for(const field of ['connector','pinout','protocol'] as const)if(normalized(requirement[field])&&normalized(port[field])&&normalized(requirement[field])!==normalized(port[field]))return false;
+  if(requirement.minSpeedMbps!==undefined&&port.speedMbps!==undefined&&port.speedMbps<requirement.minSpeedMbps)return false;
+  if(requirement.minPowerW!==undefined&&port.powerW!==undefined&&port.powerW<requirement.minPowerW)return false;
+  if(requirement.isolated&&port.isolated===false)return false;
+  return true;
+}
+
+function checkAdditionalPortCapacity(rows:{p:Placement;c:Component}[],connections:Connection[],config:Configuration,
+  add:(severity:Finding['severity'],title:string,detail:string)=>void,
+  resource:(name:string,used:number,available:number|undefined,unit?:string)=>void) {
+  const suppliers=rows.filter(row=>row.c.category!=='Chassis');
+  const potential=suppliers.filter(row=>['Motherboard','Scientific card','Network card','Storage adapter','GPU'].includes(row.c.category)||row.c.specs.ports!==undefined);
+  const catalogComplete=suppliers.some(row=>row.c.specs.ports!==undefined)&&potential.every(row=>row.c.specs.ports!==undefined);
+  const pools=suppliers.flatMap(row=>(row.c.specs.ports||[]).filter(port=>additionalKinds.has(port.kind)).map(port=>({row,port,capacity:row.p.quantity,occupied:new Set<number>()})));
+  const demands=connections.flatMap(connection=>(connection.requirements||[]).filter(requirement=>additionalKinds.has(requirement.kind)&&requirement.quantity>0).map(requirement=>({connection,requirement,remaining:requirement.quantity})));
+  const poolGroups=new Map<string,typeof pools>();
+  for(const pool of pools){const key=connectionKey(pool.port),group=poolGroups.get(key);if(group)group.push(pool);else poolGroups.set(key,[pool]);}
+  const physicalPools=new Map(pools.map(pool=>[JSON.stringify([pool.row.p.id,pool.port.id]),pool]));
+  const mappedPools=new Map<string,{pool:typeof pools[number];mapping:NonNullable<Configuration['portMappings']>[number]}[]>();
+  for(const mapping of config.portMappings||[]) {
+    const pool=physicalPools.get(JSON.stringify([mapping.placementId,mapping.portId]));
+    if(!pool)continue;
+    const key=connectionKey(pool.port),entries=mappedPools.get(key),entry={pool,mapping};
+    if(entries)entries.push(entry);else mappedPools.set(key,[entry]);
+  }
+  const groups=new Map<string,typeof demands>();
+  for(const demand of demands){const key=connectionKey(demand.requirement),group=groups.get(key);if(group)group.push(demand);else groups.set(key,[demand]);}
+  for(const group of groups.values()) {
+    const requirement=group[0].requirement;
+    const groupPools=poolGroups.get(connectionKey(requirement))||[];
+    const label=requirement.kind==='Custom'?`Custom ports (${requirement.customType?.trim()||'unnamed'})`:`${requirement.kind} ports`;
+    const total=group.reduce((n,d)=>n+d.requirement.quantity,0),available=groupPools.reduce((n,pool)=>n+pool.capacity,0);
+    resource(label,total,catalogComplete||available>=total?available:undefined);
+    if(!catalogComplete&&available<total)add('warning','Equipment port catalog incomplete',`${label}: ${available} declared ports for ${total} connections; record interface catalogs for ${potential.filter(row=>row.c.specs.ports===undefined).map(row=>row.c.name).join(', ')||'the selected components'} before asserting a shortfall.`);
+    if(group.length+groupPools.length>10000||group.length*groupPools.length>100000){add('warning','Equipment port allocation review',`${label}: too many demand or candidate pools for automatic allocation. Assign explicit physical ports in smaller groups.`);continue;}
+    for(const demand of group) {
+      const possible=groupPools.filter(pool=>possiblePort(pool.port,demand.requirement));
+      const count=possible.reduce((n,pool)=>n+pool.capacity,0);
+      resource(`Compatible ${label} (${demand.connection.name} / ${demand.requirement.id})`,demand.requirement.quantity,catalogComplete||count>=demand.requirement.quantity?count:undefined);
+      if(possible.some(pool=>['connector','pinout','protocol'].some(field=>{const key=field as 'connector'|'pinout'|'protocol';return normalized(demand.requirement[key])&&!normalized(pool.port[key]);})||(demand.requirement.minSpeedMbps!==undefined&&pool.port.speedMbps===undefined)||(demand.requirement.minPowerW!==undefined&&pool.port.powerW===undefined)||(demand.requirement.isolated&&pool.port.isolated===undefined)))add('warning','Equipment port capabilities unconfirmed',`${demand.connection.name}: some candidate ${label} have undocumented connector, pinout, protocol, speed, power or isolation. Verify each physical connection.`);
+    }
+    // Reserve explicitly mapped physical instances before evaluating the remaining demand.
+    const demandById=new Map(group.map(demand=>[JSON.stringify([demand.connection.id,demand.requirement.id]),demand]));
+    for(const {pool,mapping} of mappedPools.get(connectionKey(requirement))||[]) {
+      if(!Number.isInteger(mapping.instance)||mapping.instance<0||mapping.instance>=pool.capacity)continue;
+      if(pool.occupied.has(mapping.instance))continue;
+      pool.occupied.add(mapping.instance);
+      const demand=demandById.get(JSON.stringify([mapping.connectionId,mapping.requirementId]));
+      if(demand&&possiblePort(pool.port,demand.requirement))demand.remaining=Math.max(0,demand.remaining-1);
+    }
+    const remaining=group.reduce((n,demand)=>n+demand.remaining,0);
+    if(!remaining)continue;
+    // Compressed capacity flow avoids expanding large bulk quantities into individual nodes.
+    type Edge={to:number;reverse:number;capacity:number};
+    const source=0,firstDemand=1,firstPool=1+group.length,sink=firstPool+groupPools.length;
+    const graph:Edge[][]=Array.from({length:sink+1},()=>[]);
+    const edge=(from:number,to:number,capacity:number)=>{graph[from].push({to,reverse:graph[to].length,capacity});graph[to].push({to:from,reverse:graph[from].length-1,capacity:0});};
+    let edges=0,limited=false;
+    for(let i=0;i<group.length;i++) {
+      edge(source,firstDemand+i,group[i].remaining);
+      for(let j=0;j<groupPools.length;j++)if(group[i].remaining&&possiblePort(groupPools[j].port,group[i].requirement)) {
+        if(++edges>100000){limited=true;break;}
+        edge(firstDemand+i,firstPool+j,group[i].remaining);
+      }
+      if(limited)break;
+    }
+    if(limited){add('warning','Equipment port allocation review',`${label}: allocation exceeds the planning search limit. Assign explicit physical ports to reduce the remaining search.`);continue;}
+    groupPools.forEach((pool,j)=>edge(firstPool+j,sink,pool.capacity-pool.occupied.size));
+    let flow=0,searchWork=0,searchLimited=false;
+    while(flow<remaining) {
+      const level=Array(graph.length).fill(-1) as number[],queue=[source];level[source]=0;
+      for(let q=0;q<queue.length&&!searchLimited;q++)for(const item of graph[queue[q]]){if(++searchWork>1000000){searchLimited=true;break;}if(item.capacity>0&&level[item.to]<0){level[item.to]=level[queue[q]]+1;queue.push(item.to);}}
+      if(searchLimited)break;
+      if(level[sink]<0)break;
+      if(level[sink]>512){searchLimited=true;break;}
+      const next=Array(graph.length).fill(0) as number[];
+      const send=(node:number,amount:number):number=>{
+        if(node===sink)return amount;
+        for(;next[node]<graph[node].length;next[node]++) {
+          if(++searchWork>1000000){searchLimited=true;return 0;}
+          const item=graph[node][next[node]];
+          if(item.capacity<=0||level[item.to]!==level[node]+1)continue;
+          const moved=send(item.to,Math.min(amount,item.capacity));
+          if(moved){item.capacity-=moved;graph[item.to][item.reverse].capacity+=moved;return moved;}
+        }
+        return 0;
+      };
+      let moved=0;while(!searchLimited&&(moved=send(source,remaining-flow))>0)flow+=moved;
+      if(searchLimited)break;
+    }
+    if(searchLimited){add('warning','Equipment port allocation review',`${label}: automatic allocation reached its work limit. Assign explicit physical ports to reduce the remaining search.`);continue;}
+    if(flow<remaining)add(catalogComplete?'error':'warning',catalogComplete?'Equipment ports cannot be allocated':'Equipment port capacity incomplete',`${label}: ${remaining} unmapped connections require compatible ports; ${flow} can be allocated without sharing a physical port. Reassign existing mappings or add suitable interfaces.`);
+  }
+}
 
 /** Resolve only an explicitly pinned revision; never silently follow the newest revision. */
 export function resolveRequirementVersion(binding:Pick<PCBuildSettings,'requirementSetId'|'requirementRevision'|'requirementSnapshot'>,db:Database):RequirementVersion|undefined {
@@ -84,7 +186,7 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
   resource('Rear brackets',cards.reduce((n,r)=>n+(r.c.specs.bracketWidth||1)*r.p.quantity,0),chassis?.specs.rearSlots);
   if(cards.length) add('warning','Lane sharing and firmware review','Check motherboard lane-sharing tables, M.2/SATA disabling rules, scientific card drivers, OS support and required firmware. Declared lanes are assumed simultaneously available.');
   const system=requirementVersion?{id:config.requirementSetId!,name:requirementVersion.name,location:'',description:requirementVersion.description,connections:requirementVersion.connections}:db.systems.find(s=>s.id===config.systemId);
-  if(!system) add('warning','No equipment system linked','Link equipment to check USB and Ethernet requirements.');
+  if(!system) add('warning','No equipment system linked','Link equipment to check USB, Ethernet, Serial, Parallel and named custom interface requirements.');
   else for(const port of ['usbA','usbC','ethernet'] as const) { const used=system.connections.reduce((n,c)=>n+Math.max(c[port],(c.requirements||[]).filter(r=>r.kind===({usbA:'USB-A',usbC:'USB-C',ethernet:'Ethernet'} as const)[port]).reduce((q,r)=>q+r.quantity,0)),0); const kind=({usbA:'USB-A',usbC:'USB-C',ethernet:'Ethernet'} as const)[port]; const suppliers=rows.filter(r=>r.c.category!=='Chassis'); const known=board?.specs[port]!==undefined||board?.specs.ports!==undefined; const available=suppliers.reduce((n,r)=>n+Math.max(r.c.specs[port]||0,r.c.specs.ports?.filter(p=>p.kind===kind).length||0)*r.p.quantity,0); resource(({usbA:'USB-A ports',usbC:'USB-C ports',ethernet:'Ethernet ports'})[port],used,known?available:undefined); }
   const occupiedPorts=new Set<string>();
   for(const mapping of config.portMappings || []) {
@@ -94,17 +196,22 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
     const key=`${mapping.placementId}:${mapping.instance}:${mapping.portId}`;
     if(occupiedPorts.has(key))add('error','Equipment port double booked',`${connection!.name}: port ${mapping.portId} is assigned more than once.`);
     occupiedPorts.add(key);
+    if(port.kind==='Custom'&&requirement.kind==='Custom'&&normalized(port.customType)!==normalized(requirement.customType))add('error','Equipment custom type mismatch',`${connection!.name}: requires ${requirement.customType||'a named custom interface'}, mapped ${port.customType||'an unspecified interface'}.`);
+    for(const field of ['connector','pinout'] as const)if(requirement[field]?.trim()){if(!port[field]?.trim())add('warning',`Equipment ${field} unknown`,`${connection!.name}: verify ${requirement[field]} on ${port.id}.`);else if(normalized(port[field])!==normalized(requirement[field]))add('error',`Equipment ${field} mismatch`,`${connection!.name}: requires ${requirement[field]}, mapped ${port[field]}.`);}
     if(port.kind!==requirement.kind)add('error','Equipment connector mismatch',`${connection!.name}: ${requirement.kind} requires a matching port; mapped ${port.kind}.`);
     for(const [needed,actual,label] of [[requirement.minSpeedMbps,port.speedMbps,'speed (Mbps)'],[requirement.minPowerW,port.powerW,'power (W)']] as const)if(needed!==undefined){if(actual===undefined)add('warning','Equipment port capability unknown',`${connection!.name}: verify ${label} on ${port.id}.`);else if(actual<needed)add('error','Equipment port capability insufficient',`${connection!.name}: ${port.id} provides ${actual} ${label}, needs ${needed}.`);}
-    if(requirement.protocol){if(!port.protocol)add('warning','Equipment protocol unknown',`${connection!.name}: verify ${requirement.protocol} on ${port.id}.`);else if(port.protocol.toLowerCase()!==requirement.protocol.toLowerCase())add('error','Equipment protocol mismatch',`${connection!.name}: requires ${requirement.protocol}, mapped ${port.protocol}.`);}
+    if(requirement.protocol){if(!port.protocol)add('warning','Equipment protocol unknown',`${connection!.name}: verify ${requirement.protocol} on ${port.id}.`);else if(normalized(port.protocol)!==normalized(requirement.protocol))add('error','Equipment protocol mismatch',`${connection!.name}: requires ${requirement.protocol}, mapped ${port.protocol}.`);}
     if(requirement.isolated){if(port.isolated===undefined)add('warning','Equipment isolation unknown',`${connection!.name}: verify isolation on ${port.id}.`);else if(!port.isolated)add('error','Equipment isolation missing',`${connection!.name}: ${port.id} is not isolated.`);}
   }
+  if(system)checkAdditionalPortCapacity(rows,system.connections,config,add,resource);
+  const mappedCounts=new Map<string,number>();
+  for(const mapping of config.portMappings||[]){const key=`${mapping.connectionId}:${mapping.requirementId}`;mappedCounts.set(key,(mappedCounts.get(key)||0)+1);}
   for(const connection of system?.connections || [])for(const requirement of connection.requirements || []) {
-    const mapped=(config.portMappings||[]).filter(m=>m.connectionId===connection.id&&m.requirementId===requirement.id).length;
+    const mapped=mappedCounts.get(`${connection.id}:${requirement.id}`)||0;
     if(mapped<requirement.quantity)add('warning','Equipment ports not mapped',`${connection.name}: map ${requirement.quantity-mapped} additional ${requirement.kind} ports for ${requirement.id}.`);
     if(mapped>requirement.quantity)add('error','Equipment mapping count exceeded',`${connection.name}: ${mapped} ports mapped for ${requirement.quantity} required.`);
   }
-  if(system) add('warning','Connection performance review','Port counts do not establish USB bandwidth, power, connector protocol, Ethernet speed, real-time latency or isolation. Confirm each instrument specification.');
+  if(system) add('warning','Connection performance review','Verify connector, protocol, pinout, electrical limits, speed, power, isolation, cable/converter wiring, serial framing and shared-bus topology against each instrument specification.');
   const drives=of('Drive'); let internal25=0,internal35=0,front=0,sata=0,m2=0,rear=0;
   const sleds=of('Storage adapter');
   for(const {p,c} of drives) {

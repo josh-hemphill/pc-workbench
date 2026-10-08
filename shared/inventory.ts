@@ -51,7 +51,7 @@ export function checkInstalledPC(pc: InventoryPC, db: Database) {
   if(pc.installationLocationId) {
     const location=db.installationLocations?.find(location=>location.id===pc.installationLocationId);
     if(!location)report.findings.push({severity:'error',title:'Installation location missing',detail:'The assigned physical installation location no longer exists.'});
-    else {const locationReport=checkLocationPC(pc,location,db);for(const finding of locationReport.findings)if(!report.findings.some(previous=>previous.title===finding.title&&previous.detail===finding.detail&&previous.severity===finding.severity))report.findings.push(finding);if(location.requirementSetId)for(const resource of locationReport.resources.filter(resource=>resource.name.startsWith('Required ')||['USB-A ports','USB-C ports','Ethernet ports'].includes(resource.name)))report.resources.push({...resource,name:`Installation ${resource.name}`});}
+    else {const locationReport=checkLocationPC(pc,location,db);for(const finding of locationReport.findings)if(!report.findings.some(previous=>previous.title===finding.title&&previous.detail===finding.detail&&previous.severity===finding.severity))report.findings.push(finding);if(location.requirementSetId)for(const resource of locationReport.resources.filter(resource=>resource.name.startsWith('Required ')||/\bports(?: \(|$)/.test(resource.name)))report.resources.push({...resource,name:`Installation ${resource.name}`});}
   }
   report.status = report.findings.some(f => f.severity === 'error') ? 'Conflicts' : report.findings.some(f => f.severity === 'warning') ? 'Needs review' : 'Compatible';
   return report;
