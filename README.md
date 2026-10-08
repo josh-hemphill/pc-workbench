@@ -1,10 +1,10 @@
 # Bench — PC configuration workbench
 
-A local, full-stack TypeScript application using Vue 3, Vuetify 3, Vite, Express and pnpm. No account, cloud database or hosted service is required. Engineering and inventory data is saved in a local SQLite database using Node.js’s native `node:sqlite` module. Every collection remains importable and exportable as CSV.
+A local, full-stack TypeScript application using Vue 3, Vuetify 4, Vite 8, Express and pnpm. No account, cloud database or hosted service is required. Engineering and inventory data is saved in a local SQLite database using Node.js’s native `node:sqlite` module. Every collection remains importable and exportable as CSV.
 
 ## Run
 
-Use Node.js 24+ and pnpm 11.19.0. If using Corepack, run `corepack enable` first.
+Use Node.js 24+ and pnpm 12.10.1. The `packageManager` field pins the pnpm version. If using Corepack, run `corepack enable` first; alternatively, bootstrap installation with `npx --yes pnpm@12.10.1 install`.
 
 ```sh
 pnpm install
@@ -19,6 +19,8 @@ pnpm start
 ```
 
 Open **http://127.0.0.1:3001**. `pnpm test` runs the compatibility, installation tracking, SQLite migration/transactions, CSV round-trip and importer tests. No Python runtime is used.
+
+`pnpm typecheck` runs TypeScript 7 for regular TypeScript files and `vue-tsc` for Vue components. The current Vue checker still requires the JavaScript compiler API, so `typescript-vue` pins the latest TypeScript 6 release (6.0.3) specifically for that check through `tools/typecheck-vue.cjs`. The main `typescript` dependency remains on 7.0.2. Both checks must pass before the production build; the compatibility alias may appear in `pnpm outdated` when compared with TypeScript 7.
 
 The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port (update the Vite proxy if changed in development). `BENCH_DATA_DIR=/absolute/path` changes the storage directory.
 

@@ -1,2 +1,5 @@
 allowBuilds:
   esbuild: true
+overrides:
+  # concurrently 10 pins a vulnerable shell-quote; use its latest patched release.
+  'concurrently>shell-quote': '1.12.0'

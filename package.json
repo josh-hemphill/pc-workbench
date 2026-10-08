@@ -1,14 +1,38 @@
 {
-  "name": "pc-workbench", "private": true, "version": "0.2.0", "type": "module",
+  "name": "pc-workbench",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
   "scripts": {
     "dev": "concurrently -k -n api,web \"tsx watch server/index.ts\" \"vite --host 127.0.0.1\"",
-    "build": "vue-tsc --noEmit && vite build",
+    "typecheck": "node node_modules/typescript/bin/tsc --noEmit && node tools/typecheck-vue.cjs --noEmit",
+    "build": "pnpm typecheck && vite build",
     "start": "tsx server/index.ts",
     "test": "tsx --test tests/*.test.ts",
     "import:pcpartpicker": "tsx tools/pcpartpicker.ts"
   },
-  "dependencies": { "vue": "^3.5.22", "vuetify": "^3.10.5", "@mdi/js": "^7.4.47", "express": "^5.1.0", "csv-parse": "^6.1.0", "csv-stringify": "^6.6.0", "zod": "^4.1.11" },
-  "devDependencies": { "vite": "^7.1.9", "@vitejs/plugin-vue": "^6.0.1", "typescript": "^5.9.3", "vue-tsc": "^3.1.1", "tsx": "^4.20.6", "concurrently": "^9.2.1", "@types/express": "^5.0.3", "@types/node": "^24.7.0" },
-  "engines": { "node": ">=24.0.0" },
-  "packageManager": "pnpm@11.19.0"
+  "dependencies": {
+    "@mdi/js": "^7.4.47",
+    "csv-parse": "^7.0.3",
+    "csv-stringify": "^6.9.0",
+    "express": "^5.2.1",
+    "vue": "^3.5.43",
+    "vuetify": "^4.2.4",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.4",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "concurrently": "^10.0.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "typescript-vue": "npm:typescript@6.0.3",
+    "vite": "^8.3.3",
+    "vue-tsc": "^3.3.12"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@12.10.1"
 }
