@@ -24,6 +24,10 @@ Open **http://127.0.0.1:3001**. `pnpm test` runs the compatibility, installation
 
 The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port (update the Vite proxy if changed in development). `BENCH_DATA_DIR=/absolute/path` changes the storage directory.
 
+## User settings and Windows standalone executable
+
+Configure a private per-user `config.json` with `dataDir` and an optional `port`. On Windows it lives at `%APPDATA%\pc-workbench\config.json`. `pnpm package:windows` builds a Windows x64 executable containing Node, the server and frontend; its default database is under `%LOCALAPPDATA%\pc-workbench\data`. CSV import/export remains available. See [settings, packaging and data migration instructions](docs/STANDALONE.md).
+
 ## Features
 
 - Author, duplicate and save configurations with a bill of materials, workflow status, notes, linked equipment and live compatibility reports.
@@ -41,7 +45,7 @@ The API binds to loopback and rejects nonlocal Host/Origin requests. This is a s
 
 For migrating bespoke Excel workbooks, see the detailed [Excel and data migration specification](docs/MIGRATION.md). It includes field dictionaries, identity and unit rules, import order, API examples, reconciliation checks, and a complete [JSON/CSV example bundle](examples/migration/).
 
-The authoritative database is **`data/workbench.sqlite`**. SQLite uses WAL mode, full synchronization and database foreign-key checks. A save, stock movement, decommission or whole-workspace restore commits all record changes and references in one transaction; failed writes roll back without replacing live state. Unexpected rollback failure blocks edits until the server restarts. Up to ten automatic JSON recovery snapshots are retained in `data/backups/`.
+The authoritative database is **`workbench.sqlite`** in the selected data directory (the source checkout defaults to `data/`). SQLite uses WAL mode, full synchronization and database foreign-key checks. A save, stock movement, decommission or whole-workspace restore commits all record changes and references in one transaction; failed writes roll back without replacing live state. Unexpected rollback failure blocks edits until the server restarts. Up to ten automatic JSON recovery snapshots are retained in `data/backups/`.
 
 On the first start, the app validates and migrates existing collection CSV files together into SQLite. Legacy CSV files are preserved, and missing installation-requirement and location collections start empty. A pending legacy restore journal is recovered as the migration source. After initialization, the app reads SQLite and **does not reload legacy CSV files**; use the CSV import interface for later changes. New workspaces contain illustrative sample catalogs/configurations/PCs, with no physical stock or installation locations. All example specifications require verification.
 

@@ -1,5 +1,7 @@
 node_modules/
 dist/
+bin/
+.standalone/
 data/*
 !data/.gitkeep
 *.log

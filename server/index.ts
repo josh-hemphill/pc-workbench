@@ -1,4 +1,6 @@
 import express from 'express';
+import {isSea} from 'node:sea';
+import {resolveRuntimeConfig} from './runtime-config';
 import {prepareInstallationRecord} from './installation-requirements';
 import {savePCRecord,commissionPCRecord,decommissionPC} from './pc-lifecycle';
 import {lockWorkspace} from './persistence';
@@ -9,8 +11,10 @@ import type {Collection} from './schema';
 import {checkConfiguration} from '../shared/compatibility';
 import {checkInstalledPC,pcAllocations,planDifferences,stockReadiness} from '../shared/inventory';
 import {saveStockRecord,applyStockOperation,convertBulkToSerialized,adjustStockCount,transferBulkStock} from './inventory';
-const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-export function createApp(dataDir=process.env.BENCH_DATA_DIR||path.join(root,'data')) {
+const root=isSea()?path.dirname(process.execPath):path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+export interface AppOptions { assets?:Record<string,{data:Buffer;mime:string}> }
+export function createApp(dataDir?:string,options:AppOptions={}) {
+dataDir??=resolveRuntimeConfig({sourceRoot:root,standalone:isSea()}).dataDir;
 const release=lockWorkspace(dataDir);
 let store:Store;try{store=new Store(dataDir);}catch(error){release();throw error;}
 const app=express();
@@ -45,10 +49,18 @@ app.post('/api/inventory/batch',(req,res)=>{if(!Array.isArray(req.body.records)|
 app.post('/api/:collection/import',(req,res)=>{const c=req.params.collection as Collection;if(!collections.includes(c))return res.status(404).json({error:'Unknown collection'});if(typeof req.body.csv!=='string')return res.status(400).json({error:'CSV text required'});const rows=decodeCSV(c,req.body.csv) as {id:string}[];const merged=new Map((store.db[c] as {id:string}[]).map(r=>[r.id,r]));for(const row of rows)merged.set(row.id,prepareInstallationRecord(c,row,store.db) as {id:string});store.replace(c,[...merged.values()]);res.json({imported:rows.length});});
 app.put('/api/:collection/:id',(req,res)=>{const c=req.params.collection as Collection;if(!collections.includes(c))return res.status(404).json({error:'Unknown collection'});if(req.body.id!==req.params.id)return res.status(400).json({error:'Record ID mismatch'});const prepared=prepareInstallationRecord(c,req.body,store.db);let record:any=c==='inventory'?saveStockRecord(prepared,store.db):c==='pcs'?savePCRecord(prepared,store.db):prepared as Record<string,any>;if(c==='configurations'){const existing=store.db.configurations.find(cfg=>cfg.id===req.params.id);record={...record,revision:(existing?.revision||0)+1,approvalSnapshot:record.status==='Approved'?{at:new Date().toISOString(),components:structuredClone(store.db.components.filter(component=>record.placements.some((p:{componentId:string})=>p.componentId===component.id))),system:structuredClone(store.db.systems.find(system=>system.id===record.systemId)||null)}:existing?.approvalSnapshot,approvalHistory:existing?.approvalHistory||[]};if(record.status==='Approved'){const {approvalHistory,approvalSnapshot,revision,...configuration}=record;record.approvalHistory=[...record.approvalHistory,{revision,at:approvalSnapshot.at,configuration,components:approvalSnapshot.components,system:approvalSnapshot.system}];}}const rows=[...store.db[c]] as {id:string}[];const i=rows.findIndex(r=>r.id===req.params.id);if(i<0)rows.push(record);else rows[i]=record;store.replace(c,rows);res.json(record);});
 app.delete('/api/:collection/:id',(req,res)=>{const c=req.params.collection as Collection;if(!collections.includes(c))return res.status(404).json({error:'Unknown collection'});store.replace(c,store.db[c].filter(r=>r.id!==req.params.id));res.json({ok:true});});
-app.use(express.static(path.join(root,'dist')));
-app.get('/',(_req,res)=>res.sendFile(path.join(root,'dist/index.html')));
+if(options.assets){
+ const assets=options.assets;
+ app.use((req,res,next)=>{if(req.method!=='GET'&&req.method!=='HEAD')return next();const key=req.path==='/'?'/index.html':req.path;const asset=Object.hasOwn(assets,key)?assets[key]:undefined;if(!asset)return next();res.type(asset.mime).send(asset.data);});
+}else {
+ app.use(express.static(path.join(root,'dist')));
+ app.get('/',(_req,res)=>res.sendFile(path.join(root,'dist/index.html')));
+}
 app.use((err:unknown,_req:express.Request,res:express.Response,_next:express.NextFunction)=>{res.status(err instanceof WorkspaceRecoveryError?503:400).json({error:err instanceof Error?err.message:'Request failed'});});
 return app;
 }
-const port=Number(process.env.PORT||3001);
-if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)createApp().listen(port,'127.0.0.1',()=>console.log(`Bench API / production app: http://127.0.0.1:${port}`));
+if(!isSea()&&process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
+ const runtime=resolveRuntimeConfig({sourceRoot:root});
+ const server=createApp(runtime.dataDir).listen(runtime.port,'127.0.0.1',()=>console.log(`Bench API / production app: http://127.0.0.1:${runtime.port}\nData directory: ${runtime.dataDir}`));
+ for(const signal of ['SIGINT','SIGTERM'] as const)process.once(signal,()=>server.close());
+}
