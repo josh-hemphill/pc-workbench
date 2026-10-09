@@ -11,7 +11,9 @@ deno install --frozen
 deno task dev
 ```
 
-Open http://127.0.0.1:5173. The frontend and API are Deno processes; Vite provides Vue HMR, and the API restarts on source changes. Ctrl+C stops both. The default development workspace is `data/`; use `BENCH_DATA_DIR` for an isolated workspace. The API defaults to port 3001; if overriding `PORT`, update the frontend proxy accordingly.
+Open http://127.0.0.1:5173. Startup first installs the locked dependencies in one process, then starts the frontend and API using the installed cache. This prevents competing npm installers and overlapping download/Vite progress output. Neither watcher clears the terminal, so startup errors remain visible. If startup stays in dependency preparation, run `deno install --frozen` separately to isolate registry/download problems.
+
+The frontend and API are Deno processes; Vite provides Vue HMR, and the API restarts on source changes. Ctrl+C stops both. The default development workspace is `data/`; use `BENCH_DATA_DIR` for an isolated workspace. The API defaults to port 3001; if overriding `PORT`, update the frontend proxy accordingly.
 
 ```sh
 deno task check          # Deno tools plus Vue/shared/backend TypeScript checks
