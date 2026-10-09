@@ -39,7 +39,17 @@ deno task package linux-x64
 
 The Windows output is `bin/pc-workbench-deno-prototype-win-x64.zip`. Extract the entire ZIP into a writable user-owned folder and run `pc-workbench-deno-prototype-win-x64.exe`. Keep the Deno runtime DLL beside the launcher. There is no `pc-workbench-server.exe` and no Node executable. The builder cleans its old target output, stages only runtime files outside the workspace, checks for forbidden sidecars, and records file checksums. Unix build hosts need `zip`; Windows packaging uses native PowerShell.
 
-Microsoft Edge WebView2 Runtime must already be installed. The pinned native backend defaults its browser cache beside the launcher, requiring writable extraction. `WEBVIEW2_USER_DATA_FOLDER` can be configured before launching; setting it from application TypeScript can be too late for native initialization.
+For a **single executable to distribute**, run this on Windows x64:
+
+```sh
+deno task package:windows:single
+```
+
+Output: `bin/pc-workbench-deno-prototype-win-x64-single.exe`, plus optional `.sha256` and `.build.json` verification files. The task first builds the standard native package, then uses Windows' built-in `iexpress.exe` to embed its original launcher and matching runtime DLL into one self-extracting executable. No additional compiler or Node installation is needed. Double-click the single EXE; IExpress extracts the two runtime files to a Windows temporary directory, launches the application and cleans up after it exits. This is one distribution file; the runtime DLL still exists on disk while the application runs. Settings and SQLite data retain their configured user storage paths, outside the extracted application. It does not install the app or create shortcuts.
+
+This packaging mode requires a Windows build host. Other hosts can still cross-build the standard ZIP. IExpress configuration and Deno type checks have been reviewed; end-to-end IExpress creation, native GUI launch and temporary-directory cleanup require Windows validation. The resulting EXE is unsigned; WebView2 and the Visual C++ x64 runtime must already be installed. Deno 2.9.7's own `--compress` option creates a batch launcher and a separate archive on Windows, so it does not provide this single-EXE format.
+
+Microsoft Edge WebView2 Runtime and the Microsoft Visual C++ 2015–2022 Redistributable (x64) must already be installed. The native launcher imports `MSVCP140.dll`, `VCRUNTIME140.dll` and `VCRUNTIME140_1.dll`. The pinned native backend defaults its browser cache beside the launcher, requiring writable extraction. `WEBVIEW2_USER_DATA_FOLDER` can be configured before launching; setting it from application TypeScript can be too late for native initialization.
 
 The existing `%APPDATA%\pc-workbench\config.json` and `%LOCALAPPDATA%\pc-workbench\data` defaults remain supported. `BENCH_CONFIG_FILE`, `BENCH_DATA_DIR` and `PORT` overrides still work. Changing storage settings does not move existing data. Close any application using the same workspace before launching; native SQLite and the existing workspace lock protect it. For trials, select a disposable data directory.
 
@@ -53,6 +63,6 @@ Removing Node does not fix the reviewed native window backend's policy limitatio
 
 - Windows `beforeunload` is automatically accepted and the native close notification is not cancelable. Save drafts before closing; unsaved-close protection remains a production blocker.
 - This version exposes no pre-navigation veto, popup policy or WebView permission interception. The pinned Windows backend can open popup URLs externally without user activation. CSP reduces exposure but cannot replace native controls.
-- The package still contains a launcher and runtime DLL. WebView2 installation, writable browser cache, code signing and a production installer strategy remain deployment work.
+- The runtime uses a launcher and DLL, including when wrapped in a single self-extracting EXE. WebView2 installation, writable browser cache, code signing and a production installer strategy remain deployment work.
 
 See [evaluation evidence](../../docs/DENO-PROTOTYPE.md) and the [migration specification](../../docs/MIGRATION.md). Native Linux runtime tests and a Windows cross-build do not prove Windows GUI execution.

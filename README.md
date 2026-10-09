@@ -23,6 +23,7 @@ Open **http://127.0.0.1:3001**. `deno task test` executes all 216 original appli
 ```sh
 deno task desktop          # Native local WebView
 deno task package:windows  # Cross-build Windows x64 ZIP
+deno task package:windows:single # Build a single self-extracting .exe on Windows x64
 ```
 
 The package embeds the frontend and backend inside the Deno runtime. Its launcher/runtime DLL need no Node executable or external npm dependencies. See [prototype setup and packaging](prototypes/deno/README.md) and [evaluation evidence](docs/DENO-PROTOTYPE.md). Windows unsaved-close and native navigation/popup protections remain blockers for production adoption; save drafts before closing.
