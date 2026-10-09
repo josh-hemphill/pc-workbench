@@ -72,7 +72,7 @@ Recommended tools are a TypeScript XLSX reader such as SheetJS/ExcelJS, or a sep
 | Equipment/instrument connection table | `systems[].connections` or `requirementsSets[].versions[].connections` | Systems are legacy/editable equipment groupings; publish reusable requirements for a stable baseline. |
 | Standard control station or installation class | `requirementsSets` | One reusable set with immutable, ordered revisions; the minimum needs of a class, not the observed hardware of one PC. |
 | Standard PC BOM/template | `configurations` | Planned quantities, component placements, storage plan and pinned requirements. |
-| Campus/building/lab/room/bench hierarchy | `installationLocations` | Nodes with parent IDs. Map building/lab levels to Site/Room as appropriate; preserve source terminology in names/notes. |
+| Campus/building/lab/room/bench hierarchy | `installationLocations` | Nodes with parent IDs. Map buildings to Site, production-floor work areas to Area, production lines to Line, and numbered/lettered workstations to Station; Room remains optional for existing room records; preserve source terminology in names/notes. |
 | Physical PC/asset register | `pcs` | One machine identity with an optional plan and physical installation assignment. |
 | Unit serial inventory | `inventory`, `tracking: serialized` | One record per physical unit, quantity exactly 1. |
 | Spare-stock quantity by model/shelf/condition/lot | `inventory`, `tracking: bulk` | One lot per meaningful homogeneous stock grouping; no unit serial. |
@@ -239,7 +239,7 @@ Storage requires `{raid,bootMirror}`. Raid enum: none/mirror/raid5/raid6/raid10.
 
 ### `installationLocations`
 
-R: `{id,name,kind,parentId,requirementSetId,requirementRevision,targetConfigurationId,notes}`. O: `requirementSnapshot`. Kind is Site/Room/Bench/System. Empty parent means top-level; otherwise reference another location. Hierarchies must be acyclic. Target configuration is a live plan reference, or empty, not an immutable copy. PC assignments are allowed only to Bench/System nodes. Site/Room nodes aggregate descendant PCs and installed parts. The schema does not enforce a particular sequence of parent kinds; the migration must preserve a sensible hierarchy.
+R: `{id,name,kind,parentId,requirementSetId,requirementRevision,targetConfigurationId,notes}`. O: `requirementSnapshot`. Kind is Site/Area/Line/Station/Bench/System/Room. Empty parent means top-level; otherwise reference another location. Hierarchies must be acyclic. Target configuration is a live plan reference, or empty, not an immutable copy. PC assignments are allowed only to Station/Bench/System nodes. Site/Area/Line/Room nodes aggregate descendant PCs and installed parts. The schema does not enforce a particular sequence of parent kinds; the migration must preserve a sensible hierarchy.
 
 ### `pcs` and software
 
@@ -359,7 +359,7 @@ Run these before destination mutation and repeat relevant checks after import:
 3. Reconcile every source detail row to one or more target records or an explicit exclusion/exception. Compare catalog model count, physical PC count, serialized-unit count and bulk quantities **by component, lot and condition**, not just a single grand total.
 4. For each stock record, prove `total = unallocated + reserved + installed` and `sum(allocations) <= total`. Serialized quantity remains 1. Retired stock/PCs have no allocations. Detect unintended duplicate serials/tags, ID collisions and two rows describing the same fitted unit.
 5. Check planned versus installed differences without erasing them. Obtain `GET /api/report/:id` and `GET /api/pcs/:id/build`; record every error/warning and source evidence. Unknown dimensions/lanes/ports/drivers must remain review findings, not inferred compatibility. Schema-valid imports may have engineering Conflicts.
-6. Check each assigned PC is on the correct Bench/System leaf, each leaf uses the intended revision, and Site/Room installed-part rollups contain the expected descendants. Reservations must not inflate installed-location part counts. Unassigned PCs remain visibly unassigned.
+6. Check each assigned PC is on the correct Station/Bench/System leaf, each leaf uses the intended revision, and Site/Area/Line/Room installed-part rollups contain the expected descendants. Reservations must not inflate installed-location part counts. Unassigned PCs remain visibly unassigned.
 7. Spot-check leading-zero and long identifiers, Unicode, quoted/multiline notes, timestamps, drive roles, RAID usable capacity, scientific PCI versus PCIe cards and physical slots.
 8. Export JSON plus raw CSV after commit. Compare against the schema-normalized/canonicalized candidate, allowing only documented defaults, snapshot canonicalization and API-generated history/revision fields. Restart the scratch app to prove SQLite persistence before cutover.
 9. Record unresolved exceptions and the accepted baseline. Keep genuine unknowns explicit; do not label the migration as complete merely because the API returns 200.
@@ -474,3 +474,5 @@ Before approving or commissioning migrated data, reconcile named endpoint counts
 ## Post-migration data completion
 
 Use **Installations → Location operations** to reconcile structured assignment and installed/reserved totals, inspect repair conditions, and review vacant destinations. Use **Catalog data** for category-specific core gaps and missing-only bulk fills. Exact PCPartPicker product URLs can be queued for reviewed enrichment or saved HTML ingestion; source evidence is retained in specification notes, changed components stay unverified, and existing values are preserved. See [workflow and API payloads](CATALOG-ENRICHMENT.md). Keep workbook/cell provenance and unresolved topology/wiring exceptions separately; scraped details do not resolve uncertain identity or physical allocation joins.
+
+Production locations do not need a room number or Room level. For example: Site `Plant 1` → Area `B` → Line `2` → Station `4` → System `Camera controller`. Levels may be omitted or repeated according to source needs. Existing Room records retain their IDs and assignments; use previewed bulk type edits to convert them to Area when appropriate. This preserves references and captured historical snapshots. See [bulk actions and native table selection](BULK-RECORDS.md).

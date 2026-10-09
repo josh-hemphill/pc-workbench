@@ -1,6 +1,6 @@
 /** Run the original node:test business/API suites with Deno itself and verify real assertion counts. */
 const root = new URL("../../", import.meta.url);
-const baselineMinimum = 222;
+const baselineMinimum = 231;
 const reportDir = await Deno.makeTempDir({
   prefix: "pc-workbench-deno-tests-",
 });

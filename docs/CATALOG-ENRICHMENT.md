@@ -8,7 +8,7 @@ Search matches PC names/serials, location paths, recorded equipment systems, pin
 
 Installed and reserved totals count allocation quantities independently. Repair details show currently installed affected components, serial/lot identity and repair/return references. Removed repair stock stays at its stock location and does not appear installed in its former PC. Retired PCs remain visible when requested but are excluded from the attention workload. Parts-only PCs remain in the salvage workload.
 
-The distribution table lists Bench/System locations without an active directly assigned PC. Retired and Parts only units do not satisfy occupancy; Planning, Building and Maintenance units do, and remain visible with their statuses. This is a vacancy check, not a capacity model: a location can accept multiple PCs and has no desired-unit count. Use **Assign / move** to record physical placement; it does not commission a PC, alter its plan, or assert that it meets destination requirements. Installed parts follow the PC assignment, and compatibility findings highlight destination mismatches.
+The distribution table lists Station/Bench/System locations without an active directly assigned PC. Retired and Parts only units do not satisfy occupancy; Planning, Building and Maintenance units do, and remain visible with their statuses. This is a vacancy check, not a capacity model: a location can accept multiple PCs and has no desired-unit count. Use **Assign / move** to record physical placement; it does not commission a PC, alter its plan, or assert that it meets destination requirements. Installed parts follow the PC assignment, and compatibility findings highlight destination mismatches.
 
 ## Finding and filling gaps
 
@@ -44,3 +44,5 @@ Read `GET /api/state` for the current `revision`; every PUT below requires it in
 | `PUT /api/enrichment/:id/action` | `{ "action": "apply", "keys": ["socket"], "proposalId": "token-from-reviewed-job" }`. |
 
 After migrating bespoke Excel data, first reconcile IDs and physical allocation quantities using [the migration specification](MIGRATION.md). Then use missing-data filters and enrichment to address exceptions. Enrichment must not substitute for source reconciliation or engineering verification.
+
+For production-floor terminology and multi-record location/PC actions, see [bulk records](BULK-RECORDS.md). Missing-data selection now uses native paginated Vuetify data tables; the page checkbox preserves previous selections and **Add shown parts** adds up to 100 total selected parts.

@@ -1,3 +1,4 @@
+import {isPCInstallationKind} from './types';
 import type { Database, InstallationLocation, InventoryPC, Report, InstallationSnapshot } from './types';
 import { checkConfiguration, resolveRequirementVersion } from './compatibility';
 import { installedConfiguration, planDifferences } from './inventory';
@@ -45,7 +46,7 @@ export function checkLocationPC(pc: InventoryPC, location: InstallationLocation,
   const candidate = { ...actual, requirementSetId: location.requirementSetId || undefined, requirementRevision: location.requirementRevision || undefined, requirementSnapshot: location.requirementSnapshot };
   const report = checkConfiguration(candidate, db);
   const add: (severity: 'error'|'warning', title: string, detail: string) => void = (severity,title,detail) => { report.findings.push({severity,title,detail}); };
-  if (!['Bench','System'].includes(location.kind)) add('error','PC location must be a leaf','Assign PCs to a Bench or System, beneath a Site or Room.');
+  if (!isPCInstallationKind(location.kind)) add('error','PC location must be a leaf','Assign PCs to a Station, Bench or System, beneath a Site, Area or Line.');
   if (!location.requirementSetId) add('warning','Installation requirements not assigned',`${location.name}: select a published requirements revision.`);
   else if (!resolveRequirementVersion(location, db)) add('error','Installation requirements revision missing',`${location.name}: the pinned requirements revision cannot be found.`);
   if (location.targetConfigurationId) {

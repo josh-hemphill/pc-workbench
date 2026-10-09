@@ -18,7 +18,7 @@ deno task build
 deno task start
 ```
 
-Open **http://127.0.0.1:3001**. `deno task test` executes all 222 application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
+Open **http://127.0.0.1:3001**. `deno task test` executes all 231 application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
 
 ```sh
 deno task desktop          # Native local WebView
@@ -79,7 +79,7 @@ The backup contains all seven collections. Legacy backups with the original five
 
 **Installations → Requirements sets** publishes stable revisions containing equipment connections, minimum RAM/data/boot capacity, scientific card counts or specific component types, software/image requirements and redundancy expectations. Published revisions cannot be edited; publish the next revision for a changed requirement. Configurations choose a set and pin a revision. Mutable equipment-system records remain available for existing workflows, but a pinned requirements revision supplies the stable equipment connection requirements when selected.
 
-**Installations → Installation locations** creates Site → Room → Bench/System hierarchies. Sites and rooms roll up the PCs and parts in descendants. Assign built PCs to Bench or System locations; choose the location’s requirements revision and optional target configuration. The target configuration remains a live planning comparison, while the requirements revision is an immutable engineering baseline. Parent requirements are not silently inherited by child locations.
+**Installations → Installation locations** creates Site → Area → Line → Station/System hierarchies (with optional levels). Sites, areas and lines roll up the PCs and parts in descendants. Assign built PCs to Station, Bench or System locations; choose the location’s requirements revision and optional target configuration. The target configuration remains a live planning comparison, while the requirements revision is an immutable engineering baseline. Parent requirements are not silently inherited by child locations.
 
 For example, publish “Microscopy controller” revision 1, link the Imaging configuration to it, create “North lab / Imaging room / Bench 02”, and assign PC-01 to that bench. Its actual installed serialized units and bulk allocations appear in the bench and parent-location part lists. Moving the PC moves those installed-part whereabouts without receiving, reallocating or copying stock. Reservations still belong to stock until installed. Assignment changes are recorded in the PC timeline; commissioning snapshots preserve the assigned location path, requirements revision and actual stock identities. Later publication of revision 2 does not change the pinned installations; explicitly selecting a new revision causes a fresh compatibility check and commissioning drift review.
 
@@ -133,6 +133,10 @@ Reservations can record an owner, work order, needed-by date and expiry. Expiry 
 `GET /api/state` includes a workspace `revision`, also returned in `X-Workspace-Revision`. Send it in `If-Match` for edits, deletes, CSV imports, restoration and commissioning/decommissioning. Missing preconditions return 428; stale preconditions return 409. Inventory movement commands validate against the current balances. Clients should reload after a successful change and review again after a conflict.
 
 `POST /api/restore/preview` accepts `{ "backup": <database> }` and returns validated collection counts and the current revision. `POST /api/restore` accepts the same body with `If-Match`. Restoration replaces every collection, including histories; ordinary CSV imports merge instead. The server acquires `.server-lock.json` and releases it on normal shutdown; stale process locks are recovered at startup. If the lock cannot be verified, stop other servers before attempting manual recovery. Use JSON export for live backups. Do not copy an open SQLite database without its WAL files; stop the server before copying the database itself. Preserved legacy CSV files are migration inputs only; later edits require explicit import.
+
+## Bulk record actions and data tables
+
+Installation locations, Location operations, PC inventory and catalog missing-data lists use Vuetify native data tables for sorting, pagination and row selection. Page checkboxes preserve selections across filters; **Add all matching** includes the entire filtered set, with hidden-selection counts and an explicit Clear action. Locations and PCs support previewed atomic edits and deletion, guarded by workspace revision and a request token. Location edits cover type, parent, pinned requirements, target configuration and notes; PC edits cover physical assignment, supported lifecycle changes and notes. Dependencies and existing lifecycle rules block unsafe actions. See [bulk workflow/API details](docs/BULK-RECORDS.md).
 
 ## PCPartPicker import
 
