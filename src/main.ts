@@ -1,14 +1,190 @@
-import { createApp } from 'vue';
-import { createVuetify } from 'vuetify';
-import * as components from 'vuetify/components';
-import * as directives from 'vuetify/directives';
-import 'vuetify/styles';
-import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
-import App from './App.vue';
-import './style.css';
-import {loadAppearance,themePreference,systemDark} from './appearance';
+import { createApp, watchEffect } from "vue";
+import { createVuetify } from "vuetify";
+import {
+  VAlert,
+  VApp,
+  VAppBar,
+  VAutocomplete,
+  VBreadcrumbs,
+  VBtn,
+  VBtnToggle,
+  VCard,
+  VCardActions,
+  VCardText,
+  VCardTitle,
+  VCheckbox,
+  VCheckboxBtn,
+  VChip,
+  VCombobox,
+  VDataTable,
+  VDialog,
+  VDivider,
+  VFileInput,
+  VForm,
+  VIcon,
+  VList,
+  VListItem,
+  VMain,
+  VNavigationDrawer,
+  VProgressCircular,
+  VProgressLinear,
+  VSelect,
+  VSnackbarQueue,
+  VSpacer,
+  VSwitch,
+  VTab,
+  VTable,
+  VTabs,
+  VTabsWindow,
+  VTabsWindowItem,
+  VTextarea,
+  VTextField,
+} from "vuetify/components";
+import { Ripple } from "vuetify/directives";
+import { tableScroll } from "./table-scroll";
+import "vuetify/styles";
+import { aliases, mdi } from "vuetify/iconsets/mdi-svg";
+import App from "./App.vue";
+import "./style.css";
+import { loadAppearance, themePreference } from "./appearance";
 await loadAppearance();
-const dark=themePreference.value==='dark'||(themePreference.value==='system'&&systemDark.value);
-document.documentElement.dataset.theme=dark?'dark':'light';
-const vuetify=createVuetify({components,directives,icons:{defaultSet:'mdi',aliases,sets:{mdi}},theme:{defaultTheme:dark?'benchDark':'bench',themes:{bench:{dark:false,colors:{primary:'#284d37','on-primary':'#ffffff',secondary:'#435743','on-secondary':'#ffffff',background:'#f6f7f4','on-background':'#26322b',surface:'#ffffff','on-surface':'#26322b',error:'#922f28','on-error':'#ffffff',warning:'#735415','on-warning':'#ffffff',success:'#284d37','on-success':'#ffffff'}},benchDark:{dark:true,colors:{primary:'#a2dbb7','on-primary':'#10271a',secondary:'#bdd0c2','on-secondary':'#17231c',background:'#141c17','on-background':'#e3ede5',surface:'#202c24','on-surface':'#e3ede5',error:'#ffb4ad','on-error':'#41100b',warning:'#f3ce8d','on-warning':'#352409',success:'#a2dbb7','on-success':'#10271a'}}}},defaults:{VBtn:{rounded:'lg',elevation:0},VTextField:{variant:'outlined',density:'comfortable',hideDetails:'auto'},VSelect:{variant:'outlined',density:'comfortable',hideDetails:'auto'},VCombobox:{variant:'outlined',density:'comfortable',hideDetails:'auto'},VTextarea:{variant:'outlined',density:'comfortable',hideDetails:'auto'},VCard:{elevation:0,rounded:'lg'}}});
-createApp(App).use(vuetify).mount('#app');
+const vuetify = createVuetify({
+  components: {
+    VAlert,
+    VApp,
+    VBtn,
+    VBtnToggle,
+    VCard,
+    VCheckbox,
+    VCheckboxBtn,
+    VCombobox,
+    VDataTable,
+    VDialog,
+    VDivider,
+    VFileInput,
+    VIcon,
+    VProgressCircular,
+    VProgressLinear,
+    VSelect,
+    VSpacer,
+    VSwitch,
+    VTab,
+    VTable,
+    VTabs,
+    VTabsWindow,
+    VTabsWindowItem,
+    VTextField,
+    VTextarea,
+    VNavigationDrawer,
+    VList,
+    VListItem,
+    VAppBar,
+    VMain,
+    VBreadcrumbs,
+    VForm,
+    VCardTitle,
+    VCardText,
+    VCardActions,
+    VAutocomplete,
+    VSnackbarQueue,
+    VChip,
+  },
+  directives: { Ripple },
+  icons: { defaultSet: "mdi", aliases, sets: { mdi } },
+  theme: {
+    defaultTheme: themePreference.value,
+    themes: {
+      light: {
+        dark: false,
+        colors: {
+          primary: "#284d37",
+          "on-primary": "#ffffff",
+          secondary: "#435743",
+          "on-secondary": "#ffffff",
+          background: "#f6f7f4",
+          "on-background": "#26322b",
+          surface: "#ffffff",
+          "on-surface": "#26322b",
+          error: "#922f28",
+          "on-error": "#ffffff",
+          warning: "#735415",
+          "on-warning": "#ffffff",
+          success: "#284d37",
+          "on-success": "#ffffff",
+          "bench-sidebar": "#fbfcfa",
+          "bench-soft": "#f0f4ed",
+          "bench-muted": "#465647",
+          "bench-border": "#d8dfd4",
+          "bench-control-border": "#738171",
+          "bench-focus": "#175d88",
+          "bench-warning-surface": "#fbf5e8",
+          "bench-error-surface": "#fbefe7",
+        },
+      },
+      dark: {
+        dark: true,
+        colors: {
+          primary: "#a2dbb7",
+          "on-primary": "#10271a",
+          secondary: "#bdd0c2",
+          "on-secondary": "#17231c",
+          background: "#141c17",
+          "on-background": "#e3ede5",
+          surface: "#202c24",
+          "on-surface": "#e3ede5",
+          error: "#ffb4ad",
+          "on-error": "#41100b",
+          warning: "#f3ce8d",
+          "on-warning": "#352409",
+          success: "#a2dbb7",
+          "on-success": "#10271a",
+          "bench-sidebar": "#19231d",
+          "bench-soft": "#29392e",
+          "bench-muted": "#bdcfc1",
+          "bench-border": "#405747",
+          "bench-control-border": "#91aa99",
+          "bench-focus": "#8dccff",
+          "bench-warning-surface": "#42351e",
+          "bench-error-surface": "#422720",
+        },
+      },
+    },
+  },
+  defaults: {
+    VBtn: { rounded: "lg", elevation: 0, minHeight: 44, minWidth: 44 },
+    VTextField: {
+      variant: "outlined",
+      density: "comfortable",
+      hideDetails: "auto",
+    },
+    VSelect: {
+      variant: "outlined",
+      density: "comfortable",
+      hideDetails: "auto",
+    },
+    VAutocomplete: {
+      variant: "outlined",
+      density: "comfortable",
+      hideDetails: "auto",
+    },
+    VCombobox: {
+      variant: "outlined",
+      density: "comfortable",
+      hideDetails: "auto",
+    },
+    VTextarea: {
+      variant: "outlined",
+      density: "comfortable",
+      hideDetails: "auto",
+    },
+    VCard: { elevation: 0, rounded: "lg" },
+  },
+});
+watchEffect(() => {
+  document.documentElement.dataset.theme = vuetify.theme.current.value.dark
+    ? "dark"
+    : "light";
+});
+createApp(App).use(vuetify).directive("table-scroll", tableScroll).mount(
+  "#app",
+);

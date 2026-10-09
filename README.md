@@ -162,6 +162,8 @@ Front hot-swap bays are separate from internal bays. The current storage model s
 
 `src/` contains the Vue/Vuetify UI, including `InventoryWorkspace.vue` for physical stock and built PCs. `server/` handles the API, validation, inventory movements, native SQLite persistence, migration and sample data. `shared/` contains types, engineering compatibility and stock/readiness/installed-system calculations used by both UI and server. `tools/` contains the offline importer. `tests/` exercises engineering rules, stock accounting, CSV round trips and upgrades from legacy workspaces.
 
+The UI uses Vuetify's application layout, validated forms, scrollable dialogs, searchable record pickers, data tables, system themes, and notification queue. See the [Vuetify audit and implementation notes](docs/VUETIFY-AUDIT.md) for framework boundaries and accessibility requirements. Register new components explicitly in `src/main.ts`; use `v-table-scroll` with a table label or caption for keyboard-accessible wide tables.
+
 Browser WebMCP is optional: where supported, the page registers read-only `list_configurations` and `check_configuration` tools. Ordinary browsers do not require this API.
 
 ## Bay adapters and accessories
