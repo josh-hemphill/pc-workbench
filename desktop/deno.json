@@ -10,8 +10,8 @@
   "nodeModulesDir": "none",
   "desktop": {
     "app": {
-      "name": "PC Workbench Deno Prototype",
-      "identifier": "org.pcworkbench.deno.prototype"
+      "name": "PC Workbench",
+      "identifier": "org.pcworkbench.desktop"
     },
     "backend": "webview"
   },

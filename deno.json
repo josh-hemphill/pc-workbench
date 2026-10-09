@@ -28,18 +28,18 @@
     "vuetify/styles": "npm:vuetify@4.2.4/styles"
   },
   "tasks": {
-    "dev": "deno run --config deno.json --node-modules-dir=manual -A prototypes/deno/dev.ts",
-    "dev:web": "deno run --config deno.json -A prototypes/deno/frontend.ts dev",
-    "check": "deno check --config deno.json prototypes/deno/frontend.ts prototypes/deno/dev.ts prototypes/deno/backend-server.ts prototypes/deno/check.ts prototypes/deno/build-backend.ts prototypes/deno/package.ts prototypes/deno/windows-single.ts prototypes/deno/app-suite-runner.ts && deno run --config deno.json -A prototypes/deno/check.ts",
+    "dev": "deno run --config deno.json --node-modules-dir=manual -A tools/deno/dev.ts",
+    "dev:web": "deno run --config deno.json -A tools/deno/frontend.ts dev",
+    "check": "deno check --config deno.json tools/deno/frontend.ts tools/deno/dev.ts server/serve.ts tools/deno/check.ts tools/deno/build-backend.ts tools/deno/package.ts tools/deno/windows-single.ts tools/deno/app-suite-runner.ts && deno run --config deno.json -A tools/deno/check.ts",
     "typecheck": "deno task check",
-    "build": "deno task check && deno run --config deno.json -A prototypes/deno/frontend.ts build && deno run --config deno.json -A prototypes/deno/build-backend.ts && deno check --config prototypes/deno/deno.json prototypes/deno/main.ts prototypes/deno/backend.test.ts prototypes/deno/desktop-address.test.ts",
-    "test": "deno run --config deno.json -A prototypes/deno/app-suite-runner.ts",
-    "start": "deno run --config deno.json --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 prototypes/deno/backend-server.ts",
-    "test:desktop": "deno task build && deno test --config prototypes/deno/deno.json --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 prototypes/deno/backend.test.ts prototypes/deno/desktop-address.test.ts",
-    "desktop": "deno task build && deno desktop --config prototypes/deno/deno.json --backend webview --hmr --no-code-cache --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 --no-prompt prototypes/deno/main.ts",
-    "package": "deno task build && deno run --config deno.json -A prototypes/deno/package.ts",
+    "build": "deno task check && deno run --config deno.json -A tools/deno/frontend.ts build && deno run --config deno.json -A tools/deno/build-backend.ts && deno check --config desktop/deno.json desktop/main.ts desktop/backend.test.ts desktop/desktop-address.test.ts",
+    "test": "deno run --config deno.json -A tools/deno/app-suite-runner.ts",
+    "start": "deno run --config deno.json --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 server/serve.ts",
+    "test:desktop": "deno task build && deno test --config desktop/deno.json --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 desktop/backend.test.ts desktop/desktop-address.test.ts",
+    "desktop": "deno task build && deno desktop --config desktop/deno.json --backend webview --hmr --no-code-cache --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 --no-prompt desktop/main.ts",
+    "package": "deno task build && deno run --config deno.json -A tools/deno/package.ts",
     "package:windows": "deno task package win-x64",
-    "package:windows:single": "deno run --config deno.json -A prototypes/deno/windows-single.ts",
+    "package:windows:single": "deno run --config deno.json -A tools/deno/windows-single.ts",
     "import:pcpartpicker": "deno run --config deno.json --allow-read --allow-write --allow-env tools/pcpartpicker.ts"
   }
 }

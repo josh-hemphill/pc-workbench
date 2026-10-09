@@ -96,5 +96,5 @@ export async function proxyRequest(request: Request, backendOrigin: string): Pro
     // Constrain web content; this is NOT a substitute for native navigation and popup hooks.
     outputHeaders.set('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'");
     return new Response(response.body, { status: response.status, statusText: response.statusText, headers: outputHeaders });
-  } catch { return new Response('The local server is unavailable. Restart the prototype.', { status: 502 }); }
+  } catch { return new Response('The local server is unavailable. Restart the application.', { status: 502 }); }
 }

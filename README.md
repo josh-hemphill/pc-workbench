@@ -1,6 +1,6 @@
 # Bench — PC configuration workbench
 
-This **deno-prototype** branch runs the complete application pipeline with Deno 2.9.7: dependency installation, Vue/Vuetify development, Vite builds, type checking, tests and WebView desktop packaging. The Express backend and native `node:sqlite` run inside Deno. No Node installation, pnpm, Electron or Node server sidecar is required. Every collection remains importable/exportable as CSV.
+PC Workbench runs the complete application pipeline with Deno 2.9.7: dependency installation, Vue/Vuetify development, Vite builds, type checking, tests and WebView desktop packaging. The Express backend and native `node:sqlite` run inside Deno. No Node installation, pnpm, Electron or Node server sidecar is required. Every collection remains importable/exportable as CSV.
 
 ## Run
 
@@ -18,7 +18,7 @@ deno task build
 deno task start
 ```
 
-Open **http://127.0.0.1:3001**. `deno task test` executes all 216 original application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
+Open **http://127.0.0.1:3001**. `deno task test` executes all 203 application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
 
 ```sh
 deno task desktop          # Native local WebView
@@ -26,7 +26,7 @@ deno task package:windows  # Cross-build Windows x64 ZIP
 deno task package:windows:single # Build a single self-extracting .exe on Windows x64
 ```
 
-The package embeds the frontend and backend inside the Deno runtime. Its launcher/runtime DLL need no Node executable or external npm dependencies. See [prototype setup and packaging](prototypes/deno/README.md) and [evaluation evidence](docs/DENO-PROTOTYPE.md). Windows unsaved-close and native navigation/popup protections remain blockers for production adoption; save drafts before closing.
+The package embeds the frontend and backend inside the Deno runtime. Its launcher/runtime DLL need no Node executable or external npm dependencies. See [Deno setup and packaging](docs/DENO.md) and [evaluation evidence](docs/DESKTOP-LIMITATIONS.md). Windows unsaved-close and native navigation/popup protections remain blockers for production adoption; save drafts before closing.
 
 The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port (update the Vite proxy if changed in development). `BENCH_DATA_DIR=/absolute/path` changes the storage directory.
 

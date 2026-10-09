@@ -7,7 +7,7 @@ import { createIExpressConfig } from './windows-single-config.ts';
 if (Deno.build.os !== 'windows' || Deno.build.arch !== 'x86_64') {
   throw Error('Single-executable packaging uses Windows x64’s built-in IExpress. Run deno task package:windows:single on Windows x64. Other hosts can cross-build the standard ZIP with deno task package:windows.');
 }
-if (Deno.version.deno !== '2.9.7') throw Error('This prototype requires Deno 2.9.7.');
+if (Deno.version.deno !== '2.9.7') throw Error('This desktop runtime requires Deno 2.9.7.');
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const systemRoot = Deno.env.get('SystemRoot');
 if (!systemRoot || !path.isAbsolute(systemRoot)) throw Error('SystemRoot must identify the Windows installation directory.');
@@ -19,8 +19,8 @@ const built = await new Deno.Command(Deno.execPath(), {
 }).spawn().status;
 if (!built.success) throw Error(`Native Windows package build failed (${built.code}).`);
 
-const name = 'pc-workbench-deno-prototype-win-x64';
-const bundle = path.join(root, '.standalone', 'deno-prototype', 'win-x64', name);
+const name = 'pc-workbench-win-x64';
+const bundle = path.join(root, '.standalone', 'desktop', 'win-x64', name);
 const output = path.join(root, 'bin', `${name}-single.exe`);
 const stage = await Deno.makeTempDir({ prefix: 'pc-workbench-iexpress-' });
 // Keep the launcher's original basename: it locates the adjacent runtime DLL.

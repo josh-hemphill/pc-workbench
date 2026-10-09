@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-export const bundlePath = path.join(root, 'prototypes/deno/server-bundle.mjs');
+export const bundlePath = path.join(root, 'desktop/server-bundle.mjs');
 const mimeTypes: Record<string,string> = {'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.ico':'image/x-icon','.woff':'font/woff','.woff2':'font/woff2'};
 
 /** Bundle only the shared app and its actual dependencies; no Node executable. */

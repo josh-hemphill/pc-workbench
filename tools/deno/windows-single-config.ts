@@ -21,7 +21,7 @@ export function createIExpressConfig(sourceDirectory: string, targetFile: string
     'PostInstallCmd=%PostInstallCmd%', 'AdminQuietInstCmd=%AdminQuietInstCmd%',
     'UserQuietInstCmd=%UserQuietInstCmd%', 'SourceFiles=SourceFiles',
     '[Strings]', 'InstallPrompt=', 'DisplayLicense=', 'FinishMessage=',
-    `TargetName=${targetFile}`, 'FriendlyName=PC Workbench Deno Prototype',
+    `TargetName=${targetFile}`, 'FriendlyName=PC Workbench',
     `AppLaunched=${launcher}`, 'PostInstallCmd=<None>',
     'AdminQuietInstCmd=', 'UserQuietInstCmd=',
     ...files.map((file, index) => `FILE${index}=${file}`),

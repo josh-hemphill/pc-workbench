@@ -13,4 +13,4 @@ data/*
 /storage.png
 /mobile.png
 
-/prototypes/deno/server-bundle.mjs
+/desktop/server-bundle.mjs

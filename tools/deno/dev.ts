@@ -7,7 +7,7 @@ console.log('Preparing Deno dependencies (frontend and API start after installat
 const install=await new Deno.Command(Deno.execPath(),{cwd:root,args:['install','--config',`${root}/deno.json`,'--frozen','--node-modules-dir=auto'],stdin:'inherit',stdout:'inherit',stderr:'inherit'}).spawn().status;
 if(!install.success){console.error('Dependency installation failed; run deno install --frozen to diagnose it.');Deno.exit(install.code);}
 console.log('Dependencies ready. Starting API and Vite...');
-const children=['prototypes/deno/backend-server.ts','prototypes/deno/frontend.ts'].map((script,index)=>new Deno.Command(Deno.execPath(),{cwd:root,args:['run','--config',`${root}/deno.json`,'--node-modules-dir=manual','--cached-only','-A',...(index===0?['--watch','--no-clear-screen']:[]),script,...(index===1?['dev']:[])],stdin:'inherit',stdout:'inherit',stderr:'inherit'}).spawn());
+const children=['server/serve.ts','tools/deno/frontend.ts'].map((script,index)=>new Deno.Command(Deno.execPath(),{cwd:root,args:['run','--config',`${root}/deno.json`,'--node-modules-dir=manual','--cached-only','-A',...(index===0?['--watch','--no-clear-screen']:[]),script,...(index===1?['dev']:[])],stdin:'inherit',stdout:'inherit',stderr:'inherit'}).spawn());
 let stopping=false;
 let shutdownTimer: ReturnType<typeof setTimeout> | undefined;
 function stop(){

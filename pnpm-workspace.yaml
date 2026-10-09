@@ -1,7 +1,0 @@
-allowBuilds:
-  esbuild: true
-  # The portable desktop target uses NSIS, not Squirrel's installer toolchain.
-  electron-winstaller: false
-overrides:
-  # concurrently 10 pins a vulnerable shell-quote; use its latest patched release.
-  'concurrently>shell-quote': '1.12.0'

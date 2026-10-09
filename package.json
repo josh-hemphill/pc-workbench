@@ -3,5 +3,5 @@
   "private": true,
   "version": "0.2.0",
   "type": "module",
-  "description": "PC Workbench Deno desktop prototype; use deno task for development, validation and packaging."
+  "description": "PC configuration, inventory and installation management with Deno and Vue/Vuetify."
 }

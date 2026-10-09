@@ -1,1 +1,31 @@
-{"compilerOptions":{"target":"ES2022","module":"ESNext","moduleResolution":"Bundler","strict":true,"esModuleInterop":true,"skipLibCheck":true,"lib":["ES2022","DOM"],"types":["node","vite/client"],"noEmit":true},"include":["src/**/*.ts","src/**/*.vue","shared/**/*.ts","server/**/*.ts","tools/**/*.ts","tests/**/*.ts","vite.config.ts"]}
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "types": [
+      "node",
+      "vite/client"
+    ],
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue",
+    "shared/**/*.ts",
+    "server/**/*.ts",
+    "tools/**/*.ts",
+    "tests/**/*.ts"
+  ],
+  "exclude": [
+    "tools/deno/**",
+    "server/serve.ts"
+  ]
+}

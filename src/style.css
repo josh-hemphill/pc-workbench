@@ -58,3 +58,12 @@ summary{cursor:pointer;min-height:44px;padding:10px 6px;line-height:1.5;overflow
 
 .port-summary{flex-wrap:wrap}.port-summary>div{min-width:90px}.connection-row>span{max-width:40%;overflow-wrap:anywhere}
 @media(max-width:700px){.topbar{flex-wrap:wrap;gap:8px}.topbar>div:first-child{min-width:0;flex-wrap:wrap}.topbar>div:first-child span{overflow-wrap:anywhere}.topbar .local-status{display:flex;flex-wrap:wrap}}
+
+/* Configuration filters keep a visible selected state and wrap on narrow screens. */
+.list-toolbar:has(.configuration-filters){border-bottom:0;padding-block:8px;gap:16px}
+.configuration-filters.v-btn-group{height:auto;flex-wrap:wrap;gap:8px;overflow:visible;border:0;border-radius:0}
+.configuration-filters.v-btn-group>.v-btn{min-height:44px;border:1px solid #aebdae!important;border-radius:8px!important;background:#fff;color:#284d37;padding-inline:16px;letter-spacing:normal;text-transform:none;font-size:1rem}
+.configuration-filters.v-btn-group>.v-btn[aria-pressed="true"]{background:#284d37;color:#fff;border-color:#284d37!important}
+.configuration-filters .filter-count{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:5px;background:#e6ede5;color:#284d37;font-size:.875rem}
+.configuration-filters .v-btn[aria-pressed="true"] .filter-count{background:#fff;color:#284d37}
+@media(max-width:760px){.configuration-filters.v-btn-group{width:100%}.configuration-filters.v-btn-group>.v-btn{flex:1 1 auto}.list-toolbar:has(.configuration-filters) .search-input{margin-top:0}}

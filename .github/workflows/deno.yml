@@ -1,0 +1,43 @@
+name: Deno
+
+on:
+  push:
+    branches: [main, deno-prototype]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: 2.9.7
+      - run: deno install --frozen
+      - run: deno task test
+      - run: deno task test:desktop
+
+  windows-package:
+    needs: verify
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: 2.9.7
+      - run: deno install --frozen
+      - run: deno task test
+      - run: deno task package:windows:single
+      - run: deno test --config desktop/deno.json --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 desktop/backend.test.ts desktop/desktop-address.test.ts
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pc-workbench-windows-x64
+          path: bin/*win-x64*
+          if-no-files-found: error

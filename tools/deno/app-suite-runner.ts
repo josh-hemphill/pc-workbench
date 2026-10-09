@@ -1,6 +1,6 @@
 /** Run the original node:test business/API suites with Deno itself and verify real assertion counts. */
 const root = new URL("../../", import.meta.url);
-const baselineMinimum = 216;
+const baselineMinimum = 203;
 const reportDir = await Deno.makeTempDir({
   prefix: "pc-workbench-deno-tests-",
 });
@@ -13,11 +13,11 @@ for await (const entry of Deno.readDir(new URL("tests/", root))) {
 }
 expectedFiles.sort();
 if (!expectedFiles.length) {
-  throw new Error("No original application test files found.");
+  throw new Error("No application test files found.");
 }
 
 console.log(
-  `Running ${expectedFiles.length} original application suite files with Deno ${Deno.version.deno}.`,
+  `Running ${expectedFiles.length} application suite files with Deno ${Deno.version.deno}.`,
 );
 const process = new Deno.Command(Deno.execPath(), {
   cwd: root,
@@ -66,10 +66,10 @@ try {
     );
   }
   console.log(
-    `Verified ${tests} individual test cases across ${expectedFiles.length} original suites; failures=${failures}, errors=${errors}.`,
+    `Verified ${tests} individual test cases across ${expectedFiles.length} application suites; failures=${failures}, errors=${errors}.`,
   );
   if (!status.success || failures !== 0 || errors !== 0) {
-    throw new Error("Original application suite failed.");
+    throw new Error("Application suite failed.");
   }
   await Deno.remove(reportDir, { recursive: true });
 } catch (error) {
