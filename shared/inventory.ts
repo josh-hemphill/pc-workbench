@@ -1,5 +1,6 @@
 import type { Configuration, Database, InventoryPC, StockAllocation, StockRecord } from './types';
 import { checkConfiguration } from './compatibility';
+import { mapStorageBindings, storageBindingsMatch } from './storage-bindings';
 import { checkLocationPC, installationSnapshot } from './installations';
 
 export function stockCounts(stock: StockRecord) {
@@ -13,14 +14,22 @@ export function pcAllocations(pcId: string, db: Database) {
   return db.inventory.flatMap(stock => stock.allocations.filter(a => a.pcId === pcId).map(allocation => ({ stock, allocation })));
 }
 
+function providerIndex(installed:ReturnType<typeof pcAllocations>) {
+  const exact=new Map(installed.map(row=>[row.allocation.id,row]));
+  const planned=new Map<string,typeof installed>();
+  for(const row of installed)if(row.allocation.plannedPlacementId){const id=row.allocation.plannedPlacementId,group=planned.get(id);if(group)group.push(row);else planned.set(id,[row]);}
+  const resolve=(id='')=>{if(!id||exact.has(id))return id;const candidates=planned.get(id);return candidates?.length===1?candidates[0].allocation.id:id;};
+  return {exact,planned,resolve};
+}
+
 /** Actual components come exclusively from installation records, never the mutable template. */
 export function installedConfiguration(pc: InventoryPC, db: Database): Configuration {
   const installed = pcAllocations(pc.id, db).filter(r => r.allocation.state === 'installed');
-  const actualId = (id = '') => id ? installed.find(r => r.allocation.id === id)?.allocation.id || installed.find(r => r.allocation.plannedPlacementId === id)?.allocation.id || id : '';
+  const {exact,planned,resolve:actualId}=providerIndex(installed);
   const actualPort=(mapping:NonNullable<Configuration['portMappings']>[number])=>{
-    if(installed.some(r=>r.allocation.id===mapping.placementId))return {...mapping};
+    if(exact.has(mapping.placementId))return {...mapping};
     let instance=mapping.instance;
-    for(const {allocation} of installed.filter(r=>r.allocation.plannedPlacementId===mapping.placementId)) {
+    for(const {allocation} of planned.get(mapping.placementId)||[]) {
       if(instance<allocation.quantity)return {...mapping,placementId:allocation.id,instance};
       instance-=allocation.quantity;
     }
@@ -31,7 +40,7 @@ export function installedConfiguration(pc: InventoryPC, db: Database): Configura
     status: 'Draft', updatedAt: new Date(0).toISOString(),
     placements: installed.map(({ stock, allocation: a }) => ({
       id: a.id, componentId: stock.componentId, quantity: a.quantity, slotId: a.slotId,
-      role: a.role, mount: a.mount, group: a.group || '', targetId: a.targetId || '', adapterPlacementId: actualId(a.adapterPlacementId), controllerPlacementId: actualId(a.controllerPlacementId),
+      ...mapStorageBindings(a,actualId), role: a.role, mount: a.mount, group: a.group || '', targetId: a.targetId || '', adapterPlacementId: actualId(a.adapterPlacementId), controllerPlacementId: actualId(a.controllerPlacementId),
     })),
     requirementSetId:pc.buildSettings?.requirementSetId,requirementRevision:pc.buildSettings?.requirementRevision,requirementSnapshot:pc.buildSettings?.requirementSnapshot,
     storage: pc.buildSettings?.storage ? { ...pc.buildSettings.storage, ...(pc.buildSettings.storage.groups ? {groups:pc.buildSettings.storage.groups.map(g=>({...g,controllerPlacementId:actualId(g.controllerPlacementId)}))}: {}) } : { raid: 'none', bootMirror: false }, notes: pc.buildSettings?.notes || '', software: pc.software || pc.buildSettings?.software, portMappings: pc.buildSettings?.portMappings?.map(actualPort),
@@ -40,12 +49,13 @@ export function installedConfiguration(pc: InventoryPC, db: Database): Configura
 
 export function checkInstalledPC(pc: InventoryPC, db: Database) {
   const report = checkConfiguration(installedConfiguration(pc, db), db);
+  const allocations=pcAllocations(pc.id,db),providers=providerIndex(allocations.filter(row=>row.allocation.state==='installed'));
   if (!pc.buildSettings) report.findings.push({ severity: 'warning', title: 'Installed settings not recorded', detail: 'Capture or enter equipment and storage settings for this PC. Template settings are not inherited.' });
-  for (const { stock, allocation } of pcAllocations(pc.id, db)) {
+  for (const { stock, allocation } of allocations) {
     if (allocation.state === 'installed' && stock.condition !== 'Serviceable') {
       report.findings.push({ severity: 'error', title: 'Installed stock is not serviceable', detail: `${stock.serial || stock.assetTag || stock.id} is ${stock.condition.toLowerCase()}. Inspect and remove or repair this component.` });
     }
-    if(allocation.state==='installed')for(const binding of [allocation.adapterPlacementId,allocation.controllerPlacementId])if(binding&&!pcAllocations(pc.id,db).some(r=>r.allocation.id===binding)&&pcAllocations(pc.id,db).filter(r=>r.allocation.state==='installed'&&r.allocation.plannedPlacementId===binding).length>1)report.findings.push({severity:'error',title:'Ambiguous installed provider binding',detail:'Several installed units match the planned adapter/controller. Record the exact allocation ID in Placement before commissioning.'});
+    if(allocation.state==='installed')for(const binding of new Set([allocation.adapterPlacementId,allocation.controllerPlacementId,...(allocation.sataDataConnections||[]).map(connection=>connection.controllerPlacementId),...(allocation.sataPowerConnections||[]).map(connection=>connection.powerProviderPlacementId)]))if(binding&&!providers.exact.has(binding)&&(providers.planned.get(binding)?.length||0)>1)report.findings.push({severity:'error',title:'Ambiguous installed provider binding',detail:'Several installed units match the planned adapter/controller. Record the exact allocation ID in Placement before commissioning.'});
   }
   if (commissioningDrift(pc,db)) report.findings.push({severity:'warning',title:'Changed since commissioning',detail:'Installed identities, hardware specifications, equipment settings or software differ from the latest accepted snapshot. Validate the changes and commission a new revision.'});
   if(pc.installationLocationId) {
@@ -66,7 +76,7 @@ export function commissioningDrift(pc:InventoryPC,db:Database) {
   if (pc.snapshot.components.some(previous=>canonical(previous)!==canonical(db.components.find(c=>c.id===previous.id)))) return true;
   if (!actual.requirementSetId && canonical(pc.snapshot.system)!==canonical(db.systems.find(s=>s.id===actual.systemId)||null)) return true;
   if (pc.snapshot.installedStock) {
-    const identities=pcAllocations(pc.id,db).filter(r=>r.allocation.state==='installed').map(({stock,allocation:a})=>({stockId:stock.id,componentId:stock.componentId,serial:stock.serial,assetTag:stock.assetTag,allocationId:a.id,quantity:a.quantity,role:a.role,mount:a.mount,slotId:a.slotId,group:a.group,targetId:a.targetId}));
+    const identities=pcAllocations(pc.id,db).filter(r=>r.allocation.state==='installed').map(({stock,allocation:a})=>({stockId:stock.id,componentId:stock.componentId,serial:stock.serial,assetTag:stock.assetTag,allocationId:a.id,quantity:a.quantity,...mapStorageBindings(a),role:a.role,mount:a.mount,slotId:a.slotId,group:a.group,targetId:a.targetId}));
     if(canonical(identities)!==canonical(pc.snapshot.installedStock))return true;
   }
   return false;
@@ -96,10 +106,19 @@ export function planDifferences(pc: InventoryPC, db: Database) {
   if (!template) return ['No planned configuration linked.'];
   const installed = pcAllocations(pc.id, db).filter(r => r.allocation.state === 'installed');
   const assignments = installed.map(() => new Map<number, number>());
-  const providerId=(id='')=>id?installed.find(r=>r.allocation.id===id)?.allocation.id||installed.find(r=>r.allocation.plannedPlacementId===id)?.allocation.id||id:'';
+  const {resolve:providerId}=providerIndex(installed);
+  const bayAnchors=new Set(template.placements.filter(p=>{
+    if(!p.bayTargetIds?.length||!p.targetId)return false;
+    const provider=template.placements.find(row=>p.adapterPlacementId?row.id===p.adapterPlacementId:db.components.find(c=>c.id===row.componentId)?.category==='Chassis');
+    return db.components.find(c=>c.id===provider?.componentId)?.specs.bayTargets?.some(bay=>bay.id===p.targetId);
+  }).map(p=>p.id));
   const matches = (pi: number, ai: number) => {
     const p = template.placements[pi], { stock, allocation: a } = installed[ai];
-    return stock.componentId === p.componentId && a.role === p.role && (p.mount === 'auto' || a.mount === p.mount) && (!p.slotId || a.slotId === p.slotId) && (a.group||'')===(p.group||'') && (!p.targetId || a.targetId === p.targetId) && (!p.adapterPlacementId || providerId(a.adapterPlacementId)===providerId(p.adapterPlacementId)) && (!p.controllerPlacementId || providerId(a.controllerPlacementId)===providerId(p.controllerPlacementId));
+    const plannedBays=p.bayTargetIds?.length?new Set(p.bayTargetIds):undefined;
+    if(plannedBays&&(!a.bayTargetIds?.length||a.bayTargetIds.some(id=>!plannedBays.has(id))))return false;
+    // Each explicitly located unit can cover its subset of an aggregate BOM span.
+    // Check the complete union below after matching component quantities.
+    return storageBindingsMatch({...p,bayTargetIds:undefined},a,providerId) && stock.componentId === p.componentId && a.role === p.role && (p.mount === 'auto' || a.mount === p.mount) && (!p.slotId || a.slotId === p.slotId) && (a.group||'')===(p.group||'') && (!p.targetId || bayAnchors.has(p.id) || a.targetId === p.targetId) && (!p.adapterPlacementId || providerId(a.adapterPlacementId)===providerId(p.adapterPlacementId)) && (!p.controllerPlacementId || providerId(a.controllerPlacementId)===providerId(p.controllerPlacementId));
   };
   // Reassign flexible matches when a later constrained placement needs the same unit.
   // This finds maximum matching instead of falsely reporting drift based on BOM order.
@@ -124,6 +143,14 @@ export function planDifferences(pc: InventoryPC, db: Database) {
     let needed = p.quantity;
     while (needed > 0 && matchOne(pi, new Set())) needed--;
     if (needed > 0) differences.push(`${needed} × ${db.components.find(c => c.id === p.componentId)?.name || p.componentId} missing or placed differently (${p.role}, ${p.mount}${p.slotId ? `, ${p.slotId}` : ''}).`);
+  }
+  // Later constrained plans can move earlier matches; inspect the final assignment.
+  for(const [pi,p] of template.placements.entries()){
+    if(p.bayTargetIds?.length&&assignments.reduce((n,assigned)=>n+(assigned.get(pi)||0),0)===p.quantity){
+      const occupied=new Set(installed.flatMap((row,ai)=>(assignments[ai].get(pi)||0)>0?row.allocation.bayTargetIds||[]:[]));
+      const missing=p.bayTargetIds.filter(id=>!occupied.has(id));
+      if(missing.length)differences.push(`Recorded bay occupancy differs from the template for ${db.components.find(c=>c.id===p.componentId)?.name||p.componentId}: missing ${missing.join(', ')}.`);
+    }
   }
   for (const [ai, row] of installed.entries()) {
     const left = row.allocation.quantity - [...assignments[ai].values()].reduce((n, q) => n + q, 0);

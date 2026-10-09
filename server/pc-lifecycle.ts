@@ -1,3 +1,4 @@
+import { mapStorageBindings } from '../shared/storage-bindings';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Database, InventoryPC } from '../shared/types';
@@ -46,7 +47,7 @@ export function commissionPCRecord(original: InventoryPC, input: unknown, db: Da
   if (report.status === 'Conflicts') throw Error('Resolve installed compatibility conflicts before commissioning.');
   const pc = structuredClone(original), configuration = installedConfiguration(pc, db), at = new Date().toISOString();
   const ids = new Set(configuration.placements.map(p => p.componentId));
-  const installedStock = pcAllocations(pc.id,db).filter(r=>r.allocation.state==='installed').map(({stock,allocation:a})=>({stockId:stock.id,componentId:stock.componentId,serial:stock.serial,assetTag:stock.assetTag,allocationId:a.id,quantity:a.quantity,role:a.role,mount:a.mount,slotId:a.slotId,group:a.group,targetId:a.targetId}));
+  const installedStock = pcAllocations(pc.id,db).filter(r=>r.allocation.state==='installed').map(({stock,allocation:a})=>({stockId:stock.id,componentId:stock.componentId,serial:stock.serial,assetTag:stock.assetTag,allocationId:a.id,quantity:a.quantity,...mapStorageBindings(a),role:a.role,mount:a.mount,slotId:a.slotId,group:a.group,targetId:a.targetId}));
   const snapshot = { at, configuration, installedStock, installation:installationSnapshot(pc,db), components: structuredClone(db.components.filter(c => ids.has(c.id))), system: structuredClone(db.systems.find(s => s.id === configuration.systemId) || null) };
   pc.snapshot = snapshot; (pc.snapshots ||= []).push(snapshot);
   pc.commissioning = { at, ...confirmation }; pc.lifecycle = 'Commissioned';

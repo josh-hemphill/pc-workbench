@@ -1,8 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { Database, StockAllocation, StockEvent, StockRecord } from '../shared/types';
+import { mapStorageBindings } from '../shared/storage-bindings';
 import { stockCounts } from '../shared/inventory';
 import { schemas, stockActionSchema } from './schema';
+
+function clearPhysicalBindings(allocation:StockAllocation){
+  if(allocation.bayTargetIds?.includes(allocation.targetId||''))allocation.targetId='';
+  for(const field of ['bayTargetIds','sataDataConnections','sataPowerConnections'] as const)delete allocation[field];
+}
 
 function event(stock: StockRecord, action: StockEvent['action'], quantity: number, db: Database, allocation?: StockAllocation, notes = '', linkage: Pick<StockEvent, 'sourceAllocationId' | 'targetStockId'> = {}) {
   const reservation=allocation?`Owner: ${allocation.owner||'unassigned'}; work order: ${allocation.workOrder||'none'}; needed by: ${allocation.dueAt||'none'}; expiry: ${allocation.expiresAt||'none'}. `:'';
@@ -44,27 +50,32 @@ export function applyStockOperation(original: StockRecord, input: unknown, db: D
     const template = db.configurations.find(c => c.id === pc.configurationId);
     const planned = template?.placements.find(p => p.id === action.plannedPlacementId);
     if (action.plannedPlacementId && (!planned || planned.componentId !== stock.componentId)) throw Error('Selected planned placement does not match this stock and PC configuration.');
+    // A subset has no established physical identity within a multi-unit line.
+    // Copying the entire line's bays/wiring would invent overlapping assignments.
+    const inheritBindings=planned&&action.quantity===planned.quantity;
     const allocation: StockAllocation = {
       id: randomUUID(), pcId: pc.id, quantity: action.quantity, state: action.action === 'reserve' ? 'reserved' : 'installed',
       plannedPlacementId: action.plannedPlacementId, role: action.role || planned?.role || 'general',
       mount: action.mount || planned?.mount || 'auto', slotId: action.slotId ?? planned?.slotId ?? '',
+      ...mapStorageBindings({bayTargetIds:action.bayTargetIds??(inheritBindings?planned.bayTargetIds:undefined),sataDataConnections:action.sataDataConnections??(inheritBindings?planned.sataDataConnections:undefined),sataPowerConnections:action.sataPowerConnections??(inheritBindings?planned.sataPowerConnections:undefined)}),
       notes: action.notes, createdAt: now, updatedAt: now,
       owner: action.owner || '', workOrder: action.workOrder || '', dueAt: action.dueAt || '', expiresAt: action.expiresAt || '',
-      group: action.group || planned?.group || '', targetId: action.targetId || planned?.targetId || '', adapterPlacementId: action.adapterPlacementId || planned?.adapterPlacementId || '', controllerPlacementId: action.controllerPlacementId || planned?.controllerPlacementId || '',
+      group: action.group ?? planned?.group ?? '', targetId: action.targetId ?? (planned&&!inheritBindings&&planned.bayTargetIds?.includes(planned.targetId||'')?'':planned?.targetId??''), adapterPlacementId: action.adapterPlacementId ?? planned?.adapterPlacementId ?? '', controllerPlacementId: action.controllerPlacementId ?? planned?.controllerPlacementId ?? '',
     };
     stock.allocations.push(allocation);
-    event(stock, action.action, action.quantity, db, allocation, `${allocation.role}; ${allocation.mount}; slot ${allocation.slotId || 'auto'}. ${action.notes}`);
+    event(stock, action.action, action.quantity, db, allocation, `${allocation.role}; ${allocation.mount}; slot ${allocation.slotId || 'auto'}; wiring ${JSON.stringify(mapStorageBindings(allocation))}.${planned&&!inheritBindings?' Partial BOM allocation: assign individual bays and wiring explicitly.':''} ${action.notes}`);
   } else {
     if (!('allocationId' in action)) throw Error('Allocation ID is required.');
     const allocationId = action.allocationId;
     const allocation = stock.allocations.find(a => a.id === allocationId);
     if (!allocation) throw Error('Allocation not found; it may already have been released or removed.');
     if (action.action === 'configure') {
-      const description=(a:StockAllocation)=>`${a.role}, ${a.mount}, ${a.slotId || 'auto'}, group ${a.group||'default'}, target ${a.targetId||'auto'}, provider ${a.adapterPlacementId||'auto'}, controller ${a.controllerPlacementId||'auto'}, owner ${a.owner||'unassigned'}, work order ${a.workOrder||'none'}, due ${a.dueAt||'none'}, expiry ${a.expiresAt||'none'}`;
+      const description=(a:StockAllocation)=>`${a.role}, ${a.mount}, wiring ${JSON.stringify(mapStorageBindings(a))}, ${a.slotId || 'auto'}, group ${a.group||'default'}, target ${a.targetId||'auto'}, provider ${a.adapterPlacementId||'auto'}, controller ${a.controllerPlacementId||'auto'}, owner ${a.owner||'unassigned'}, work order ${a.workOrder||'none'}, due ${a.dueAt||'none'}, expiry ${a.expiresAt||'none'}`;
       const previous = description(allocation);
       allocation.role = action.role; allocation.mount = action.mount; allocation.slotId = action.slotId;
       allocation.notes = action.notes; allocation.updatedAt = now;
       for (const key of ['group','targetId','adapterPlacementId','controllerPlacementId'] as const) if (action[key] !== undefined) allocation[key]=action[key];
+      Object.assign(allocation,mapStorageBindings(action));
       const raw = input as Record<string, unknown>;
       for (const key of ['owner','workOrder','dueAt','expiresAt'] as const) if (key in raw) allocation[key]=action[key];
       event(stock, 'configure', 0, db, allocation, `${previous} → ${description(allocation)}. ${action.notes}`);
@@ -77,21 +88,28 @@ export function applyStockOperation(original: StockRecord, input: unknown, db: D
         if(pc.lifecycle==='Parts only'||pc.lifecycle==='Retired')throw Error('Parts-only or retired PCs cannot install reservations. Return the PC to Building first.');
         if (stock.condition !== 'Serviceable') throw Error('Quarantined or retired stock cannot be installed.');
         let installed = allocation;
+        const priorWiring=JSON.stringify(mapStorageBindings(allocation));
+        let split=false;
         if (action.quantity < allocation.quantity) {
+          split=true;
           allocation.quantity -= action.quantity; allocation.updatedAt = now;
           installed = { ...allocation, id: randomUUID(), quantity: action.quantity, createdAt: now };
+          // Splitting a reservation cannot determine which unit owns each cable/bay.
+          clearPhysicalBindings(installed);clearPhysicalBindings(allocation);
           stock.allocations.push(installed);
         }
         installed.state = 'installed'; installed.updatedAt = now;
         if (action.notes) installed.notes = action.notes;
-        event(stock, 'install', action.quantity, db, installed, `${installed.role}; ${installed.mount}; slot ${installed.slotId || 'auto'}. ${action.notes}`, { sourceAllocationId: allocation.id });
+        event(stock, 'install', action.quantity, db, installed, `${installed.role}; ${installed.mount}; slot ${installed.slotId || 'auto'}; prior wiring ${priorWiring}.${split?' Quantity split: individual bays and wiring must be reassigned for both allocations.':''} ${action.notes}`, { sourceAllocationId: allocation.id });
       } else {
         if (action.action === 'release' && allocation.state !== 'reserved') throw Error('Only reservations can be released. Use Remove for installed components.');
         if (action.action === 'remove' && allocation.state !== 'installed') throw Error('Only installed components can be removed. Use Release for reservations.');
         const destinationLocation = action.action === 'remove' ? action.destinationLocation ?? stock.location : stock.location;
         const disposition = action.action === 'remove' ? action.disposition ?? stock.condition : stock.condition;
-        event(stock, action.action, action.quantity, db, allocation, `${allocation.role}; ${allocation.mount}; returned to ${destinationLocation || 'unrecorded stock location'}, ${disposition}. ${action.notes}`);
+        const partial=action.quantity<allocation.quantity;
+        event(stock, action.action, action.quantity, db, allocation, `${allocation.role}; ${allocation.mount}; prior wiring ${JSON.stringify(mapStorageBindings(allocation))}; returned to ${destinationLocation || 'unrecorded stock location'}, ${disposition}.${partial?' Partial allocation recovery: reassign individual bays and wiring for the remaining units.':''} ${action.notes}`);
         allocation.quantity -= action.quantity; allocation.updatedAt = now;
+        if(partial)clearPhysicalBindings(allocation);
         if (!allocation.quantity) stock.allocations = stock.allocations.filter(a => a.id !== allocation.id);
         if (action.action === 'remove' && (destinationLocation !== stock.location || disposition !== stock.condition)) {
           if (stock.tracking === 'serialized') {

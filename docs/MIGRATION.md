@@ -178,7 +178,7 @@ Specification dictionary:
 | `slotWidth`, `requiredLanes` | Integers 1–16; physical connector width and electrical demand are different. |
 | `minGeneration` | Integer 1–7; `bracketWidth` integer 1–8. |
 | `pciVoltage`, `pciBits` | 3.3V / 5V / universal; 32 or 64. Applies to conventional PCI. |
-| `driveInterface`, `driveSize` | SATA / NVMe; 2.5 / 3.5 / M.2. Quotes are not part of these values. |
+| `driveInterface`, `driveSize` | SATA / NVMe; 2.5 / 3.5 / M.2 / 5.25. Quotes are not part of these values. |
 | `m2Lengths` | Array of integer M.2 lengths, e.g. `[80,110]`. |
 | `requiresBifurcation`, `bifurcation`, `sledHotSwap`, `bootable`, `hotPlug` | Booleans. Do not infer hot-swap from physical access alone. |
 | `bifurcationMode`, `requiredDriver`, `requiredFirmware`, `notes` | Text. Driver/firmware dictionaries use component IDs as keys. |
@@ -188,9 +188,9 @@ Each slot requires `{id,bus,physical,lanes,generation,position}`. Width/lanes ar
 
 Each port requires `{id,kind}` where kind is USB-A, USB-C, Ethernet, Serial, Parallel or Custom; optional `{customType,connector,pinout,protocol,speedMbps,powerW,isolated}` records interface identity and capabilities. Custom requires a nonblank `customType`, for example GPIB, CAN or vendor trigger I/O. `connector` names the PC-side physical endpoint (e.g. DB9); `pinout` identifies its wiring standard. Numeric speed/power must be nonnegative. IDs unique within the component; at most 1,000 ports. Aggregate port counts and explicit port records describe the same capacity; do not add them together as separate ports.
 
-Each drive target requires `{id,mount}`; optional `{driveSizes,interfaces,m2Lengths,hotSwap,bootable}`. IDs unique within the component; at most 1,000 targets. Mount is auto/internal/front-hot-swap/rear-sled. Use individual targets to model bay restrictions and occupancy, with consistent interface/size labels.
+Each drive target requires `{id,mount}`; optional `{driveSizes,interfaces,m2Lengths,hotSwap,bootable,bayId,sataDataInputId,sataPowerInputId}`. IDs unique within the component; at most 1,000 targets. Mount is auto/internal/front-hot-swap/rear-sled. Use individual targets to model bay restrictions and occupancy, with consistent interface/size labels.
 
-Each lane rule requires `{id,slots}`; optional `{maxLanes,exclusive,disableM2Slots,disableSataPorts}`. IDs unique, referenced slots must exist on that component; at most 100 rules. Count properties are integers 0–10,000. Record actual shared-resource topology, not an inferred sum of connector sizes.
+Each lane rule requires `{id,slots}`; optional `{maxLanes,exclusive,disableM2Slots,disableSataPorts,disableSataPortIds}`. IDs unique, referenced slots must exist on that component; at most 100 rules. Count properties are integers 0–10,000. Record actual shared-resource topology, not an inferred sum of connector sizes.
 
 ### `systems` and equipment connections
 
@@ -259,7 +259,7 @@ R: `{id,componentId,tracking,serial,assetTag,quantity,location,condition,notes,a
 - Separate bulk lots by component, location, condition and provenance when those distinctions matter. Stock `location` is the home shelf/lot location. Installed whereabouts derive from the PC's installation assignment; moving a PC does not change stock ownership or quantities.
 - Allocation quantities sum to no more than stock quantity, across all PCs and states. Retired stock has no allocations. The importer does not guarantee that a non-Retired condition is appropriate for an installed part; reconciliation must flag questionable assignments. Operational reserve/install actions require Serviceable stock.
 
-Allocation R fields: `{id,pcId,quantity,state,plannedPlacementId,slotId,role,mount,notes,createdAt,updatedAt}`. Quantity 1–32, state reserved/installed, PC must exist and not be retired. Restored historical assignments may belong to a `Parts only` PC; movement commands cannot add allocations to that lifecycle. `plannedPlacementId` empty is allowed for an unplanned part; otherwise map it to the relevant configuration line. Role/mount use placement enums. O fields: `group`, `targetId`, `adapterPlacementId`, `controllerPlacementId`. D fields: `owner`, `workOrder`, `dueAt`, `expiresAt` empty strings; due/expiry accept empty or UTC timestamp. At most 10,000 allocations per stock record. Large bulk allocations must be split into records of at most 32 units each without duplicating stock totals.
+Allocation R fields: `{id,pcId,quantity,state,plannedPlacementId,slotId,role,mount,notes,createdAt,updatedAt}`. Quantity 1–32, state reserved/installed, PC must exist and not be retired. Restored historical assignments may belong to a `Parts only` PC; movement commands cannot add allocations to that lifecycle. `plannedPlacementId` empty is allowed for an unplanned part; otherwise map it to the relevant configuration line. Role/mount use placement enums. O fields: `group`, `targetId`, `adapterPlacementId`, `controllerPlacementId`, `bayTargetIds`, `sataDataConnections`, `sataPowerConnections` (section 11). D fields: `owner`, `workOrder`, `dueAt`, `expiresAt` empty strings; due/expiry accept empty or UTC timestamp. At most 10,000 allocations per stock record. Large bulk allocations must be split into records of at most 32 units each without duplicating stock totals.
 
 History R fields: `{id,at,action,quantity,pcId,pcName,allocationId,notes}`. D: `sourceAllocationId`, `targetStockId`, `sourceStockId`, `actor` empty strings. Action enum: receive/adjust/edit/reserve/install/release/remove/configure/transfer-in/transfer-out. Quantity integer −1,000,000 to 1,000,000; metadata/configuration changes normally use 0. At most 100,000 events per stock record. History is descriptive: importing events does not replay/reconstruct balances. Validate current quantities/allocations separately. Historical PC/link strings may describe records no longer present; retain their names/evidence rather than imposing current foreign keys on them.
 
@@ -371,34 +371,99 @@ A useful instruction for a migration agent:
 
 > Read docs/MIGRATION.md and the target version's schemas first. Inventory every workbook sheet and preserve source hashes/row references. Produce a mapping, deterministic identity crosswalk, exception report, complete seven-collection candidate, and per-component stock reconciliation. Keep requirements classes, physical locations, planned BOMs and actual installed stock distinct. Preserve text identifiers and unknown specifications. Validate in an isolated workspace, round-trip all CSVs and review engineering reports. Present ambiguous joins/counts and the exact replacement scope before cutover. Preserve a pre-migration backup, commit the accepted candidate using the current revision, then export/reconcile the result. Do not silently discard data, invent commissioning evidence, overwrite live data while investigating, or publish operational source data.
 
-## Bay adapters and mounting accessories
+## 11. Physical bays, drive targets and SATA wiring
 
-Additional optional component specifications:
+Migrate these as three related structures: physical mounting spaces, logical drive/tray positions, and data/power connections. A two-drive cage may occupy one chassis bay, expose two trays, require two motherboard SATA data channels, and share one PSU SATA power plug. Those are distinct capacities. Empty fitted cages still occupy mounting space; a wired empty cage input still occupies its source connector.
 
-| Field | Type | Meaning |
-|---|---|---|
-| `bays525` | integer 0–10,000 | Chassis 5.25-inch mounting capacity |
-| `bayTargets` | array of `{id,size}` | Individually named mounting spaces; size is `2.5`, `3.5`, or `5.25` |
-| `baySize` | `2.5`, `3.5`, or `5.25` | Mounting bay size required by an adapter/accessory |
-| `bayUnits` | integer 1–32 | Mounting spaces consumed per unit; omitted means one |
-| `sataPowerPlugs` | integer 0–10,000 | Actual PSU SATA power connectors used per adapter/accessory unit |
+### Catalog fields and category decisions
 
-Use category `Storage adapter` for a cage providing `driveTargets`, and `Bay accessory` for devices such as bay speakers. `bayTargets` name mounting spaces, while `driveTargets` name downstream drive positions; do not describe the same physical space as independent capacities in both lists. Chassis aggregate counts and named targets describe the same capacity. An adapter with `baySize` does not consume a PCI/PCIe slot unless `slotBus` is also explicitly set.
+| Component specification | Meaning and migration rule |
+| --- | --- |
+| `storageAdapterKind` | For category `Storage adapter`, use `controller`, `pcie-sled`, `bay-cage` or `mount-adapter`. Choose using hardware evidence. Controllers and PCIe sleds use expansion slots; passive cages/mounting adapters use bays. Legacy inference is a fallback, not evidence. |
+| `driveKind`, `driveSize` | `driveKind` is `disk` or `optical`; optical drives may have `driveSize:"5.25"`. Optical capacity is not a disk capacity requirement. Record interface separately, for example SATA. |
+| `baySize`, `bayUnits` | Required physical bay size (`2.5`, `3.5`, `5.25`) and number consumed **per unit**. Omitted consumption assumes one and requires review. `lengthMm` is device mounting depth. |
+| `bayTargets` | Named physical spaces on a chassis or `mount-adapter`: `{id,size,group?,position?,maxDepthMm?}`. Use the same `group` and consecutive integer `position` values for adjacent spaces. `maxDepthMm` is usable insertion clearance. |
+| `bays25`, `bays35`, `bays525` | Legacy aggregate physical capacities. Named spaces and counts describe the same pool. Effective capacity is the larger of count and named spaces; a smaller count than named list produces a discrepancy warning. Resolve that discrepancy against the hardware. |
+| `driveTargets[].bayId` | Optional reference to a physical bay on the **same provider component**. Use for a direct drive position sharing that bay. Do not invent separate capacity for one space represented by both lists. Cage trays normally omit this alias: the cage consumes the host spaces. |
+| `sataDataPorts` | Complete motherboard/controller source list of `{id,disabled?}`. Explicit lists override legacy `sataPorts`; disabled ports do not provide capacity. An empty list is known zero, not unknown. |
+| `sataPowerConnectors` | Complete PSU **end-plug** list of `{id,harness?}`. Explicit lists override legacy `sataPower`. Four plugs on one harness count as four plugs; the modular socket at the PSU does not add a fifth. Harness names aid identification and do not specify current limits. |
+| `sataDataInputs`, `sataPowerInputs` | Consumer input lists of `{id}`. Document actual cage/backplane inputs, including unused inputs if wired. Named power inputs override legacy `sataPowerPlugs`. |
+| `driveTargets[].sataDataInputId`, `.sataPowerInputId` | Route each compatible cage tray to its upstream input. Two trays need distinct SATA data inputs; a vendor-supported shared power input may serve both. A passive backplane does not create host SATA channels. |
+| `laneRules[].disableSataPortIds` | Named SATA ports disabled by an active motherboard lane rule. Keep any legacy `disableSataPorts` count consistent; the checker also accounts for unnamed disabled capacity. |
 
-Example chassis and cage specifications:
+All of these specifications are optional. Missing data remains unknown and can produce review warnings. Write zero or an empty complete catalog only when source evidence establishes no capacity. Do not create a partial named SATA source list while keeping a larger count: named source lists are interpreted as complete, not a sample. If only the count is known, retain count-only mode until every source endpoint can be documented. The editor's **Use count only** action copies the current list length into the scalar before removing the list. This discards endpoint IDs, harness names and per-port disabled flags; review the resulting usable count and update any affected wiring and lane rules.
+
+Component editor examples are illustrative and mark specifications unverified. Confirm vendor bay consumption, depth, tray interfaces, hot-swap capability and power routing. Preserve existing advanced fields when changing category; inspect retained fields rather than assuming the editor deleted them. A passive adapter cannot provide SATA controller capacity merely because an old record has `sataPorts`.
+
+### Placement and actual allocation bindings
+
+`Placement` and `StockAllocation` can carry these optional fields:
 
 ```json
 {
-  "chassis":{"bays525":1,"bayTargets":[{"id":"external_1","size":"5.25"}]},
-  "cage":{"baySize":"5.25","bayUnits":1,"sataPowerPlugs":1,"driveTargets":[
-    {"id":"tray_1","mount":"front-hot-swap","driveSizes":["2.5"],"interfaces":["SATA"],"hotSwap":true,"bootable":true},
-    {"id":"tray_2","mount":"front-hot-swap","driveSizes":["2.5"],"interfaces":["SATA"],"hotSwap":true,"bootable":true}
-  ]}
+  "bayTargetIds": ["OPTICAL_1", "OPTICAL_2"],
+  "sataDataConnections": [
+    {"inputId":"DATA_1","controllerPlacementId":"board","portId":"SATA_1"}
+  ],
+  "sataPowerConnections": [
+    {"inputId":"POWER_1","powerProviderPlacementId":"psu","connectorId":"HARNESS_A_1"}
+  ]
 }
 ```
 
-On the cage placement, set `adapterPlacementId` to the chassis placement ID and `targetId:"external_1"`. Each drive placement uses `adapterPlacementId` equal to the cage placement ID and one of its tray IDs. Use quantity one for individually bound devices and providers. For the example above two SATA drives consume two SATA data links and the cage consumes one PSU SATA power plug. Do not count the trays again as independent chassis front hot-swap capacity. Missing cage power specifications require review; do not invent a known connector count. Declaring zero means no SATA power connectors (record other power needs in notes).
+This fragment shows the shapes, not a universal device footprint. A nonempty `bayTargetIds` must list **every** occupied space, with distinct IDs and exactly `bayUnits × quantity` entries. Provider selection still uses `adapterPlacementId`, and legacy `targetId` remains a mounting anchor for accessories/cages or a logical tray ID for drives. An omitted or empty occupied list uses count-only planning or the legacy anchor and requires occupancy review. A drive bound to a target with `bayId` must use that same physical bay if it also records a nonempty `bayTargetIds`.
 
-A speaker uses `baySize:"5.25",bayUnits:1` with no drive targets and binds to the chassis in the same way. Cages and accessories count mounting occupancy even when empty. For devices spanning multiple bays, `bayUnits` counts the full footprint, but the single `targetId` reserves only the named anchor; preserve adjacency and additional occupied bay IDs in provenance/notes for manual verification.
+For multi-bay devices, select adjacent spaces in one bank per unit. For two two-bay devices, spans at positions 1–2 and 4–5 are valid; positions 1 and 3 for one device are not. Missing group/position metadata yields an adjacency warning. A single legacy anchor budgets the complete `bayUnits` footprint but cannot prove the other spaces are free. Replace it with the complete occupied list when evidence is available. Named occupancy detects collisions between cages, bay accessories and direct/optical drives even when aggregate capacity is sufficient.
 
-Stock allocations reuse these same provider and target fields. Use exact installed allocation IDs where several units match one planned provider; ambiguous references are conflicts. Commissioned configuration snapshots preserve the full topology. Existing CSV headers remain unchanged: the new specifications are nested in `specs`, and bindings stay in existing placement/allocation JSON cells. Suggestions in the editor normalize whitespace and case against catalog values; migration agents must still reconcile synonyms and differing source terminology explicitly before import.
+Split providers and wired devices into quantity-one placements before assigning named data/power connectors. Named provider references on a quantity-many line are ambiguous. Multi-unit mounting alone can list complete independent bay spans, but separate lines give clearer per-unit traceability. Never copy one complete bay/connector assignment onto every serialized allocation from a quantity-many BOM line: assign each physical unit's actual subset and endpoints.
+
+Connections with omitted `inputId` address a component's default/unnamed input; use named input IDs for multiple input plugs. Empty source provider IDs select the automatic motherboard/PSU. Missing endpoint IDs retain count-only accounting and require routing review. Explicit named mappings check missing, disabled and double-booked endpoints; separate data and power catalogs are independent. SATA hot-swap and bootability still require the tray/controller/vendor capabilities; a matching connector alone does not establish either property.
+
+### Two-drive cage example
+
+The following **unverified specification fragments** describe a dual 2.5-inch cage in one 5.25-inch chassis bay. They are not a complete importable workspace:
+
+```json
+{
+  "chassis": {
+    "bays525":2,
+    "bayTargets":[
+      {"id":"OPTICAL_1","size":"5.25","group":"Front","position":1,"maxDepthMm":200},
+      {"id":"OPTICAL_2","size":"5.25","group":"Front","position":2,"maxDepthMm":200}
+    ]
+  },
+  "board": {"sataPorts":2,"sataDataPorts":[{"id":"SATA_1"},{"id":"SATA_2"}]},
+  "psu": {"sataPower":1,"sataPowerConnectors":[{"id":"HARNESS_A_1","harness":"Cable A"}]},
+  "cage": {
+    "storageAdapterKind":"bay-cage","baySize":"5.25","bayUnits":1,"lengthMm":150,
+    "sataDataInputs":[{"id":"DATA_1"},{"id":"DATA_2"}],
+    "sataPowerInputs":[{"id":"POWER_1"}],
+    "driveTargets":[
+      {"id":"TRAY_1","mount":"front-hot-swap","driveSizes":["2.5"],"interfaces":["SATA"],"sataDataInputId":"DATA_1","sataPowerInputId":"POWER_1"},
+      {"id":"TRAY_2","mount":"front-hot-swap","driveSizes":["2.5"],"interfaces":["SATA"],"sataDataInputId":"DATA_2","sataPowerInputId":"POWER_1"}
+    ]
+  }
+}
+```
+
+Use these full placement fragments alongside your actual component IDs and other planned hardware:
+
+```json
+[
+  {"id":"cage","componentId":"cmp_cage","quantity":1,"slotId":"","role":"general","mount":"auto","group":"","adapterPlacementId":"chassis","bayTargetIds":["OPTICAL_1"],"sataDataConnections":[{"inputId":"DATA_1","controllerPlacementId":"board","portId":"SATA_1"},{"inputId":"DATA_2","controllerPlacementId":"board","portId":"SATA_2"}],"sataPowerConnections":[{"inputId":"POWER_1","powerProviderPlacementId":"psu","connectorId":"HARNESS_A_1"}]},
+  {"id":"disk_1","componentId":"cmp_disk","quantity":1,"slotId":"","role":"data","mount":"front-hot-swap","group":"","adapterPlacementId":"cage","targetId":"TRAY_1"},
+  {"id":"disk_2","componentId":"cmp_disk","quantity":1,"slotId":"","role":"data","mount":"front-hot-swap","group":"","adapterPlacementId":"cage","targetId":"TRAY_2"}
+]
+```
+
+Here `chassis`, `board` and `psu` must be other installed **placement IDs**, not catalog component IDs. The cage occupies one 5.25-inch bay and two controller data ports, and draws through one PSU end plug. The two tray drives do not consume another two chassis bays or another two PSU plugs. A two-bay cage instead uses `bayUnits:2` and `bayTargetIds:["OPTICAL_1","OPTICAL_2"]`, after confirming vendor dimensions and both positions' adjacency.
+
+For a direct optical drive, use a Drive catalog entry with `driveKind:"optical",driveSize:"5.25",driveInterface:"SATA"` and one physical bay binding. Its own SATA data and power connections remain separate from another cage's routing.
+
+### CSV serialization, upgrade and reconciliation
+
+CSV headers remain unchanged. `specs` contains nested JSON on component rows, `placements` contains nested JSON on configuration rows, and `allocations` contains nested JSON on inventory rows. The same fields also occur in whole-workspace snapshots. Serialize the whole object/array with JSON, then let the application's CSV encoder quote that single cell. Never flatten connector IDs into invented CSV columns or encode arrays as comma-separated words inside a JSON field. Historical snapshots may retain old count-only/anchor representations; preserve the evidence they captured.
+
+Existing count-only records and legacy anchors remain supported. No upgrade can infer which real bay, SATA cable or PSU plug was used. Add bindings from inspection/specification evidence, keep unknown values absent, then rerun planned and installed compatibility reports. Actual provider references are allocation IDs, resolved in the same actual built PC. Template provider IDs must map to the intended installed allocation; split or explicitly select ambiguous providers.
+
+Before approving or commissioning migrated data, reconcile named endpoint counts versus aggregate counts, occupied physical bays versus quantities, bay/tray aliases, depth/adjacency, drive-to-input routes, disabled motherboard ports and source double booking. Confirm shared power routes from vendor documentation. Preserve previous approval/commissioning snapshots and record hardware/wiring changes through the normal PC/inventory operations; do not overwrite historical sign-off to make the new topology appear previously accepted. These checks do not model cable lengths, PSU harness current limits, connector adapters/splitters, SAS expander fanout, or vendor electrical wiring beyond the declared SATA routes; retain those requirements as documented review evidence.

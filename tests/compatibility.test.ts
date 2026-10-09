@@ -16,3 +16,22 @@ test('socket, memory generation, card dimensions and power conflicts are detecte
 test('RAID capacity uses smallest member and invalid groups report zero usable data',()=>{const {db,config}=setup();config.placements.find(p=>p.componentId==='hdd')!.quantity=1;config.placements.push({id:'ssd-data',componentId:'ssd',quantity:1,slotId:'',role:'data',mount:'internal',group:''});assert.equal(checkConfiguration(config,db).usableDataGb,2000);config.storage.raid='raid5';let r=checkConfiguration(config,db);assert.equal(r.usableDataGb,0);assert.ok(has(r,'Invalid data redundancy layout'));config.placements.find(p=>p.componentId==='hdd')!.quantity=3;r=checkConfiguration(config,db);assert.equal(r.usableDataGb,6000);config.storage.raid='raid6';assert.equal(checkConfiguration(config,db).usableDataGb,4000);config.storage.raid='raid10';assert.equal(checkConfiguration(config,db).usableDataGb,4000);});
 test('incomplete live quantity inputs never crash the report',()=>{const {db,config}=setup();for(const value of [0,-1,1.5,NaN,'']){config.placements[0].quantity=value as number;assert.ok(has(checkConfiguration(config,db),'Invalid component quantity'));}});
 test('unknown resource capacity requires review rather than implying zero',()=>{const {db,config}=setup();delete db.components.find(c=>c.id==='board-atx')!.specs.usbA;const r=checkConfiguration(config,db);assert.ok(r.findings.some(f=>f.title==='USB-A ports capacity unknown'&&f.severity==='warning'));assert.ok(!has(r,'USB-A ports capacity exceeded'));});
+
+test('slot backtracking preserves an explicitly connected SATA endpoint while allowing safe unused-port sharing',()=>{
+ const {db,config}=setup();config.systemId='';config.placements=config.placements.filter(p=>!['gpu','nic'].includes(p.componentId));
+ const board=db.components.find(c=>c.id==='board-atx')!,bp=config.placements.find(p=>p.componentId===board.id)!,daq=config.placements.find(p=>p.componentId==='daq')!;daq.slotId='';
+ board.specs.slots=[{id:'SHARED',bus:'PCIe',physical:4,lanes:4,generation:4,position:1},{id:'SAFE',bus:'PCIe',physical:4,lanes:4,generation:4,position:4}];
+ board.specs.sataDataPorts=Array.from({length:6},(_,i)=>({id:`SATA${i+1}`}));board.specs.laneRules=[{id:'sata-share',slots:['SHARED'],disableSataPortIds:['SATA1'],disableSataPorts:1}];
+ const disk=config.placements.find(p=>p.componentId==='hdd')!;disk.quantity=1;disk.sataDataConnections=[{controllerPlacementId:bp.id,portId:'SATA1'}];config.placements.push({...structuredClone(disk),id:'second-hdd',sataDataConnections:[{controllerPlacementId:bp.id,portId:'SATA2'}]});
+ const safe=checkConfiguration(config,db);assert.equal(safe.slotAssignments[`${daq.id}:0`],'SAFE');assert.ok(!has(safe,'SATA data endpoint disabled'));assert.ok(!has(safe,'Expansion slots cannot be allocated'));
+ daq.slotId='SHARED';assert.ok(has(checkConfiguration(config,db),'Expansion slots cannot be allocated'));
+ daq.slotId='';disk.sataDataConnections[0].portId='SATA3';const shared=checkConfiguration(config,db);assert.equal(shared.slotAssignments[`${daq.id}:0`],'SHARED');assert.equal(shared.resources.find(r=>r.name==='SATA ports')!.available,5);assert.ok(!has(shared,'SATA data endpoint disabled'));
+});
+
+test('optical drives retain SATA and bay requirements but never add legacy capacity to boot or data arrays',()=>{
+ const {db,config}=setup();const baseline=checkConfiguration(config,db);db.components.find(c=>c.category==='Chassis')!.specs.bays525=1;
+ db.components.push({id:'optical',name:'DVD drive',category:'Drive',manufacturer:'Example',source:'',verified:true,specs:{driveKind:'optical',driveSize:'5.25',driveInterface:'SATA',capacityGb:999999,powerW:20,lengthMm:150}});
+ const optical:Placement={id:'optical-placement',componentId:'optical',quantity:1,role:'data',mount:'internal',slotId:'',group:''};config.placements.push(optical);
+ for(const role of ['data','boot'] as const){optical.role=role;const report=checkConfiguration(config,db);assert.equal(report.bootGb,baseline.bootGb);assert.equal(report.usableDataGb,baseline.usableDataGb);assert.ok(has(report,'Optical drive storage role invalid'));assert.equal(report.resources.find(r=>r.name==='SATA ports')!.used,3);assert.equal(report.resources.find(r=>r.name==='5.25-inch bays')!.used,1);}
+ optical.role='general';assert.ok(!has(checkConfiguration(config,db),'Optical drive storage role invalid'));
+});
