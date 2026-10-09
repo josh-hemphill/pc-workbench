@@ -13,7 +13,7 @@ export function locationPath(id: string, db: Database): string {
   return names.join(' / ');
 }
 
-export function installationPCs(locationId: string, db: Database, includeDescendants = true): InventoryPC[] {
+export function installationLocationIds(locationId: string, db: Database, includeDescendants = true): Set<string> {
   const ids = new Set([locationId]);
   if (includeDescendants) {
     let changed = true;
@@ -22,6 +22,10 @@ export function installationPCs(locationId: string, db: Database, includeDescend
       for (const location of db.installationLocations || []) if (ids.has(location.parentId) && !ids.has(location.id)) { ids.add(location.id); changed = true; }
     }
   }
+  return ids;
+}
+export function installationPCs(locationId: string, db: Database, includeDescendants = true): InventoryPC[] {
+  const ids=installationLocationIds(locationId,db,includeDescendants);
   return db.pcs.filter(pc => pc.installationLocationId && ids.has(pc.installationLocationId));
 }
 

@@ -18,7 +18,7 @@ deno task build
 deno task start
 ```
 
-Open **http://127.0.0.1:3001**. `deno task test` executes all 204 application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
+Open **http://127.0.0.1:3001**. `deno task test` executes all 222 application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
 
 ```sh
 deno task desktop          # Native local WebView
@@ -140,9 +140,11 @@ Reservations can record an owner, work order, needed-by date and expiry. Expiry 
 deno task import:pcpartpicker ./product.html --category CPU --output ./parts.csv --source https://pcpartpicker.com/product/example
 ```
 
-Use a product page you saved locally from your browser. The offline importer reads standard `application/ld+json` Product blocks (including arrays and `@graph`) and extracts product name, brand, and URL. It creates deterministic IDs and unverified components; dimensions, slots, ports and other engineering fields must be entered manually. Output files are created exclusively to avoid silently overwriting existing files. Import the resulting CSV through **Data & imports**.
+The offline importer reads standard Product JSON-LD (including arrays and `@graph`) for stable product identities. For single-product pages it also extracts supported engineering candidates from structured properties, specification tables and PCPartPicker groups. All results remain unverified. Output files are created exclusively; import the resulting CSV through **Data & imports**.
 
-This does **not** scrape the live PCPartPicker database or claim access to an official public API. Actual page markup varies; pages without Product JSON-LD fail with a clear unsupported-format error. For richer data use manufacturer specifications or prepare CSV. A bulk scraper would require a confirmed accessible source and its supported access method.
+Use **Catalog data** to see category-specific gaps, bulk-fill only missing values, and queue exact PCPartPicker product URLs for live fetching or saved HTML upload. Review the source identity and proposed fields before applying. Populated values are preserved; applied details retain source evidence in specification notes and need manufacturer verification. Access blocks and unsupported formats produce actionable per-item failures.
+
+Use **Installations → Location operations** to filter actual PCs by location and status, inspect installed Repair/Quarantined parts and repair references, find unassigned units and vacant installations, and record physical moves. See [operations and enrichment workflow/API details](docs/CATALOG-ENRICHMENT.md).
 
 ## Compatibility boundaries
 

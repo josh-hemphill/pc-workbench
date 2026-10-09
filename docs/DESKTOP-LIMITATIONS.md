@@ -13,7 +13,7 @@ See [setup, tasks and packaging](../docs/DENO.md).
 ## Validation
 
 - Deno's native `node:sqlite` supports the application's `DatabaseSync` API; no external SQLite library or FFI adapter is needed.
-- All **204 application tests across 26 files** pass under Deno, with individual JUnit counts checked. The 13 tests for the retired Electron/Node-sidecar protocol were removed with that unused code; application tests are retained. Six API test fixtures explicitly close remaining test connections after assertions to account for Deno HTTP keepalive behavior.
+- All **222 application tests across 30 files** pass under Deno, with individual JUnit counts checked. The 13 tests for the retired Electron/Node-sidecar protocol were removed with that unused code; application tests are retained. Six API test fixtures explicitly close remaining test connections after assertions to account for Deno HTTP keepalive behavior.
 - Seven additional in-process desktop integration tests cover real SQLite edits/restart, CSV import/export, backups, stale revisions, malformed imports, Host/Origin rejection, duplicate workspace ownership, startup port errors, desktop-assigned proxy/backend port separation, and bounded shutdown. They run without `--allow-run`.
 - Vite/Vue production builds, development transforms and Vue/TypeScript checking execute inside Deno. An intentional type-error probe was rejected. A clean Deno dependency installation was tested independently of the previous pnpm `node_modules`.
 - Runtime packaging embeds only used backend dependencies and frontend assets. It rejects Node executables, the former server sidecar and `node_modules` directories. ZIP and embedded-file checksums are emitted.

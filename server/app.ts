@@ -1,4 +1,7 @@
 import express from 'express';
+import {EnrichmentQueue,type ProductFetcher} from './enrichment';
+import {patchMissing} from '../shared/catalog-quality';
+import {z} from 'zod';
 import {resolveRuntimeConfig} from './runtime-config';
 import {prepareInstallationRecord} from './installation-requirements';
 import {savePCRecord,commissionPCRecord,decommissionPC} from './pc-lifecycle';
@@ -10,14 +13,15 @@ import type {Collection} from './schema';
 import {checkConfiguration} from '../shared/compatibility';
 import {checkInstalledPC,pcAllocations,planDifferences,stockReadiness} from '../shared/inventory';
 import {saveStockRecord,applyStockOperation,convertBulkToSerialized,adjustStockCount,transferBulkStock} from './inventory';
-export interface AppOptions { assets?:Record<string,{data:Buffer;mime:string}>; sourceRoot?:string }
+export interface AppOptions { assets?:Record<string,{data:Buffer;mime:string}>; sourceRoot?:string; productFetcher?:ProductFetcher }
 export function createApp(dataDir?:string,options:AppOptions={}) {
 const root=options.sourceRoot??(import.meta.url?path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'):process.cwd());
 dataDir??=resolveRuntimeConfig({sourceRoot:root,standalone:false}).dataDir;
 const release=lockWorkspace(dataDir);
 let store:Store;try{store=new Store(dataDir);}catch(error){release();throw error;}
 const app=express();
-const closeStore=()=>{store.close();release();};
+let enrichment:EnrichmentQueue;try{enrichment=new EnrichmentQueue(store,options.productFetcher);}catch(error){store.close();release();throw error;}
+const closeStore=()=>{enrichment.close();store.close();release();};
 app.locals.closeStore=closeStore;
 app.locals.store=store;
 const listen=app.listen.bind(app);
@@ -37,6 +41,11 @@ app.put('/api/preferences',(req,res)=>{
  store.setThemePreference(body.theme);res.json({theme:store.getThemePreference()});
 });
 app.use('/api',(req,res,next)=>{const json=res.json.bind(res),send=res.send.bind(res);res.json=((body:unknown)=>{res.setHeader('X-Workspace-Revision',store.revision);return json(body);}) as typeof res.json;res.send=((body:unknown)=>{res.setHeader('X-Workspace-Revision',store.revision);return send(body);}) as typeof res.send;if(!['GET','HEAD','OPTIONS'].includes(req.method)&&req.path!=='/restore/preview')store.assertWritable();const protectedEdit=req.method==='PUT'||req.method==='DELETE'||(req.method==='POST'&&(req.path.endsWith('/import')||req.path.endsWith('/commission')||req.path.endsWith('/decommission')||req.path==='/restore'));if(protectedEdit){if(!req.headers['if-match'])return res.status(428).json({error:'Read the workspace revision and send it in If-Match before editing.'});if(req.headers['if-match']!==store.revision)return res.status(409).json({error:'Workspace changed. Reload before saving.'});}next();});
+app.get('/api/enrichment',(_req,res)=>res.json({jobs:enrichment.jobs,running:enrichment.running}));
+app.put('/api/catalog/bulk-fill',(req,res)=>{const input=z.object({componentIds:z.array(z.string()).min(1).max(100),patch:z.record(z.string(),z.unknown()).refine(p=>Object.keys(p).length>0)}).strict().parse(req.body);if(new Set(input.componentIds).size!==input.componentIds.length||input.componentIds.some(id=>!store.db.components.some(c=>c.id===id)))throw Error('Select unique existing components.');const selected=new Set(input.componentIds);store.replace('components',store.db.components.map(c=>selected.has(c.id)?patchMissing(c,input.patch,store.db):c));res.json({updated:input.componentIds.length});});
+app.put('/api/enrichment/enqueue',(req,res)=>{const input=z.object({items:z.array(z.object({componentId:z.string(),url:z.string().max(2000)}).strict()).min(1).max(100)}).strict().parse(req.body);res.json({added:enrichment.enqueue(input.items)});});
+app.put('/api/enrichment/control',(req,res)=>{const input=z.object({action:z.enum(['start','pause','clear'])}).strict().parse(req.body);if(input.action==='start')enrichment.start();else if(input.action==='pause')enrichment.pause();else enrichment.clear();res.json({running:enrichment.running});});
+app.put('/api/enrichment/:id/action',(req,res)=>{const input=z.discriminatedUnion('action',[z.object({action:z.literal('apply'),keys:z.array(z.string()).min(1).max(100),proposalId:z.string().min(1).max(100)}).strict(),z.object({action:z.literal('upload'),html:z.string().max(2*1024*1024)}).strict(),z.object({action:z.enum(['retry','cancel'])}).strict()]).parse(req.body);if(input.action==='apply')enrichment.apply(req.params.id,input.keys,input.proposalId);else if(input.action==='upload')enrichment.upload(req.params.id,input.html);else if(input.action==='retry')enrichment.retry(req.params.id);else enrichment.cancel(req.params.id);res.json({jobs:enrichment.jobs});});
 app.get('/api/state',(_req,res)=>res.json({...store.db,revision:store.revision,recoveryRequired:store.recoveryRequired}));
 app.get('/api/report/:id',(req,res)=>{const cfg=store.db.configurations.find(c=>c.id===req.params.id);if(!cfg)return res.status(404).json({error:'Configuration not found'});res.json(checkConfiguration(cfg,store.db));});
 app.get('/api/pcs/:id/build',(req,res)=>{const pc=store.db.pcs.find(p=>p.id===req.params.id);if(!pc)return res.status(404).json({error:'PC not found'});const template=store.db.configurations.find(c=>c.id===pc.configurationId);res.json({report:checkInstalledPC(pc,store.db),allocations:pcAllocations(pc.id,store.db),differences:planDifferences(pc,store.db),readiness:template?stockReadiness(template,store.db,pc.id):[]});});

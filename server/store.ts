@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import type {EnrichmentJob} from '../shared/catalog-quality';
 import { isThemePreference, type ThemePreference } from '../shared/appearance';
 import {createHash,randomUUID} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
@@ -57,6 +58,8 @@ export class Store {
   }catch(error){this.sqlite.close();throw error;}
  }
  close(){if(this.closed)return;this.sqlite.close();this.closed=true;}
+ getEnrichmentJobs():EnrichmentJob[]{const row=this.sqlite.prepare("SELECT value FROM workspace_meta WHERE key='enrichment-queue'").get();return row?JSON.parse(String(row.value)):[];}
+ setEnrichmentJobs(jobs:EnrichmentJob[]){this.assertWritable();this.sqlite.prepare('INSERT OR REPLACE INTO workspace_meta(key,value) VALUES(?,?)').run('enrichment-queue',JSON.stringify(jobs));}
  getThemePreference():ThemePreference {
   const value=this.sqlite.prepare("SELECT value FROM workspace_meta WHERE key='theme'").get()?.value;
   return isThemePreference(value)?value:'system';

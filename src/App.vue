@@ -10,6 +10,7 @@ import { checkConfiguration } from '../shared/compatibility';
 import { stockReadiness, installedConfiguration } from '../shared/inventory';
 import InventoryWorkspace from './InventoryWorkspace.vue';
 import InstallationsWorkspace from './InstallationsWorkspace.vue';
+import CatalogMaintenance from './CatalogMaintenance.vue';
 import {locationPath} from '../shared/installations';
 import {resolveRequirementVersion} from '../shared/compatibility';
 import EngineeringEditor from './EngineeringEditor.vue';
@@ -27,6 +28,7 @@ watch([themePreference,systemDark],()=>{
 },{immediate:true});
 function changeAppearance(event:Event){const value=(event.target as HTMLSelectElement).value;if(isThemePreference(value))void saveAppearance(value).catch(error=>toast(String(error.message)));}
 const db=ref<Database>({components:[],systems:[],configurations:[],pcs:[],inventory:[],requirementsSets:[],installationLocations:[]});
+const catalogMaintenance=ref<{hasUnsavedChanges:()=>boolean;confirmDiscard:()=>boolean}|null>(null);
 const installationsWorkspace=ref<{hasUnsavedChanges:()=>boolean;confirmDiscard:()=>boolean}|null>(null);
 const inventoryWorkspace=ref<{hasUnsavedChanges:()=>boolean;confirmDiscard:()=>boolean}|null>(null);
 const recoveryRequired=ref(false);
@@ -42,14 +44,14 @@ const jsonSpecs=ref(''), advanced=ref(false), confirmDelete=ref<{collection:stri
 watch(confirmDelete,(value,old)=>{if(value&&!old&&document.activeElement instanceof HTMLElement)dialogOpeners.set('delete',document.activeElement);if(!value&&old)nextTick(()=>{const opener=dialogOpeners.get('delete');if(opener?.isConnected)opener.focus();else document.getElementById('main-content')?.focus();dialogOpeners.delete('delete');});},{flush:'sync'});
 const addCategory=ref<Category>('Scientific card'), addPart=ref(''), addQty=ref(1);
 const csvCollection=ref('components'), importFile=ref<File|null>(null), importing=ref(false);
-const navigation=[{name:'Configurations',icon:mdiViewDashboardOutline},{name:'Component catalog',icon:mdiMemory},{name:'Component inventory',icon:mdiCubeOutline},{name:'Equipment systems',icon:mdiLan},{name:'PC inventory',icon:mdiDesktopTowerMonitor},{name:'Storage planner',icon:mdiHarddisk},{name:'Installations',icon:mdiLan}];
+const navigation=[{name:'Configurations',icon:mdiViewDashboardOutline},{name:'Component catalog',icon:mdiMemory},{name:'Catalog data',icon:mdiDatabaseOutline},{name:'Component inventory',icon:mdiCubeOutline},{name:'Equipment systems',icon:mdiLan},{name:'PC inventory',icon:mdiDesktopTowerMonitor},{name:'Storage planner',icon:mdiHarddisk},{name:'Installations',icon:mdiLan}];
 const uid=()=>crypto.randomUUID();
 const clone=<T,>(v:T):T=>v===undefined?v:JSON.parse(JSON.stringify(v));
 function toast(text:string){notice.value=text;noticeOpen.value=true;}
 async function api(url:string,options:RequestInit={}){const r=await fetch(url,{...options,headers:{'Content-Type':'application/json',...options.headers}});const result=await r.json();if(!r.ok)throw Error(result.error||'Request failed');const next=r.headers.get('X-Workspace-Revision');if(next)revision.value=next;return result;}
 async function load(){try{const state=await api('/api/state');revision.value=state.revision;recoveryRequired.value=!!state.recoveryRequired;const {revision:_,recoveryRequired:__,...data}=state;db.value=data;failure.value='';}catch(e){failure.value=String(e);}finally{loading.value=false;}}
 async function saveRecord(collection:string,record:{id:string},expected=editorRevision.value){busy.value=true;try{await api(`/api/${collection}/${record.id}`,{method:'PUT',headers:{'If-Match':expected},body:JSON.stringify(record)});await load();if(collection!=='configurations'&&configRevision.value===expected)configRevision.value=revision.value;return true;}catch(e){toast(String(e));return false;}finally{busy.value=false;}}
-function navigate(name:string){if(installationsWorkspace.value&&!installationsWorkspace.value.confirmDiscard())return;if(inventoryWorkspace.value&&!inventoryWorkspace.value.confirmDiscard())return;if(working.value&&dirty.value&&!window.confirm('Discard unsaved configuration changes?'))return;page.value=name;working.value=null;search.value='';nextTick(()=>document.getElementById('main-content')?.focus());}
+function navigate(name:string){if(catalogMaintenance.value&&!catalogMaintenance.value.confirmDiscard())return;if(installationsWorkspace.value&&!installationsWorkspace.value.confirmDiscard())return;if(inventoryWorkspace.value&&!inventoryWorkspace.value.confirmDiscard())return;if(working.value&&dirty.value&&!window.confirm('Discard unsaved configuration changes?'))return;page.value=name;working.value=null;search.value='';nextTick(()=>document.getElementById('main-content')?.focus());}
 const dirty=computed(()=>!!working.value&&JSON.stringify(working.value)!==original.value);
 function openConfig(c:Configuration){configRevision.value=revision.value;working.value=clone(c);original.value=JSON.stringify(c);detailTab.value='components';page.value='Configurations';}
 function newConfig(){const c:Configuration={id:uid(),name:'Untitled configuration',description:'',systemId:'',status:'Draft',updatedAt:new Date().toISOString(),placements:[],storage:{raid:'none',bootMirror:false},notes:''};openConfig(c);original.value='';}
@@ -128,7 +130,7 @@ async function importCSV(){if(!importFile.value)return;importing.value=true;try{
 const editorDirty=computed(()=>{const d=componentDraft.value||systemDraft.value||pcDraft.value;return !!d&&(JSON.stringify(d)!==editorOriginal.value||(advanced.value&&!!componentDraft.value&&jsonSpecs.value!==JSON.stringify(componentDraft.value.specs,null,2)));});
 function closeEditor(kind:'component'|'system'|'pc'){if(editorDirty.value&&!window.confirm('Discard unsaved changes?'))return;if(kind==='component')componentDraft.value=null;else if(kind==='system')systemDraft.value=null;else pcDraft.value=null;}
 async function refreshWorkspace(){if(installationsWorkspace.value&&!installationsWorkspace.value.confirmDiscard())return;if(inventoryWorkspace.value&&!inventoryWorkspace.value.confirmDiscard())return;if((dirty.value||editorDirty.value)&&!window.confirm('Discard drafts and reload the workspace?'))return;working.value=null;componentDraft.value=null;systemDraft.value=null;pcDraft.value=null;await load();}
-function beforeUnload(e:BeforeUnloadEvent){if(dirty.value||editorDirty.value||inventoryWorkspace.value?.hasUnsavedChanges()||installationsWorkspace.value?.hasUnsavedChanges()){e.preventDefault();e.returnValue='';}}
+function beforeUnload(e:BeforeUnloadEvent){if(dirty.value||editorDirty.value||catalogMaintenance.value?.hasUnsavedChanges()||inventoryWorkspace.value?.hasUnsavedChanges()||installationsWorkspace.value?.hasUnsavedChanges()){e.preventDefault();e.returnValue='';}}
 window.addEventListener('beforeunload',beforeUnload);onBeforeUnmount(()=>window.removeEventListener('beforeunload',beforeUnload));
 async function previewRestore(){try{if(!restoreFile.value)return;restoreBackup.value=JSON.parse(await restoreFile.value.text());restorePreview.value=await api('/api/restore/preview',{method:'POST',body:JSON.stringify({backup:restoreBackup.value})});}catch(e){toast(String(e));restorePreview.value=null;}}
 async function commitRestore(){if(!restorePreview.value)return;if(!window.confirm('Replace the entire workspace with this backup? A safety backup will be saved first.'))return;busy.value=true;try{const result=await api('/api/restore',{method:'POST',headers:{'If-Match':restorePreview.value.revision},body:JSON.stringify({backup:restoreBackup.value})});await load();restorePreview.value=null;restoreFile.value=null;toast(`Workspace restored. Safety backup: ${result.backupFile}`);}catch(e){toast(String(e));}finally{busy.value=false;}}
@@ -201,6 +203,7 @@ onMounted(async()=>{await load();const context=(document as Document&{modelConte
      <div class="systems-grid"><article v-for="s in systems" :key="s.id" class="panel system-card"><div class="system-card-head"><span class="config-icon"><v-icon aria-hidden="true" :icon="mdiLan" size="25" /></span><span class="neutral-badge">{{s.connections.length}} devices</span></div><h2>{{s.name}}</h2><small>{{s.location||'Location not recorded'}}</small><p>{{s.description}}</p><div class="port-summary"><div v-for="(total,i) in connectionPortTotals(s.connections)" :key="i"><strong>{{total.quantity}}</strong><span>{{total.label}}</span></div></div><div class="device-tags"><span v-for="connection in s.connections" :key="connection.id">{{connection.name}}</span></div><div class="card-footer"><span>{{db.configurations.filter(c=>c.systemId===s.id).length}} linked builds</span><button @click="editSystem(s)">Edit requirements <v-icon aria-hidden="true" :icon="mdiArrowRight" size="16" /></button></div></article></div><div v-if="!systems.length" class="empty-state"><h3>No equipment systems found</h3><p>Add equipment and its connection requirements.</p></div>
     </template>
 
+    <template v-else-if="page==='Catalog data'"><CatalogMaintenance ref="catalogMaintenance" :db="db" :revision="revision" @reload="load" @notify="toast" @edit-component="editComponent" /></template>
     <template v-else-if="page==='Installations'"><InstallationsWorkspace ref="installationsWorkspace" :db="db" :revision="revision" @reload="load" @notify="toast" @edit-pc="editPC" /></template>
     <template v-else-if="page==='PC inventory' || page==='Component inventory'">
      <InventoryWorkspace ref="inventoryWorkspace" :key="page" :db="db" :revision="revision" :mode="page==='PC inventory'?'pcs':'stock'" @reload="load" @notify="toast" @edit-pc="editPC" />

@@ -12,7 +12,7 @@ await Deno.mkdir(buildDirectory,{recursive:true});
 try{
  await Deno.remove(output,{recursive:true}).catch(error=>{if(!(error instanceof Deno.errors.NotFound))throw error;});
  for(const filename of ['deno.json','main.ts','backend.ts','proxy-server.ts','server-bundle.mjs','server-bundle.d.mts'])await Deno.copyFile(path.join(root,'desktop',filename),path.join(stage,filename));
- const result=await new Deno.Command(Deno.execPath(),{cwd:stage,args:['desktop','--backend','webview','--target',triples[target],'--output',output,'--no-code-cache','--allow-read','--allow-write','--allow-env','--allow-sys','--allow-net=127.0.0.1','--no-prompt','main.ts'],stdout:'inherit',stderr:'inherit'}).spawn().status;
+ const result=await new Deno.Command(Deno.execPath(),{cwd:stage,args:['desktop','--backend','webview','--target',triples[target],'--output',output,'--no-code-cache','--allow-read','--allow-write','--allow-env','--allow-sys','--allow-net=127.0.0.1,pcpartpicker.com','--no-prompt','main.ts'],stdout:'inherit',stderr:'inherit'}).spawn().status;
  if(!result.success)throw Error(`Deno desktop build failed (${result.code}).`);
 }finally{await Deno.remove(stage,{recursive:true});}
 await Deno.copyFile(path.join(root,'docs','DENO.md'),path.join(output,'README.md'));
