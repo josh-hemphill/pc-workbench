@@ -2,7 +2,7 @@
 import type { Server } from 'node:http';
 
 export interface Application {
-  listen(port: number, host: string, callback: () => void): Server;
+  listen(port: number, host: string, callback: (error?: Error) => void): Server;
   locals: { closeStore: () => void };
 }
 export type ApplicationFactory = () => Application;
@@ -39,7 +39,9 @@ export class Backend {
       };
       try {
         this.app = factory();
-        this.server = this.app.listen(options.port ?? 0, '127.0.0.1', () => {
+        this.server = this.app.listen(options.port ?? 0, '127.0.0.1', (error) => {
+          // Express 5 also invokes its listen callback on binding failures.
+          if (error) { fail(error); return; }
           clearTimeout(timer);
           const address = this.server!.address();
           if (!address || typeof address === 'string') { fail(Error('Invalid local server address.')); return; }

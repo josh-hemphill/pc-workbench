@@ -18,7 +18,7 @@ deno task build
 deno task start
 ```
 
-Open **http://127.0.0.1:3001**. `deno task test` executes all 216 original application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs six additional in-process backend tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
+Open **http://127.0.0.1:3001**. `deno task test` executes all 216 original application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
 
 ```sh
 deno task desktop          # Native local WebView

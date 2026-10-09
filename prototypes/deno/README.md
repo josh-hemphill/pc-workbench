@@ -19,7 +19,7 @@ The frontend and API are Deno processes; Vite provides Vue HMR, and the API rest
 deno task check          # Deno tools plus Vue/shared/backend TypeScript checks
 deno task test           # All 216 existing application assertions, verified via JUnit
 deno task build         # Vue assets + self-contained backend module + desktop typechecks
-deno task test:desktop  # Build, then six real in-process Deno backend integration tests
+deno task test:desktop  # Build, then seven real in-process Deno desktop integration tests
 deno task desktop       # Build and run the native WebView window
 ```
 

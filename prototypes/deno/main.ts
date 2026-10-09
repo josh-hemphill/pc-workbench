@@ -1,4 +1,5 @@
 import { Backend, proxyRequest } from './backend.ts';
+import { startDesktopProxy } from './proxy-server.ts';
 // @deno-types="./server-bundle.d.mts"
 import { createApp, resolveRuntimeConfig, assets } from './server-bundle.mjs';
 
@@ -8,11 +9,11 @@ appWindow?.setTitle('PC Workbench — Deno prototype (save before closing)');
 let backend: Backend | undefined;
 let backendOrigin: string | undefined, startupError: string | undefined;
 let closing: Promise<void> | undefined;
-const server = Deno.serve({ hostname: '127.0.0.1', port: 0, onListen: ({ port }) => console.log(JSON.stringify({ type: 'proxy', url: `http://127.0.0.1:${port}` })) }, request => {
+const server = startDesktopProxy(request => {
   if (backendOrigin) return proxyRequest(request, backendOrigin);
   if (startupError) return new Response(`PC Workbench Deno prototype could not start.\n${startupError}`, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
   return new Response('Starting the local server…', { status: 503 });
-});
+}, ({ port }) => console.log(JSON.stringify({ type: 'proxy', url: `http://127.0.0.1:${port}` })));
 
 function close(): Promise<void> {
   return closing ??= (async () => {

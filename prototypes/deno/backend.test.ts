@@ -86,7 +86,7 @@ Deno.test('listen failure releases SQLite and permits opening the workspace agai
   let restarted: Backend | undefined;
   try {
     const backend = new Backend(() => createApp(directory, { assets }), { port: (occupied.addr as Deno.NetAddr).port });
-    await assert.rejects(backend.ready, /address.*use|EADDRINUSE|Invalid local server address/i);
+    await assert.rejects(backend.ready, /address.*use|EADDRINUSE/i);
     await backend.stop(); assert.equal((await backend.status).success, false);
     await assert.rejects(Deno.stat(`${directory}/.server-lock.json`), Deno.errors.NotFound);
     restarted = new Backend(() => createApp(directory, { assets }));
