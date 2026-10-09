@@ -8,7 +8,7 @@ Release: https://github.com/vuetifyjs/vuetify/releases/tag/v4.2.4
 
 The refactor now uses:
 
-- `VNavigationDrawer`, `VListItem`, `VAppBar`, `VMain`, and `VBreadcrumbs` for the application shell. Desktop navigation stays visible; mobile navigation uses a temporary drawer. Data and imports lives in the drawer's append slot. Navigation buttons retain explicit accessible button roles, keyboard tab stops, current-page names, and existing dirty-draft guards.
+- `VNavigationDrawer`, `VListItem`, `VAppBar`, `VMain`, and `VBreadcrumbs` for the application shell. Desktop navigation defaults open and can be collapsed with the hamburger button. Mobile navigation uses a full-width temporary drawer below the two-row top bar, preserving access to the hamburger button and current path. Data and imports lives in the drawer's append slot. Navigation buttons retain explicit accessible button roles, keyboard tab stops, current-page names, and existing dirty-draft guards.
 - `VForm` for configuration, component, equipment, PC, inventory, installation, and bulk editors. Submit handlers await Vuetify's validation result and check busy state before and after awaiting. Invalid fields receive focus; configuration validation opens the relevant tab when needed. Enter previews bulk changes; applying or deleting remains an explicit reviewed action.
 - Scrollable `VDialog` shells with card title, text, and action sections. Root editors supply their captured activators for native focus restoration, retaining a fallback when an opener has disappeared. Shared programmatic inventory/installation dialogs retain their existing opener fallback handling.
 - `VAutocomplete` for large existing-record pickers, while fixed enums remain selects and editable vocabularies remain multi-select comboboxes.
@@ -23,6 +23,8 @@ The optional tree browser was not added: existing operational tables and searcha
 Production output compared with the pre-refactor commit: JavaScript approximately **1,104 → 844 kB** and CSS **545 → 390 kB**, before compression. The existing large JavaScript chunk warning remains; no warning threshold was raised.
 
 Validation: application type checks and production/backend builds pass; **231 application tests** and **7 desktop tests** pass. Isolated Chromium checks cover real desktop/mobile navigation, keyboard submission and invalid-field focus, opener focus restoration, native manufacturer search, light/dark/system appearance, 44-pixel appearance targets, Shift selection without double toggles, keyboard tab activation, numeric bulk-fill errors, retained hidden selections, preview invalidation, atomic bulk edits, and dependency-aware deletion. Test workspaces were temporary; no production inventory data was modified.
+
+Responsive follow-up: the desktop drawer is 304 pixels wide and the appearance selector is 184 pixels wide. Desktop navigation retains its open/closed state during page changes; crossing into mobile closes the drawer, and returning to desktop opens it. Mobile layout reserves 128 pixels for the top bar. Page overflow checks compare `scrollWidth` with `documentElement.clientWidth`, which accounts for vertical scrollbars. Long unbroken record names exposed grid minimum-width overflow; shrinking grid children and wrapping names fixes it without hiding page content or disabling horizontal table scrolling. Browser checks cover all pages and the builder at narrow widths, including long names, and real drawer toggles at desktop and mobile sizes.
 
 ## Findings and recommended order
 

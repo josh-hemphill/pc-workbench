@@ -26,8 +26,8 @@ import PcLifecycleEditor from './PcLifecycleEditor.vue';
 const theme=useTheme();
 watch(themePreference,value=>{void theme.change(value);},{immediate:true});
 const {smAndDown}=useDisplay();
-const navigationOpen=ref(false);
-const drawerActive=computed({get:()=>!smAndDown.value||navigationOpen.value,set:(value:boolean)=>{navigationOpen.value=value;}});
+const navigationOpen=ref(!smAndDown.value);
+watch(smAndDown,small=>{navigationOpen.value=!small;});
 function changeAppearance(event:Event){const value=(event.target as HTMLSelectElement).value;if(isThemePreference(value))void saveAppearance(value).catch(error=>toast(String(error.message)));}
 const db=ref<Database>({components:[],systems:[],configurations:[],pcs:[],inventory:[],requirementsSets:[],installationLocations:[]});
 const catalogMaintenance=ref<{hasUnsavedChanges:()=>boolean;confirmDiscard:()=>boolean}|null>(null);
@@ -59,7 +59,7 @@ function toast(text:string){notices.value.push(text);}
 async function api(url:string,options:RequestInit={}){const r=await fetch(url,{...options,headers:{'Content-Type':'application/json',...options.headers}});const result=await r.json();if(!r.ok)throw Error(result.error||'Request failed');const next=r.headers.get('X-Workspace-Revision');if(next)revision.value=next;return result;}
 async function load(){try{const state=await api('/api/state');revision.value=state.revision;recoveryRequired.value=!!state.recoveryRequired;const {revision:_,recoveryRequired:__,...data}=state;db.value=data;failure.value='';}catch(e){failure.value=String(e);}finally{loading.value=false;}}
 async function saveRecord(collection:string,record:{id:string},expected=editorRevision.value){busy.value=true;try{await api(`/api/${collection}/${record.id}`,{method:'PUT',headers:{'If-Match':expected},body:JSON.stringify(record)});await load();if(collection!=='configurations'&&configRevision.value===expected)configRevision.value=revision.value;return true;}catch(e){toast(String(e));return false;}finally{busy.value=false;}}
-function navigate(name:string){if(catalogMaintenance.value&&!catalogMaintenance.value.confirmDiscard())return;if(installationsWorkspace.value&&!installationsWorkspace.value.confirmDiscard())return;if(inventoryWorkspace.value&&!inventoryWorkspace.value.confirmDiscard())return;if(working.value&&dirty.value&&!window.confirm('Discard unsaved configuration changes?'))return;page.value=name;navigationOpen.value=false;working.value=null;search.value='';nextTick(()=>document.getElementById('main-content')?.focus());}
+function navigate(name:string){if(catalogMaintenance.value&&!catalogMaintenance.value.confirmDiscard())return;if(installationsWorkspace.value&&!installationsWorkspace.value.confirmDiscard())return;if(inventoryWorkspace.value&&!inventoryWorkspace.value.confirmDiscard())return;if(working.value&&dirty.value&&!window.confirm('Discard unsaved configuration changes?'))return;page.value=name;if(smAndDown.value)navigationOpen.value=false;working.value=null;search.value='';nextTick(()=>document.getElementById('main-content')?.focus());}
 const dirty=computed(()=>!!working.value&&JSON.stringify(working.value)!==original.value);
 function openConfig(c:Configuration){configRevision.value=revision.value;working.value=clone(c);original.value=JSON.stringify(c);detailTab.value='components';page.value='Configurations';}
 function newConfig(){const c:Configuration={id:uid(),name:'Untitled configuration',description:'',systemId:'',status:'Draft',updatedAt:new Date().toISOString(),placements:[],storage:{raid:'none',bootMirror:false},notes:''};openConfig(c);original.value='';}
@@ -160,15 +160,16 @@ onMounted(async()=>{await load();const context=(document as Document&{modelConte
 
 <template>
  <v-app><a class="skip-link" href="#main-content">Skip to main content</a>
-  <v-navigation-drawer v-model="drawerActive" class="workspace-drawer" :permanent="!smAndDown" :temporary="smAndDown" :width="272" aria-label="Application navigation">
+  <v-navigation-drawer id="workspace-navigation" v-model="navigationOpen" class="workspace-drawer" :temporary="smAndDown" :mobile="smAndDown" disable-resize-watcher :order="smAndDown?1:0" :width="smAndDown?'100%':304" aria-label="Application navigation" @keydown.esc.stop.prevent="navigationOpen=false">
    <a class="brand" href="#" @click.prevent="navigate('Configurations')"><span class="brand-mark">b<span>.</span></span><span>bench<span class="brand-period">.</span></span></a>
    <nav aria-label="Main navigation"><v-list nav tag="div" role="presentation" :tabindex="-1"><v-list-item v-for="item in navigation" :key="item.name" tag="button" role="button" :tabindex="0" class="workspace-nav-item" :active="page===item.name" :aria-label="item.name" :aria-current="page===item.name?'page':undefined" :prepend-icon="item.icon" :title="item.name" @click="navigate(item.name)"><template v-if="item.name==='Configurations'" #append><v-chip size="small" variant="tonal" :text="String(db.configurations.length)" /></template></v-list-item></v-list></nav>
    <template #append><v-list nav tag="div" role="presentation" :tabindex="-1"><v-list-item tag="button" role="button" :tabindex="0" class="workspace-nav-item" :active="page==='Data & imports'" :aria-current="page==='Data & imports'?'page':undefined" :prepend-icon="mdiDatabaseOutline" title="Data & imports" aria-label="Data & imports" @click="navigate('Data & imports')" /></v-list><div class="workspace-storage"><span class="status-dot" /> SQLite storage</div></template>
   </v-navigation-drawer>
-  <v-app-bar class="workspace-app-bar" :height="80" elevation="0" border="b">
-   <v-btn v-if="smAndDown" :icon="mdiMenu" variant="text" aria-label="Toggle navigation" :aria-expanded="navigationOpen" @click="navigationOpen=!navigationOpen" />
+  <v-app-bar class="workspace-app-bar" :order="smAndDown?0:1" :height="smAndDown?128:80" elevation="0" border="b">
+   <div class="workspace-bar-path">
+   <v-btn :icon="mdiMenu" variant="text" aria-label="Toggle navigation" aria-controls="workspace-navigation" :aria-expanded="navigationOpen" @click="navigationOpen=!navigationOpen" />
    <nav aria-label="Breadcrumb"><v-breadcrumbs :items="[{title:'Workspace',disabled:true},{title:page,disabled:!working,...(working?{href:'#',onClick:(event:Event)=>{event.preventDefault();navigate(page);}}:{})},...(working?[{title:working.name,disabled:true}]:[])]" /></nav>
-   <v-spacer />
+   </div>
    <div class="workspace-app-actions"><label class="appearance-control"><span class="sr-only">Appearance</span><select :value="themePreference" aria-label="Appearance" @change="changeAppearance"><option value="system">System theme</option><option value="light">Light theme</option><option value="dark">Dark theme</option></select></label><v-btn variant="text" :icon="mdiRefresh" aria-label="Reload workspace" @click="refreshWorkspace" /></div>
   </v-app-bar>
   <v-main id="main-content" class="workspace-main" tabindex="-1" aria-label="Workspace content">

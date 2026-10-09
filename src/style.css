@@ -64,10 +64,10 @@ summary{cursor:pointer;min-height:44px;padding:10px 6px;line-height:1.5;overflow
 @media(max-width:760px){.configuration-filters.v-btn-group{width:100%}.configuration-filters.v-btn-group>.v-btn{flex:1 1 auto}.list-toolbar:has(.configuration-filters) .search-input{margin-top:0}}
 
 /* Native appearance control retains an accessible target and themed surface. */
-.appearance-control select{min-height:44px;max-width:160px;padding:8px 28px 8px 12px;border:1px solid var(--bench-control-border);border-radius:8px;color:var(--bench-text);background:var(--bench-surface);font:inherit;cursor:pointer}
+.appearance-control select{min-height:44px;width:184px;max-width:100%;padding:8px 32px 8px 12px;border:1px solid var(--bench-control-border);border-radius:8px;color:var(--bench-text);background:var(--bench-surface);font:inherit;cursor:pointer}
 .appearance-control select:focus-visible{outline:3px solid var(--bench-focus);outline-offset:3px}
 .brand-mark span{color:var(--bench-on-primary)}
-@media(max-width:760px){.appearance-control select{max-width:150px}}
+
 
 /* Native action buttons inherit the surface rather than the browser dark widget paint. */
 :where(button:not(.v-btn)){background:transparent;border:0}
@@ -91,7 +91,7 @@ body{background:var(--bench-background)}
 .v-data-table-footer{flex-wrap:wrap;gap:12px;padding:16px!important}
 
 /* Vuetify owns shell sizing and scrollable dialog structure. */
-.workspace-main{min-width:0}
+.workspace-main{min-width:0;max-width:100%}
 .workspace-drawer .v-navigation-drawer__content{padding:24px 12px 0}
 .workspace-drawer .brand{margin:0 12px 24px}
 .workspace-nav-item{width:100%;text-align:left;min-height:48px;white-space:normal}
@@ -100,8 +100,25 @@ body{background:var(--bench-background)}
 .workspace-nav-item.v-list-item--active{color:var(--bench-primary);font-weight:700}
 .workspace-storage{display:flex;align-items:center;gap:8px;padding:12px 24px 20px;font-size:.875rem}
 .workspace-app-bar .v-toolbar__content{padding-inline:16px;gap:8px}
-.workspace-app-bar nav{min-width:0;flex:1}.workspace-app-bar .v-breadcrumbs{padding:8px 0;flex-wrap:wrap;font-size:.875rem}.workspace-app-bar .v-breadcrumbs-item--disabled{opacity:1}
+.workspace-bar-path{display:flex;align-items:center;gap:8px;flex:1;min-width:0}.workspace-app-bar nav{min-width:0;flex:1}.workspace-app-bar .v-breadcrumbs{padding:8px 0;flex-wrap:wrap;font-size:.875rem}.workspace-app-bar .v-breadcrumbs-item--disabled{opacity:1}
 .workspace-app-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .v-card-title.dialog-head{display:flex;align-items:center;justify-content:space-between;white-space:normal}
 .v-card-actions.dialog-footer{padding:20px 24px;gap:12px;flex-wrap:wrap}
-@media(max-width:600px){.workspace-app-bar .v-toolbar__content{padding-inline:8px;gap:4px}.workspace-app-bar .v-breadcrumbs{font-size:.8rem}.workspace-app-bar .v-breadcrumbs-item:first-child,.workspace-app-bar .v-breadcrumbs-divider:first-of-type{display:none}.workspace-app-actions{gap:0}.workspace-app-actions select{max-width:130px}.v-card-actions.dialog-footer{padding:16px}}
+@media(max-width:600px){.v-card-actions.dialog-footer{padding:16px}}
+
+/* Header controls stay visible while the mobile drawer fills the area below them. */
+.workspace-app-bar .v-breadcrumbs-item{min-width:0;overflow-wrap:anywhere}
+@media(max-width:839.98px){
+ .workspace-app-bar .v-toolbar__content{flex-wrap:wrap;align-content:center;column-gap:8px;row-gap:8px;padding-inline:16px}
+ .workspace-bar-path{flex:1 1 100%;max-width:100%;gap:8px}
+ .workspace-app-bar .v-breadcrumbs{flex-wrap:nowrap;overflow:hidden;padding:0}
+ .workspace-app-bar .v-breadcrumbs-item:first-child,.workspace-app-bar .v-breadcrumbs-divider:nth-child(2){display:none}
+ .workspace-app-bar .v-breadcrumbs-item{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .workspace-app-actions{width:100%;min-width:0;justify-content:flex-end;gap:8px}
+ .appearance-control{min-width:0}
+}
+
+/* Long names and imported identifiers must not set a grid's minimum page width. */
+.page-content{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.systems-grid>*,.data-grid>*,.builder-meta>*{min-width:0}
+.card-title strong{min-width:0;overflow-wrap:anywhere}
