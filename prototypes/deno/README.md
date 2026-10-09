@@ -20,10 +20,12 @@ deno task check          # Deno tools plus Vue/shared/backend TypeScript checks
 deno task test           # All 216 existing application assertions, verified via JUnit
 deno task build         # Vue assets + self-contained backend module + desktop typechecks
 deno task test:desktop  # Build, then seven real in-process Deno desktop integration tests
-deno task desktop       # Build and run the native WebView window
+deno task desktop       # Build, then launch the native WebView runtime with deno desktop --hmr
 ```
 
 Tests use disposable workspaces, not your configured data. The desktop host tests use read/write/env/sys and localhost network permissions; they require **no subprocess permission**. `deno task build` uses native build tools; `deno task dev` supervises Deno child processes. The Vue checker runs TypeScript 6 inside Deno because Vue tooling needs the JavaScript compiler API, and Deno 2.9.7 itself ships TypeScript 6.
+
+`Deno.BrowserWindow` is available only inside the native desktop runtime. Ordinary `deno run prototypes/deno/main.ts` cannot open the window. Deno 2.9.7 uses `deno desktop --hmr` to compile and launch it locally; `deno desktop` without `--hmr` only builds the package. The task builds frontend assets first; rerun it after Vue changes to refresh embedded assets.
 
 `deno task build` generates the ignored `prototypes/deno/server-bundle.mjs`, containing the backend's actual npm dependencies and embedded frontend assets. Runtime packages do not need `node_modules`, source files, or network access to package registries. The tracked declaration describes the host boundary; the shared implementation is checked separately by the Vue/TypeScript checker.
 

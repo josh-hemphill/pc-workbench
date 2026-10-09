@@ -36,7 +36,7 @@
     "test": "deno run --config deno.json -A prototypes/deno/app-suite-runner.ts",
     "start": "deno run --config deno.json --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 prototypes/deno/backend-server.ts",
     "test:desktop": "deno task build && deno test --config prototypes/deno/deno.json --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 prototypes/deno/backend.test.ts prototypes/deno/desktop-address.test.ts",
-    "desktop": "deno task build && deno run --config prototypes/deno/deno.json --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 prototypes/deno/main.ts",
+    "desktop": "deno task build && deno desktop --config prototypes/deno/deno.json --backend webview --hmr --no-code-cache --allow-read --allow-write --allow-env --allow-sys --allow-net=127.0.0.1 --no-prompt prototypes/deno/main.ts",
     "package": "deno task build && deno run --config deno.json -A prototypes/deno/package.ts",
     "package:windows": "deno task package win-x64",
     "import:pcpartpicker": "deno run --config deno.json --allow-read --allow-write --allow-env tools/pcpartpicker.ts"

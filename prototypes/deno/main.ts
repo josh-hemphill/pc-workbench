@@ -4,6 +4,9 @@ import { startDesktopProxy } from './proxy-server.ts';
 import { createApp, resolveRuntimeConfig, assets } from './server-bundle.mjs';
 
 const headless = Deno.env.get('BENCH_DENO_HEADLESS') === '1';
+if (!headless && typeof Deno.BrowserWindow !== 'function') {
+  throw new Error('The native window requires Deno’s desktop runtime. Run deno task desktop from the repository root; ordinary deno run does not provide BrowserWindow.');
+}
 const appWindow = headless ? undefined : new Deno.BrowserWindow({ title: 'PC Workbench — Deno prototype (save before closing)', width: 1440, height: 960 });
 appWindow?.setTitle('PC Workbench — Deno prototype (save before closing)');
 let backend: Backend | undefined;

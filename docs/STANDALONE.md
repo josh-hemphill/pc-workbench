@@ -69,6 +69,6 @@ deno task package:windows
 
 Output: `bin/pc-workbench-deno-prototype-win-x64.zip` plus `.sha256` and `.build.json`. The manifest records runtime files and `nodeSidecar:false`. Packaging cross-builds the native WebView launcher/runtime DLL and embeds the used backend dependencies and Vue assets. Generated bundles, executables and build intermediates are ignored by Git. Unix build hosts need `zip`; Windows hosts use PowerShell's native ZIP command.
 
-`deno task package linux-x64` builds a Linux comparison package requiring GTK/WebKitGTK. `deno task build` followed by `deno task start` runs the API/UI server from the checkout. `deno task desktop` runs the native window from source after building. No public HTTP shutdown route or subprocess sidecar is added.
+`deno task package linux-x64` builds a Linux comparison package requiring GTK/WebKitGTK. `deno task build` followed by `deno task start` runs the API/UI server from the checkout. `deno task desktop` builds the assets and uses `deno desktop --hmr` to compile and launch the native window. Ordinary `deno run` does not expose `Deno.BrowserWindow`. No public HTTP shutdown route or subprocess sidecar is added.
 
 Linux tests verify the native Deno backend, SQLite changes/restarts, CSV import/export, backups, Host/Origin and revision protections, startup failures and bounded shutdown. A Windows cross-build does not establish Windows GUI behavior; a Windows launch trial remains necessary. The native close/navigation/popup limits remain production adoption blockers.
