@@ -3,44 +3,5 @@
   "private": true,
   "version": "0.2.0",
   "type": "module",
-  "scripts": {
-    "dev": "concurrently -k -n api,web \"tsx watch server/index.ts\" \"vite --host 127.0.0.1\"",
-    "typecheck": "node node_modules/typescript/bin/tsc --noEmit && node tools/typecheck-vue.cjs --noEmit",
-    "build": "pnpm typecheck && vite build",
-    "start": "tsx server/index.ts",
-    "test": "tsx --test tests/*.test.ts",
-    "import:pcpartpicker": "tsx tools/pcpartpicker.ts",
-    "package:windows": "pnpm build && node tools/build-standalone.mjs --target win-x64 && node tools/build-desktop.mjs",
-    "package:standalone": "pnpm build && node tools/build-standalone.mjs",
-    "package:server:windows": "pnpm build && node tools/build-standalone.mjs --target win-x64",
-    "prototype:deno:windows": "node tools/build-deno-desktop.mjs --target win-x64"
-  },
-  "dependencies": {
-    "@mdi/js": "^7.4.47",
-    "csv-parse": "^7.0.3",
-    "csv-stringify": "^6.9.0",
-    "express": "^5.2.1",
-    "vue": "^3.5.43",
-    "vuetify": "^4.2.4",
-    "zod": "^4.6.5"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node": "^26.6.4",
-    "@vitejs/plugin-vue": "^6.0.9",
-    "concurrently": "^10.0.5",
-    "electron": "^44.7.0",
-    "electron-builder": "^26.15.3",
-    "esbuild": "^0.28.2",
-    "postject": "1.0.0-alpha.6",
-    "tsx": "^4.23.15",
-    "typescript": "^7.0.2",
-    "typescript-vue": "npm:typescript@6.0.3",
-    "vite": "^8.3.3",
-    "vue-tsc": "^3.3.12"
-  },
-  "engines": {
-    "node": ">=24.0.0"
-  },
-  "packageManager": "pnpm@12.10.1"
+  "description": "PC Workbench Deno desktop prototype; use deno task for development, validation and packaging."
 }

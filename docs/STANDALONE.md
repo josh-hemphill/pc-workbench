@@ -28,13 +28,11 @@ Equivalent JSON (backslashes must be escaped):
 
 `dataDir` is required; `port` is optional and defaults to 3001. A relative data directory resolves against the settings file's directory. `~/` refers to the current user's home. Environment variable names inside JSON are not interpolated; use a literal path or generate the file with PowerShell.
 
-Launch `pc-workbench-desktop-win-x64.exe`. It opens the application in an Electron desktop window and starts its local server automatically, with no separate browser or console window. Chromium, Electron, Node, native SQLite support, server dependencies and the built frontend are included; users need neither Node, pnpm nor WebView2. Closing the last window shuts down the server and closes SQLite. Unsaved drafts prompt before closing. A second launch focuses the existing window. The server binds only to `127.0.0.1`, preserves local-origin restrictions, and uses the existing workspace lock and revision checks.
+On this branch, run `deno task package:windows`, extract the entire `pc-workbench-deno-prototype-win-x64.zip`, and launch `pc-workbench-deno-prototype-win-x64.exe`. Keep its Deno runtime DLL beside the launcher. The Vue interface, Express backend and native SQLite execute inside one Deno application process. No Node sidecar, Node installation, pnpm or Electron is needed. WebView2 Runtime must already be installed on Windows.
 
-The portable launcher extracts its bundled runtime into a temporary directory while running. Settings and data stay in the configured user directories. The sandboxed renderer has no Node integration, preload bridge or operating-system permissions. External pages cannot replace the application window. To open an HTTPS manufacturer/documentation link, right-click it and choose **Open link in browser**; popup windows are blocked.
+The prototype uses the existing workspace lock and revision checks and binds only to loopback. Closing its window stops the in-process server and closes SQLite with a bounded connection-drain period. **Save drafts before closing:** Deno 2.9.7's Windows native backend cannot guarantee an unsaved-draft prompt or native navigation/popup protections. See [prototype limitations](DENO-PROTOTYPE.md).
 
-The separate `pc-workbench-win-x64.exe` is still available as a headless server. It prints a localhost URL to open in your browser and stops with Ctrl+C. `pnpm package:server:windows` builds only this server; `pnpm package:windows` builds the full desktop package.
-
-Replace the executable to update the program. Settings and data stay in their separate directories. The executable is unsigned; signing Windows distributions requires your own signing certificate.
+Extract into a writable user-owned directory because the pinned WebView backend defaults its browser cache beside the launcher. Set `WEBVIEW2_USER_DATA_FOLDER` before starting the executable if another browser-cache directory is needed. Replacing the whole application directory updates code; settings and database stay in their configured locations. This evaluation package is unsigned and does not install WebView2.
 
 ## Other runtime locations
 
@@ -60,17 +58,17 @@ Changing `dataDir` selects a different workspace; it does not move or merge exis
 
 For a filesystem move, stop the server first and copy the entire data directory, including recovery backups. Never copy a live SQLite database without its associated WAL state. Keep an independent backup before changing storage locations. This workflow is designed for local storage and one running instance per workspace.
 
-## Build a Windows executable
+## Build a Windows desktop package
 
-On a development machine with Node.js 24+ and the pinned pnpm:
+Install Deno 2.9.7; no Node toolchain is required:
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm package:windows
+deno install --frozen
+deno task package:windows
 ```
 
-Output: `bin/pc-workbench-desktop-win-x64.exe`, a `.sha256` checksum and a `.build.json` manifest. The manifest records the embedded server checksum and Electron version. The server executable is also retained at `bin/pc-workbench-win-x64.exe`. Generated binaries and packaging intermediates are ignored by Git. A Windows cross-build downloads the official Node binary matching the build host's exact Node version and checks its SHA-256 against Node's published checksum list. Network access is needed for that download and for Electron/NSIS packaging tools. A native Windows x64 build reuses the running Node binary. The frontend is embedded as Node SEA assets, and Node's native SQLite module remains a runtime builtin.
+Output: `bin/pc-workbench-deno-prototype-win-x64.zip` plus `.sha256` and `.build.json`. The manifest records runtime files and `nodeSidecar:false`. Packaging cross-builds the native WebView launcher/runtime DLL and embeds the used backend dependencies and Vue assets. Generated bundles, executables and build intermediates are ignored by Git. Unix build hosts need `zip`; Windows hosts use PowerShell's native ZIP command.
 
-`pnpm package:standalone` builds the headless server for the current host. SEA snapshots and code caches are disabled so the Windows x64 bundle can be prepared on a matching-version Linux build host. Other cross-platform builds are not supported. macOS host builds additionally require `codesign` for ad-hoc signing.
+`deno task package linux-x64` builds a Linux comparison package requiring GTK/WebKitGTK. `deno task build` followed by `deno task start` runs the API/UI server from the checkout. `deno task desktop` runs the native window from source after building. No public HTTP shutdown route or subprocess sidecar is added.
 
-The SEA packaging interface is experimental in Node 24. Linux smoke tests verify the bundled server, embedded frontend, SQLite writes/restarts, CSV export, JSON readiness, private shutdown commands, parent disconnection and startup failures. Desktop policy tests verify local navigation, external-link restrictions and confirmed child-process shutdown. A Windows executable built on Linux must also receive a Windows launch test before distribution; a PE-format/injection check cannot establish Windows runtime behavior.
+Linux tests verify the native Deno backend, SQLite changes/restarts, CSV import/export, backups, Host/Origin and revision protections, startup failures and bounded shutdown. A Windows cross-build does not establish Windows GUI behavior; a Windows launch trial remains necessary. The native close/navigation/popup limits remain production adoption blockers.

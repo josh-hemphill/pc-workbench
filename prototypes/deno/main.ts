@@ -1,10 +1,8 @@
 import { Backend, proxyRequest } from './backend.ts';
+// @deno-types="./server-bundle.d.mts"
+import { createApp, resolveRuntimeConfig, assets } from './server-bundle.mjs';
 
 const headless = Deno.env.get('BENCH_DENO_HEADLESS') === '1';
-const separator = Deno.build.os === 'windows' ? '\\' : '/';
-const executable = Deno.execPath();
-const directory = executable.slice(0, executable.lastIndexOf(separator));
-const backendPath = Deno.env.get('BENCH_DENO_SERVER') || `${directory}${separator}pc-workbench-server${Deno.build.os === 'windows' ? '.exe' : ''}`;
 const appWindow = headless ? undefined : new Deno.BrowserWindow({ title: 'PC Workbench — Deno prototype (save before closing)', width: 1440, height: 960 });
 appWindow?.setTitle('PC Workbench — Deno prototype (save before closing)');
 let backend: Backend | undefined;
@@ -32,16 +30,17 @@ if (Deno.build.os !== 'windows') {
   Deno.addSignalListener('SIGINT', () => { void close(); });
 }
 try {
-  backend = new Backend(backendPath);
+  const config = resolveRuntimeConfig({ standalone: true });
+  backend = new Backend(() => createApp(config.dataDir, { assets }), { port: config.port });
   backendOrigin = await backend.ready;
-  // Native startup gives up waiting after 15 s, before our 30 s backend timeout.
+  // Native startup gives up waiting after 15 s; explicitly refresh when ready.
   // Explicit navigation replaces any earlier startup/error document.
   if (appWindow && !closing && !appWindow.isClosed()) appWindow.navigate(`http://127.0.0.1:${(server.addr as Deno.NetAddr).port}`);
-  console.log(JSON.stringify({ type: 'ready', backend: backendOrigin, pid: backend.child.pid }));
+  console.log(JSON.stringify({ type: 'ready', backend: backendOrigin, pid: Deno.pid }));
   void backend.status.then(status => {
     if (!closing) {
       backendOrigin = undefined;
-      startupError = `The server exited unexpectedly (${status.code}). Close and restart the prototype.`;
+      startupError = `The local server stopped unexpectedly (${status.code}). Close and restart the prototype.`;
       if (appWindow) appWindow.reload(); else void close();
     }
   });

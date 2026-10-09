@@ -22,6 +22,8 @@ async function workspace(run: (request: Request, state: () => Promise<Database>)
   };
   try { await run(request, async () => (await request('/api/backup')).json() as Promise<Database>); }
   finally {
+    // All request assertions are complete; Deno may keep discarded fetch bodies connected.
+    server.closeAllConnections();
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
     fs.rmSync(dir, { recursive: true, force: true });
   }

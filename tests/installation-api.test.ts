@@ -29,5 +29,7 @@ test('installation API captures canonical requirement revisions, protects public
   const csv=await (await request('/api/export/installationLocations')).text();assert.equal(decodeCSV('installationLocations',csv).length,1);
   const state=await (await request('/api/state')).json();assert.equal(state.pcs[0].installationLocationId,'bench');assert.match(state.pcs[0].timeline.at(-1).summary,/Installation location: Unassigned → Bench/);
   const sqlite=path.join(dir,'workbench.sqlite');assert.equal(fs.existsSync(sqlite),true);assert.equal(fs.existsSync(path.join(dir,'pcs.csv')),false);
- }finally{await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));fs.rmSync(dir,{recursive:true,force:true});}
+ }finally{// All request assertions are complete; Deno may keep discarded fetch bodies connected.
+ server.closeAllConnections();
+ await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));fs.rmSync(dir,{recursive:true,force:true});}
 });

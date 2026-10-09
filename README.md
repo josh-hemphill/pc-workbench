@@ -1,34 +1,37 @@
 # Bench — PC configuration workbench
 
-A local, full-stack TypeScript application using Vue 3, Vuetify 4, Vite 8, Express and pnpm. No account, cloud database or hosted service is required. Engineering and inventory data is saved in a local SQLite database using Node.js’s native `node:sqlite` module. Every collection remains importable and exportable as CSV.
+This **deno-prototype** branch runs the complete application pipeline with Deno 2.9.7: dependency installation, Vue/Vuetify development, Vite builds, type checking, tests and WebView desktop packaging. The Express backend and native `node:sqlite` run inside Deno. No Node installation, pnpm, Electron or Node server sidecar is required. Every collection remains importable/exportable as CSV.
 
 ## Run
 
-Use Node.js 24+ and pnpm 12.10.1. The `packageManager` field pins the pnpm version. If using Corepack, run `corepack enable` first; alternatively, bootstrap installation with `npx --yes pnpm@12.10.1 install`.
+Install Deno **2.9.7**, then run:
 
 ```sh
-pnpm install
-pnpm dev
+deno install --frozen
+deno task dev
 ```
 
-Open **http://localhost:5173**. Vite proxies `/api` to the local API on port 3001. Both services stop with Ctrl+C. For a single-server local installation:
+Open **http://127.0.0.1:5173**. Vite proxies `/api` to the Deno API on port 3001. Both services stop with Ctrl+C; Vue supports HMR and the API watches source changes. For a single-server local installation:
 
 ```sh
-pnpm build
-pnpm start
+deno task build
+deno task start
 ```
 
-Open **http://127.0.0.1:3001**. `pnpm test` runs the compatibility, installation tracking, SQLite migration/transactions, CSV round-trip and importer tests. No Python runtime is used.
+Open **http://127.0.0.1:3001**. `deno task test` executes all 216 original application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs six additional in-process backend tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
 
-`pnpm typecheck` runs TypeScript 7 for regular TypeScript files and `vue-tsc` for Vue components. The current Vue checker still requires the JavaScript compiler API, so `typescript-vue` pins the latest TypeScript 6 release (6.0.3) specifically for that check through `tools/typecheck-vue.cjs`. The main `typescript` dependency remains on 7.0.2. Both checks must pass before the production build; the compatibility alias may appear in `pnpm outdated` when compared with TypeScript 7.
+```sh
+deno task desktop          # Native local WebView
+deno task package:windows  # Cross-build Windows x64 ZIP
+```
+
+The package embeds the frontend and backend inside the Deno runtime. Its launcher/runtime DLL need no Node executable or external npm dependencies. See [prototype setup and packaging](prototypes/deno/README.md) and [evaluation evidence](docs/DENO-PROTOTYPE.md). Windows unsaved-close and native navigation/popup protections remain blockers for production adoption; save drafts before closing.
 
 The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port (update the Vite proxy if changed in development). `BENCH_DATA_DIR=/absolute/path` changes the storage directory.
 
 ## User settings and Windows desktop executable
 
-Configure a private per-user `config.json` with `dataDir` and an optional `port`. On Windows it lives at `%APPDATA%\pc-workbench\config.json`. `pnpm package:windows` builds a portable Windows x64 desktop executable with an embedded Electron window, Chromium, Node, the server and frontend; its default database is under `%LOCALAPPDATA%\pc-workbench\data`. The window manages server startup and shutdown; no separate browser is needed. CSV import/export remains available. See [settings, packaging and data migration instructions](docs/STANDALONE.md).
-
-A separate [Deno WebView prototype](docs/DENO-PROTOTYPE.md) uses TypeScript and Windows WebView2 without Chromium or a Rust/C#/Go build toolchain. `pnpm prototype:deno:windows` packages it after the matching SEA server is built. The prototype demonstrates working UI, SQLite and CSV integration; native unsaved-close and navigation controls remain blockers to production adoption.
+Configure a private per-user `config.json` with `dataDir` and an optional `port`. On Windows it lives at `%APPDATA%\pc-workbench\config.json`, and the desktop default database is under `%LOCALAPPDATA%\pc-workbench\data`. The Deno window manages its in-process server and SQLite shutdown; CSV import/export remains available. See [settings, packaging and data migration instructions](docs/STANDALONE.md).
 
 ## Features
 
@@ -131,7 +134,7 @@ Reservations can record an owner, work order, needed-by date and expiry. Expiry 
 ## PCPartPicker import
 
 ```sh
-pnpm import:pcpartpicker ./product.html --category CPU --output ./parts.csv --source https://pcpartpicker.com/product/example
+deno task import:pcpartpicker ./product.html --category CPU --output ./parts.csv --source https://pcpartpicker.com/product/example
 ```
 
 Use a product page you saved locally from your browser. The offline importer reads standard `application/ld+json` Product blocks (including arrays and `@graph`) and extracts product name, brand, and URL. It creates deterministic IDs and unverified components; dimensions, slots, ports and other engineering fields must be entered manually. Output files are created exclusively to avoid silently overwriting existing files. Import the resulting CSV through **Data & imports**.

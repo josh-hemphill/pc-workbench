@@ -35,5 +35,7 @@ test('inventory HTTP workflows are durable and reject overspending or unaudited 
     assert.equal((await req('/api/inventory/api-lot', 'DELETE')).status, 400);
     assert.equal((await req('/api/pcs/missing/build')).status, 404);
     assert.equal((await req('/api/state')).status, 200);
-  } finally { await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve())); fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally { // All request assertions are complete; Deno may keep discarded fetch bodies connected.
+ server.closeAllConnections();
+ await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve())); fs.rmSync(dir, { recursive: true, force: true }); }
 });

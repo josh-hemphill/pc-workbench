@@ -1,9 +1,19 @@
 {
   "version": "0.2.0",
-  "compilerOptions": { "lib": ["deno.ns", "deno.window", "deno.desktop"] },
+  "compilerOptions": {
+    "lib": [
+      "deno.ns",
+      "deno.window",
+      "deno.desktop"
+    ]
+  },
   "nodeModulesDir": "none",
   "desktop": {
-    "app": { "name": "PC Workbench Deno Prototype", "identifier": "org.pcworkbench.deno.prototype" },
+    "app": {
+      "name": "PC Workbench Deno Prototype",
+      "identifier": "org.pcworkbench.deno.prototype"
+    },
     "backend": "webview"
-  }
+  },
+  "lock": false
 }

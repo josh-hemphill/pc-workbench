@@ -1,18 +1,11 @@
-// Dependency-free Deno host code. The renderer receives no native bindings.
-import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
-import { Readable, Writable } from 'node:stream';
-const encoder = new TextEncoder();
-export const MESSAGE_LIMIT = 65536;
+// The server and native window share one Deno process. No renderer bindings.
+import type { Server } from 'node:http';
 
-export function parseReady(line: string): string {
-  if (encoder.encode(line).length > MESSAGE_LIMIT) throw Error('Backend startup message exceeds 64 KiB.');
-  const message = JSON.parse(line);
-  if (message?.type === 'error' && typeof message.message === 'string') throw Error(message.message.slice(0, 8192));
-  if (message?.type !== 'ready' || typeof message.url !== 'string') throw Error('Invalid backend readiness message.');
-  const url = new URL(message.url);
-  if (url.protocol !== 'http:' || url.hostname !== '127.0.0.1' || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw Error('Backend must report a loopback HTTP URL.');
-  return url.origin;
+export interface Application {
+  listen(port: number, host: string, callback: () => void): Server;
+  locals: { closeStore: () => void };
 }
+export type ApplicationFactory = () => Application;
 
 export function proxyTarget(requestURL: string, backendOrigin: string): string {
   const incoming = new URL(requestURL);
@@ -24,85 +17,65 @@ export function proxyTarget(requestURL: string, backendOrigin: string): string {
 }
 
 export class Backend {
-  readonly child: ChildProcessWithoutNullStreams;
-  readonly status: Promise<{ code: number; signal: string | null; success: boolean }>;
   readonly ready: Promise<string>;
-  private writer: WritableStreamDefaultWriter<Uint8Array>;
+  readonly status: Promise<{ code: number; success: boolean }>;
+  private server?: Server;
+  private app?: Application;
   private stopping?: Promise<void>;
-  private exited = false;
-  private stderr = '';
-  private stdout: ReadableStream<Uint8Array>;
-  private errorOutput: ReadableStream<Uint8Array>;
-  private spawnError?: Error;
+  private settled = false;
+  private finish!: (status: {code: number; success: boolean}) => void;
 
-  constructor(executable: string, options: { startupTimeoutMs?: number; env?: Record<string, string> } = {}) {
-    // Deno.Command does not expose windowsHide. Deno's Node-compatible spawn
-    // forwards that flag, avoiding an extra console for the SEA sidecar.
-    this.child = spawn(executable, ['--desktop'], { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'], env: { ...Deno.env.toObject(), ...options.env } });
-    this.writer = (Writable.toWeb(this.child.stdin) as WritableStream<Uint8Array>).getWriter();
-    this.stdout = Readable.toWeb(this.child.stdout) as ReadableStream<Uint8Array>;
-    this.errorOutput = Readable.toWeb(this.child.stderr) as ReadableStream<Uint8Array>;
-    let spawned = false;
-    this.child.once('spawn', () => { spawned = true; });
-    this.status = new Promise(resolve => {
-      this.child.once('exit', (code, signal) => { this.exited = true; resolve({ code: code ?? 1, signal, success: code === 0 }); });
-      this.child.on('error', error => {
-        // A failed kill also emits error; only failed creation confirms no live child.
-        if (!spawned) { this.spawnError = error; this.exited = true; resolve({ code: 1, signal: null, success: false }); }
-      });
-    });
-    void this.consumeErrors();
-    this.ready = this.readReady(options.startupTimeoutMs ?? 30000);
+  constructor(factory: ApplicationFactory, options: { port?: number; startupTimeoutMs?: number; shutdownTimeoutMs?: number } = {}) {
+    this.status = new Promise(resolve => { this.finish = resolve; });
+    this.ready = Promise.resolve().then(() => new Promise<string>((resolve, reject) => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const fail = (error: Error) => {
+        clearTimeout(timer);
+        this.server?.closeAllConnections();
+        this.server?.close();
+        this.app?.locals.closeStore();
+        this.complete(1);
+        reject(error);
+      };
+      try {
+        this.app = factory();
+        this.server = this.app.listen(options.port ?? 0, '127.0.0.1', () => {
+          clearTimeout(timer);
+          const address = this.server!.address();
+          if (!address || typeof address === 'string') { fail(Error('Invalid local server address.')); return; }
+          resolve(`http://127.0.0.1:${address.port}`);
+        });
+        this.server.once('error', fail);
+        this.server.once('close', () => this.complete(this.stopping ? 0 : 1));
+        timer = setTimeout(() => fail(Error('Local server startup timed out.')), options.startupTimeoutMs ?? 30000);
+      } catch (error) { fail(error instanceof Error ? error : Error(String(error))); }
+    }));
+    this.shutdownTimeoutMs = options.shutdownTimeoutMs ?? 10000;
   }
-
-  private async consumeErrors() {
-    try {
-      for await (const chunk of this.errorOutput.pipeThrough(new TextDecoderStream())) this.stderr = (this.stderr + chunk).slice(-8192);
-    } catch { /* Process loss is reported by status/readiness. */ }
+  private shutdownTimeoutMs: number;
+  private complete(code: number) {
+    if (!this.settled) { this.settled = true; this.finish({ code, success: code === 0 }); }
   }
-
-  private async readReady(timeoutMs: number): Promise<string> {
-    const reader = this.stdout.getReader();
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const timeout = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(Error('Backend startup timed out.')), timeoutMs); });
-    const decoder = new TextDecoder();
-    const read = async () => {
-      let pending = '';
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) throw Error(`Backend stopped before readiness.${this.stderr ? ` ${this.stderr}` : ''}`);
-        pending += decoder.decode(value, { stream: true });
-        if (encoder.encode(pending).length > MESSAGE_LIMIT) throw Error('Backend startup message exceeds 64 KiB.');
-        const newline = pending.indexOf('\n');
-        if (newline >= 0) return parseReady(pending.slice(0, newline).trim());
-      }
-    };
-    try { return await Promise.race([read(), timeout, this.status.then(() => { throw this.spawnError ?? Error('Backend stopped before readiness.'); })]); }
-    finally { clearTimeout(timer); await reader.cancel().catch(() => {}); reader.releaseLock(); }
-  }
-
   stop(): Promise<void> {
-    return this.stopping ??= this.shutdown();
+    return this.stopping ??= Promise.resolve().then(() => this.shutdown());
   }
-
   private async shutdown() {
-    if (this.exited) return;
-    // Command + EOF uses the same private protocol as Electron. EOF is also the
-    // safety net if the Deno host is terminated before async cleanup completes.
-    let graceTimer: ReturnType<typeof setTimeout> | undefined;
-    const grace = new Promise<boolean>(resolve => { graceTimer = setTimeout(() => resolve(false), 10000); });
+    await this.ready.catch(() => {});
+    if (this.settled) return;
+    const server = this.server!;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      await this.writer.write(encoder.encode('{"type":"shutdown"}\n'));
-      await this.writer.close();
-    } catch { /* Broken pipe: still wait for confirmed exit. */ }
-    const confirmed = await Promise.race([this.status.then(() => true), grace]);
-    clearTimeout(graceTimer);
-    if (confirmed) return;
-    try { this.child.kill('SIGKILL'); } catch { /* May already have exited. */ }
-    let forceTimer: ReturnType<typeof setTimeout> | undefined;
-    const forced = await Promise.race([this.status.then(() => true), new Promise<boolean>(resolve => { forceTimer = setTimeout(() => resolve(false), 1000); })]);
-    clearTimeout(forceTimer);
-    if (!forced) throw Error('Backend termination was not confirmed. Check for a remaining server before restarting.');
+      await new Promise<void>((resolve, reject) => {
+        timer = setTimeout(() => {
+          // Abort lingering HTTP clients; server close then releases SQLite/lock.
+          server.closeAllConnections();
+        }, this.shutdownTimeoutMs);
+        server.close(error => error ? reject(error) : resolve());
+        server.closeIdleConnections();
+      });
+      this.app!.locals.closeStore();
+      this.complete(0);
+    } finally { clearTimeout(timer); }
   }
 }
 

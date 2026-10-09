@@ -1,55 +1,54 @@
-# PC Workbench Deno WebView prototype
+# PC Workbench Deno desktop prototype
 
-This experiment uses official **Deno 2.9.7 desktop**, its pinned **Laufey 0.7.0 WebView backend**, and our existing Node SEA/SQLite server. Vue/Vuetify, CSV import/export and per-user settings are unchanged. The renderer receives no native bindings. The Deno wrapper proxies the interface over an ephemeral loopback port, validates Host/Origin and forwards backend revision headers and download attachments. The backend keeps its configured port, default 3001.
+This branch runs the whole application pipeline with **Deno 2.9.7**: dependency installation, Vite/Vue development, Vue/TypeScript checks, the existing application tests, backend bundling, and desktop packaging. Express, CSV libraries and native `node:sqlite` execute inside Deno through its Node compatibility layer. **No Node installation, pnpm, Electron, Node server sidecar, or Node runtime executable is required.** npm packages and platform build binaries such as esbuild/Rolldown remain development dependencies managed by Deno.
 
-## Windows trial
+## Development and validation
 
-1. Extract the **entire ZIP** into a writable folder under your user profile. Keep the executable, runtime DLL and `pc-workbench-server.exe` together.
-2. Make sure **Microsoft Edge WebView2 Runtime** is installed. This prototype does not install or bundle it.
-3. Close any other running PC Workbench server, then run `pc-workbench-deno-prototype-win-x64.exe`.
-4. Save all drafts before closing. This is an evaluation package, not the production desktop replacement.
-
-The existing `%APPDATA%\pc-workbench\config.json`, `%LOCALAPPDATA%\pc-workbench\data` defaults, CSV imports/exports and backups still apply. The prototype opens the **same configured workspace** as the other packages. For an isolated trial, use a separate settings file via `BENCH_CONFIG_FILE` or set `BENCH_DATA_DIR` before launching. Changing the data directory does not move data.
-
-WebView2 browser cache is separate from SQLite. The pinned backend defaults to a folder beside the launcher; hence the writable extraction directory requirement. A Windows launcher can set `WEBVIEW2_USER_DATA_FOLDER` to a user-owned directory **before** starting the native executable. Setting it later from TypeScript may occur after browser initialization.
-
-## Findings and limits
-
-- Official `deno desktop` is available in the released Deno 2.9.7. The Windows WebView backend is a small native launcher with a Deno runtime DLL; Chromium is not bundled. No Rust/C#/Go build toolchain is required.
-- Startup/readiness and private stdin shutdown integrate with the tested Node executable. Closing or losing the wrapper's pipe triggers server shutdown and SQLite closure. No HTTP shutdown endpoint is added.
-- **Unsaved-close protection is a blocker:** the pinned Windows backend automatically accepts `beforeunload`, and Deno's native close event is a noncancelable notification despite the guide's cancellation example. This prototype cannot promise to retain unsaved drafts when the title-bar close button is used.
-- **Native navigation/popup policy is a blocker:** this Deno version exposes no pre-navigation veto, popup policy or WebView permission interception. The pinned Windows backend opens HTTP/HTTPS popup URLs in the external browser without requiring user activation. Response CSP reduces exposure but cannot replace native controls. Do not expose privileged native bindings to the renderer.
-- WebView2 must already be installed. A writable browser-cache directory and an explicit runtime/bootstrapper strategy are needed for production deployment.
-- Packaging produces multiple files. A single portable launcher needs an additional packager. The current experiment uses a ZIP; Deno's default MSI installation into Program Files needs a browser-cache override and bundled sidecar integration before use.
-- The wrapper has subprocess permission to start its bundled backend and environment access to preserve the backend's per-user settings and overrides. It uses Deno's Node-compatible `spawn` with `windowsHide: true`, because `Deno.Command` does not expose console suppression. Production permission scopes and the missing native policies must be resolved before adoption.
-
-Source evidence: [Deno API](https://github.com/denoland/deno/blob/v2.9.7/cli/tsc/dts/lib.deno.desktop.d.ts), [Deno close callback](https://github.com/denoland/deno/blob/v2.9.7/cli/rt_desktop/lib.rs), [Windows WebView backend](https://github.com/littledivy/laufey/blob/v0.7.0/webview/src/webview_windows.cc), [distribution guide](https://docs.deno.com/runtime/desktop/distribution/).
-
-## Reproduce
-
-Install Deno **2.9.7** plus the repository's normal Node/pnpm toolchain. Build the frontend and matching SEA backend, then the wrapper:
+Run from the repository root with Deno 2.9.7 on PATH:
 
 ```sh
-pnpm package:server:windows
-pnpm prototype:deno:windows
+deno install --frozen
+deno task dev
 ```
 
-`BENCH_DENO_BIN` optionally selects the Deno executable. The builder also detects `.standalone/deno-tools/deno[.exe]` if a locally downloaded runtime is present. On Unix build hosts, ZIP packaging requires the `zip` utility; Windows uses PowerShell `Compress-Archive`. No Electron tooling is imported by this prototype builder. Staging occurs outside the pnpm workspace so unused npm dependencies cannot inflate the Deno payload.
-
-Linux GUI comparison (requires GTK/WebKitGTK and a graphical display):
+Open http://127.0.0.1:5173. The frontend and API are Deno processes; Vite provides Vue HMR, and the API restarts on source changes. Ctrl+C stops both. The default development workspace is `data/`; use `BENCH_DATA_DIR` for an isolated workspace. The API defaults to port 3001; if overriding `PORT`, update the frontend proxy accordingly.
 
 ```sh
-pnpm package:standalone
-node tools/build-deno-desktop.mjs --target linux-x64
+deno task check          # Deno tools plus Vue/shared/backend TypeScript checks
+deno task test           # All 216 existing application assertions, verified via JUnit
+deno task build         # Vue assets + self-contained backend module + desktop typechecks
+deno task test:desktop  # Build, then six real in-process Deno backend integration tests
+deno task desktop       # Build and run the native WebView window
 ```
 
-Run the Deno-side tests with a matching SEA backend and disposable test data:
+Tests use disposable workspaces, not your configured data. The desktop host tests use read/write/env/sys and localhost network permissions; they require **no subprocess permission**. `deno task build` uses native build tools; `deno task dev` supervises Deno child processes. The Vue checker runs TypeScript 6 inside Deno because Vue tooling needs the JavaScript compiler API, and Deno 2.9.7 itself ships TypeScript 6.
+
+`deno task build` generates the ignored `prototypes/deno/server-bundle.mjs`, containing the backend's actual npm dependencies and embedded frontend assets. Runtime packages do not need `node_modules`, source files, or network access to package registries. The tracked declaration describes the host boundary; the shared implementation is checked separately by the Vue/TypeScript checker.
+
+## Package and Windows trial
 
 ```sh
-cd prototypes/deno
-BENCH_DENO_SERVER=../../bin/pc-workbench-linux-x64 deno test --config deno.json --allow-read --allow-write --allow-env --allow-net=127.0.0.1 --allow-run backend.test.ts
+deno task package:windows
+# Optional Linux comparison (GTK/WebKitGTK required):
+deno task package linux-x64
 ```
 
-Use an **absolute** `BENCH_DENO_SERVER` path on Windows or when starting from another directory. `BENCH_DENO_HEADLESS=1` runs `main.ts` without a native window for proxy/lifecycle diagnostics; it does not validate WebView rendering or Windows close behavior. Never treat a Linux test as proof of Windows GUI operation.
+The Windows output is `bin/pc-workbench-deno-prototype-win-x64.zip`. Extract the entire ZIP into a writable user-owned folder and run `pc-workbench-deno-prototype-win-x64.exe`. Keep the Deno runtime DLL beside the launcher. There is no `pc-workbench-server.exe` and no Node executable. The builder cleans its old target output, stages only runtime files outside the workspace, checks for forbidden sidecars, and records file checksums. Unix build hosts need `zip`; Windows packaging uses native PowerShell.
 
-Validation results and package sizes are recorded in the repository's `docs/DENO-PROTOTYPE.md`.
+Microsoft Edge WebView2 Runtime must already be installed. The pinned native backend defaults its browser cache beside the launcher, requiring writable extraction. `WEBVIEW2_USER_DATA_FOLDER` can be configured before launching; setting it from application TypeScript can be too late for native initialization.
+
+The existing `%APPDATA%\pc-workbench\config.json` and `%LOCALAPPDATA%\pc-workbench\data` defaults remain supported. `BENCH_CONFIG_FILE`, `BENCH_DATA_DIR` and `PORT` overrides still work. Changing storage settings does not move existing data. Close any application using the same workspace before launching; native SQLite and the existing workspace lock protect it. For trials, select a disposable data directory.
+
+The backend runs **in the same process** as the desktop host, on the configured loopback API port. The window's proxy uses a separate ephemeral loopback port, preserving Host/Origin checks, CSP, revision headers and CSV/backup download attachments. The renderer receives no native bindings. Graceful close drains idle clients and bounds outstanding requests before closing SQLite; process loss cannot leave a detached backend process behind. SQLite's normal WAL recovery handles an abrupt process termination.
+
+`BENCH_DENO_HEADLESS=1` runs the same host without a native window and prints its proxy URL for diagnostics. It validates the packaged backend but does not validate Windows WebView behavior.
+
+## Remaining desktop limits
+
+Removing Node does not fix the reviewed native window backend's policy limitations:
+
+- Windows `beforeunload` is automatically accepted and the native close notification is not cancelable. Save drafts before closing; unsaved-close protection remains a production blocker.
+- This version exposes no pre-navigation veto, popup policy or WebView permission interception. The pinned Windows backend can open popup URLs externally without user activation. CSP reduces exposure but cannot replace native controls.
+- The package still contains a launcher and runtime DLL. WebView2 installation, writable browser cache, code signing and a production installer strategy remain deployment work.
+
+See [evaluation evidence](../../docs/DENO-PROTOTYPE.md) and the [migration specification](../../docs/MIGRATION.md). Native Linux runtime tests and a Windows cross-build do not prove Windows GUI execution.
