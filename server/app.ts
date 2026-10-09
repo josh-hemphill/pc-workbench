@@ -29,6 +29,13 @@ app.use((req,res,next)=>{
  res.setHeader('X-Content-Type-Options','nosniff');next();
 });
 app.use(express.json({limit:'10mb'}));
+// Presentation settings are independent of inventory revision preconditions.
+app.get('/api/preferences',(_req,res)=>res.json({theme:store.getThemePreference()}));
+app.put('/api/preferences',(req,res)=>{
+ const body=req.body;
+ if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).length!==1||!Object.hasOwn(body,'theme'))return res.status(400).json({error:'Provide only a theme preference.'});
+ store.setThemePreference(body.theme);res.json({theme:store.getThemePreference()});
+});
 app.use('/api',(req,res,next)=>{const json=res.json.bind(res),send=res.send.bind(res);res.json=((body:unknown)=>{res.setHeader('X-Workspace-Revision',store.revision);return json(body);}) as typeof res.json;res.send=((body:unknown)=>{res.setHeader('X-Workspace-Revision',store.revision);return send(body);}) as typeof res.send;if(!['GET','HEAD','OPTIONS'].includes(req.method)&&req.path!=='/restore/preview')store.assertWritable();const protectedEdit=req.method==='PUT'||req.method==='DELETE'||(req.method==='POST'&&(req.path.endsWith('/import')||req.path.endsWith('/commission')||req.path.endsWith('/decommission')||req.path==='/restore'));if(protectedEdit){if(!req.headers['if-match'])return res.status(428).json({error:'Read the workspace revision and send it in If-Match before editing.'});if(req.headers['if-match']!==store.revision)return res.status(409).json({error:'Workspace changed. Reload before saving.'});}next();});
 app.get('/api/state',(_req,res)=>res.json({...store.db,revision:store.revision,recoveryRequired:store.recoveryRequired}));
 app.get('/api/report/:id',(req,res)=>{const cfg=store.db.configurations.find(c=>c.id===req.params.id);if(!cfg)return res.status(404).json({error:'Configuration not found'});res.json(checkConfiguration(cfg,store.db));});

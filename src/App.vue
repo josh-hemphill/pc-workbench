@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useTheme } from 'vuetify';
+import { themePreference, systemDark, saveAppearance } from './appearance';
+import { isThemePreference } from '../shared/appearance';
 import { computed, onMounted, onBeforeUnmount, nextTick, watch, ref } from 'vue';
 import { mdiViewDashboardOutline, mdiMemory, mdiLan, mdiDesktopTowerMonitor, mdiHarddisk, mdiDatabaseOutline, mdiPlus, mdiMagnify, mdiArrowTopRight, mdiArrowLeft, mdiDownload, mdiUpload, mdiCheckCircleOutline, mdiAlertCircleOutline, mdiClose, mdiContentCopy, mdiTrashCanOutline, mdiCubeOutline, mdiArrowRight, mdiCogOutline, mdiRefresh, mdiCheck, mdiChevronRight, mdiInformationOutline } from '@mdi/js';
 import type { Category, Component, Configuration, Database, InventoryPC, Placement, Specs, System } from '../shared/types';
@@ -16,6 +19,13 @@ import { catalogSuggestions, normalizeCatalogValue, normalizeCatalogValues, cata
 import { connectionPortTotals, connectionSummary, portLabel } from '../shared/ports';
 import {componentCapabilities,storageAdapterKind,storageAdapterKinds,retainedAdvancedFields} from '../shared/component-capabilities';
 import PcLifecycleEditor from './PcLifecycleEditor.vue';
+const theme=useTheme();
+watch([themePreference,systemDark],()=>{
+ const dark=themePreference.value==='dark'||(themePreference.value==='system'&&systemDark.value);
+ document.documentElement.dataset.theme=dark?'dark':'light';
+ void theme.change(dark?'benchDark':'bench');
+},{immediate:true});
+function changeAppearance(event:Event){const value=(event.target as HTMLSelectElement).value;if(isThemePreference(value))void saveAppearance(value).catch(error=>toast(String(error.message)));}
 const db=ref<Database>({components:[],systems:[],configurations:[],pcs:[],inventory:[],requirementsSets:[],installationLocations:[]});
 const installationsWorkspace=ref<{hasUnsavedChanges:()=>boolean;confirmDiscard:()=>boolean}|null>(null);
 const inventoryWorkspace=ref<{hasUnsavedChanges:()=>boolean;confirmDiscard:()=>boolean}|null>(null);
@@ -147,7 +157,7 @@ onMounted(async()=>{await load();const context=(document as Document&{modelConte
    <div class="sidebar-footer"><span class="status-dot" /> SQLite storage<span>v0.2</span></div>
   </aside>
   <main id="main-content" class="main" tabindex="-1" aria-label="Workspace content">
-   <header class="topbar"><div>Workspace <v-icon aria-hidden="true" :icon="mdiChevronRight" size="15" /> <span>{{page}}</span><template v-if="working"><v-icon aria-hidden="true" :icon="mdiChevronRight" size="15" /><span>{{working.name}}</span></template></div><div class="local-status"><v-btn variant="text" :icon="mdiRefresh" size="small" aria-label="Reload workspace" @click="refreshWorkspace" /><span class="status-dot" />Local workspace<v-divider vertical class="mx-4" /></div></header>
+   <header class="topbar"><div>Workspace <v-icon aria-hidden="true" :icon="mdiChevronRight" size="15" /> <span>{{page}}</span><template v-if="working"><v-icon aria-hidden="true" :icon="mdiChevronRight" size="15" /><span>{{working.name}}</span></template></div><div class="local-status"><label class="appearance-control"><span class="sr-only">Appearance</span><select :value="themePreference" aria-label="Appearance" @change="changeAppearance"><option value="system">System theme</option><option value="light">Light theme</option><option value="dark">Dark theme</option></select></label><v-btn variant="text" :icon="mdiRefresh" size="small" aria-label="Reload workspace" @click="refreshWorkspace" /><span class="status-dot" />Local workspace<v-divider vertical class="mx-4" /></div></header>
    <div v-if="loading" class="loading-state"><v-progress-circular indeterminate color="primary" /><p>Opening your workbench…</p></div>
    <div v-else-if="failure" class="page-content"><v-alert type="error" role="alert" title="Cannot connect to the local server">{{failure}}<br>Start the app with deno task dev or deno task start.</v-alert><v-btn class="mt-4" @click="load">Retry</v-btn></div>
    <div v-else class="page-content"><v-alert v-if="recoveryRequired" type="error" role="alert" class="mb-6" title="Workspace recovery required">A disk operation could not finish safely. Edits are blocked. Stop and restart the local server to process recovery before continuing.</v-alert>

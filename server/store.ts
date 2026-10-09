@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { isThemePreference, type ThemePreference } from '../shared/appearance';
 import {createHash,randomUUID} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
 import {durableWrite} from './persistence';
@@ -56,6 +57,16 @@ export class Store {
   }catch(error){this.sqlite.close();throw error;}
  }
  close(){if(this.closed)return;this.sqlite.close();this.closed=true;}
+ getThemePreference():ThemePreference {
+  const value=this.sqlite.prepare("SELECT value FROM workspace_meta WHERE key='theme'").get()?.value;
+  return isThemePreference(value)?value:'system';
+ }
+ setThemePreference(theme:unknown) {
+  this.assertWritable();
+  if(!isThemePreference(theme))throw Error('Theme must be system, light or dark.');
+  // Presentation settings do not change records or their optimistic revision.
+  this.sqlite.prepare('INSERT OR REPLACE INTO workspace_meta(key,value) VALUES(?,?)').run('theme',theme);
+ }
  /** Called only inside a transaction; tests can inject failures between collection writes. */
  persist(collection:Collection,rows:unknown[]){
   for(const row of rows)if(Buffer.byteLength(encodeCSV(collection,[row]))>maxCSVRecordSize)throw Error('A CSV record exceeds the 64 MiB limit; archive or split history before continuing.');

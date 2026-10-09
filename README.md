@@ -18,7 +18,7 @@ deno task build
 deno task start
 ```
 
-Open **http://127.0.0.1:3001**. `deno task test` executes all 203 application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
+Open **http://127.0.0.1:3001**. `deno task test` executes all 204 application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
 
 ```sh
 deno task desktop          # Native local WebView
@@ -33,6 +33,8 @@ The API binds to loopback and rejects nonlocal Host/Origin requests. This is a s
 ## User settings and Windows desktop executable
 
 Configure a private per-user `config.json` with `dataDir` and an optional `port`. On Windows it lives at `%APPDATA%\pc-workbench\config.json`, and the desktop default database is under `%LOCALAPPDATA%\pc-workbench\data`. The Deno window manages its in-process server and SQLite shutdown; CSV import/export remains available. See [settings, packaging and data migration instructions](docs/STANDALONE.md).
+
+Choose **System theme**, **Light theme**, or **Dark theme** from the header. System theme follows operating-system changes. The preference is saved in the workspace SQLite database separately from inventory records; CSV exports and JSON data backups do not include appearance settings.
 
 ## Features
 
