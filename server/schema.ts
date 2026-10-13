@@ -17,6 +17,7 @@ const slot=z.object({id,bus:z.enum(['PCI','PCIe']),physical:z.number().int().min
 const baySize=z.enum(['2.5','3.5','5.25']);
 const sataInputs=z.array(z.object({id}).strict()).max(1000).refine(rows=>new Set(rows.map(row=>row.id)).size===rows.length,'SATA input IDs must be unique');
 const specs=z.object({
+ storageMedium:z.enum(['HDD','SSD']).optional(),
  storageAdapterKind:z.enum(['controller','pcie-sled','bay-cage','mount-adapter']).optional(),driveKind:z.enum(['disk','optical']).optional(),
  sataDataPorts:z.array(z.object({id,disabled:z.boolean().optional()}).strict()).max(1000).refine(rows=>new Set(rows.map(row=>row.id)).size===rows.length,'SATA data port IDs must be unique').optional(),
  sataPowerConnectors:z.array(z.object({id,harness:str.optional()}).strict()).max(1000).refine(rows=>new Set(rows.map(row=>row.id)).size===rows.length,'SATA power connector IDs must be unique').optional(),sataDataInputs:sataInputs.optional(),sataPowerInputs:sataInputs.optional(),

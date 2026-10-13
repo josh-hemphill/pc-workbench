@@ -74,3 +74,20 @@ test('UTF-8 BOM settings from Windows PowerShell preserve paths, Unicode and por
  const config=resolveRuntimeConfig({...options(home),env:{BENCH_CONFIG_FILE:file}});
  assert.equal(config.dataDir,path.resolve(path.dirname(file),'research-μ'));assert.equal(config.port,4100);
 }));
+
+test('user preferences and cache resolve independently of a custom app config and workspace',()=>fixture(home=>{
+ const file=path.join(home,'launcher-config.json');fs.writeFileSync(file,JSON.stringify({dataDir:'portable'}));
+ const standard=resolveRuntimeConfig(options(home));
+ const selected=resolveRuntimeConfig({...options(home),env:{BENCH_CONFIG_FILE:file}});
+ assert.equal(selected.userSettingsFile,standard.userSettingsFile);assert.equal(selected.cacheDir,standard.cacheDir);
+ assert.equal(selected.overrides.configFile,true);assert.equal(selected.overrides.userSettingsFile,false);
+ const explicit=resolveRuntimeConfig({...options(home),env:{BENCH_USER_SETTINGS_FILE:path.join(home,'preferences.json'),BENCH_CACHE_DIR:path.join(home,'cache')}});
+ assert.equal(explicit.userSettingsFile,path.join(home,'preferences.json'));assert.equal(explicit.cacheDir,path.join(home,'cache'));
+ assert.throws(()=>resolveRuntimeConfig({...options(home),env:{BENCH_CACHE_DIR:'relative'}}),/absolute directory/);
+}));
+test('Windows WebView cache uses the user profile and honors an existing WebView override',()=>{
+ const base={home:'C:\\Users\\Example',platform:'win32' as const,standalone:true};
+ assert.equal(resolveRuntimeConfig({...base,env:{}}).cacheDir,'C:\\Users\\Example\\AppData\\Local\\pc-workbench\\cache');
+ const overridden=resolveRuntimeConfig({...base,env:{WEBVIEW2_USER_DATA_FOLDER:'D:\\PrivateCache',BENCH_CACHE_DIR:'D:\\BenchCache'}});
+ assert.equal(overridden.cacheDir,'D:\\PrivateCache');assert.equal(overridden.overrides.cacheDir,true);
+});

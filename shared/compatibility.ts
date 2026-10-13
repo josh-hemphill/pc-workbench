@@ -312,7 +312,7 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
       if(group.controllerPlacementId&&!rows.some(r=>r.p.id===group.controllerPlacementId&&componentCapabilities(r.c).controller))add('error','Storage group controller missing',`${group.name}: select a motherboard or storage adapter.`);
     }
     const ungrouped=data.filter(r=>!r.p.group);
-    if(ungrouped.length)usableDataGb+=capacityGroup('default','Default data array',config.storage.raid,ungrouped);
+    if(ungrouped.length)usableDataGb+=capacityGroup(groups.some(g=>g.id==='default')?'default:ungrouped':'default','Default data array',config.storage.raid,ungrouped);
     if(data.some(r=>r.p.group&&!groups.some(g=>g.id===r.p.group)))add('error','Data drive group missing','A data drive names a storage group that no longer exists.');
   }else usableDataGb=capacityGroup('default','Data',config.storage.raid,data);
   if(!config.storage.bootMirror&&boots.length>1)add('warning','Multiple unmirrored boot drives','Confirm intended boot selection or enable a boot mirror.');

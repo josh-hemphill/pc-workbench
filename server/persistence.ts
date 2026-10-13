@@ -7,11 +7,11 @@ export class CommittedWriteError extends Error {
 }
 
 /** Flush contents before replacing a file; readers never see a partial CSV. */
-export function durableWrite(filename: string, contents: string) {
+export function durableWrite(filename: string, contents: string, mode?:number) {
  let committed=false;
  const temporary = `${filename}.${randomUUID()}.tmp`;
  try {
-  const fd = fs.openSync(temporary, 'wx');
+  const fd = fs.openSync(temporary, 'wx', mode);
   try { fs.writeFileSync(fd, contents); fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
   fs.renameSync(temporary, filename);
   committed=true;

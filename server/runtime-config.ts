@@ -9,7 +9,11 @@ export interface RuntimeConfigOptions {
   platform?: NodeJS.Platform;
   home?: string;
 }
-export interface RuntimeConfig { configFile: string; dataDir: string; port: number }
+export interface RuntimeConfig {
+  configFile: string; userSettingsFile: string; cacheDir: string; dataDir: string; port: number;
+  defaultDataDir: string; homeDir: string;
+  overrides: { dataDir: boolean; port: boolean; configFile: boolean; userSettingsFile: boolean; cacheDir: boolean };
+}
 
 /** Resolve user settings without creating directories or changing process state. */
 export function resolveRuntimeConfig(options:RuntimeConfigOptions={}):RuntimeConfig {
@@ -33,19 +37,24 @@ export function resolveRuntimeConfig(options:RuntimeConfigOptions={}):RuntimeCon
     return value;
   };
   const app='pc-workbench';
-  let configDir:string,dataDefault:string;
+  let configDir:string,dataDefault:string,cacheDefault:string;
   if(platform==='win32') {
     configDir=paths.join(directory('APPDATA',paths.join(home,'AppData','Roaming')),app);
     dataDefault=paths.join(directory('LOCALAPPDATA',paths.join(home,'AppData','Local')),app,'data');
+    cacheDefault=paths.join(directory('LOCALAPPDATA',paths.join(home,'AppData','Local')),app,'cache');
   }else if(platform==='darwin') {
     configDir=paths.join(home,'Library','Application Support',app);
     dataDefault=paths.join(configDir,'data');
+    cacheDefault=paths.join(home,'Library','Caches',app);
   }else {
     configDir=paths.join(directory('XDG_CONFIG_HOME',paths.join(home,'.config')),app);
     dataDefault=paths.join(directory('XDG_DATA_HOME',paths.join(home,'.local','share')),app);
+    cacheDefault=paths.join(directory('XDG_CACHE_HOME',paths.join(home,'.cache')),app);
   }
   const explicitConfig=env.BENCH_CONFIG_FILE!==undefined;
   const configFile=explicitConfig?paths.resolve(expand(nonempty(env.BENCH_CONFIG_FILE,'BENCH_CONFIG_FILE'))):paths.join(configDir,'config.json');
+  const userSettingsFile=env.BENCH_USER_SETTINGS_FILE!==undefined?paths.resolve(expand(nonempty(env.BENCH_USER_SETTINGS_FILE,'BENCH_USER_SETTINGS_FILE'))):paths.join(configDir,'user-settings.json');
+  const cacheDir=platform==='win32'&&env.WEBVIEW2_USER_DATA_FOLDER!==undefined?directory('WEBVIEW2_USER_DATA_FOLDER',cacheDefault):directory('BENCH_CACHE_DIR',cacheDefault);
   let fileSettings:{dataDir:string;port?:number}|undefined;
   try {
     const raw=fs.readFileSync(configFile,'utf8');
@@ -53,8 +62,9 @@ export function resolveRuntimeConfig(options:RuntimeConfigOptions={}):RuntimeCon
     try{parsed=JSON.parse(raw.replace(/^\uFEFF/,''));}catch(error){throw new Error(`Invalid JSON: ${(error as Error).message}`);}
     if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw new Error('Settings must be a JSON object with dataDir and optional port.');
     const settings=parsed as Record<string,unknown>;
-    const unknown=Object.keys(settings).filter(key=>key!=='dataDir'&&key!=='port');
-    if(unknown.length)throw new Error(`Unknown setting${unknown.length===1?'':'s'}: ${unknown.join(', ')}. Supported settings are dataDir and port.`);
+    if(settings.version!==undefined&&settings.version!==1)throw new Error('Unsupported settings version. Use a compatible application; the file has not been changed.');
+    const unknown=Object.keys(settings).filter(key=>key!=='dataDir'&&key!=='port'&&key!=='version');
+    if(unknown.length)throw new Error(`Unknown setting${unknown.length===1?'':'s'}: ${unknown.join(', ')}. Supported settings are version, dataDir and port.`);
     const dataDir=nonempty(settings.dataDir,'dataDir');
     if(settings.port!==undefined&&(typeof settings.port!=='number'||!Number.isInteger(settings.port)||settings.port<1||settings.port>65535))throw new Error('port must be an integer from 1 to 65535.');
     fileSettings={dataDir,...(settings.port!==undefined?{port:settings.port as number}:{})};
@@ -77,5 +87,6 @@ export function resolveRuntimeConfig(options:RuntimeConfigOptions={}):RuntimeCon
     if(!/^\d+$/.test(value)||!Number.isInteger(Number(value))||Number(value)<1||Number(value)>65535)throw new Error('PORT must be an integer from 1 to 65535.');
     port=Number(value);
   }
-  return {configFile,dataDir,port};
+  return {configFile,userSettingsFile,cacheDir,dataDir,port,homeDir:home,defaultDataDir:options.standalone?dataDefault:paths.resolve(options.sourceRoot??process.cwd(),'data'),
+    overrides:{dataDir:env.BENCH_DATA_DIR!==undefined,port:env.PORT!==undefined,configFile:explicitConfig,userSettingsFile:env.BENCH_USER_SETTINGS_FILE!==undefined,cacheDir:env.BENCH_CACHE_DIR!==undefined||(platform==='win32'&&env.WEBVIEW2_USER_DATA_FOLDER!==undefined)}};
 }

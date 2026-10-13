@@ -14,9 +14,11 @@ Room records remain valid for CSV/JSON import and retain their IDs, parents, PC 
 
 ## Native data tables and selection
 
-Installation locations, Location operations, PC inventory, and catalog missing-data lists use Vuetify `VDataTable`. They support sorting, pagination, page selection, individually named checkbox labels, and keyboard-accessible horizontal scrolling. Small detail/ledger tables continue to use `VTable`.
+Component catalog, component stock, requirements sets, Storage planner, installation locations, assigned PCs, and Location operations use Vuetify `VDataTable`. Enable **Bulk actions** to show selection checkboxes and the bulk toolbar; turning it off clears selection. Catalog missing-data lists retain their dedicated enrichment selection.
 
-The header checkbox selects or deselects the current page. Previously selected rows on other pages and outside current filters remain selected. **Add all matching … to selection** adds the full search/filter result to those existing selections, independent of pagination. The toolbar reports total selected and how many are hidden by filters. **Clear selection** removes all selections. Locations and PCs allow 500 selected records per bulk action; catalog missing-only fills keep their 100-part limit. Deleted IDs are removed from local selection when workspace data reloads.
+Fleet picklists, restock suggestions, installed parts, readiness lists, allocations, movement ledgers, and decommissioning reviews also support sorting and pagination. Read-only reports and ledgers do not offer generic bulk deletion. Search is available within tables that lack a page-level search. Small fixed resource/slot summaries and array capacities retain `VTable`.
+
+The header checkbox selects or deselects the current page. Previously selected rows on other pages and outside current filters remain selected. **Add all matching … to selection** adds the full search/filter result to those existing selections, independent of pagination. The toolbar reports total selected and how many are hidden by filters. **Clear selection** removes all selections. Record bulk actions allow 500 selected records per action; catalog missing-only fills keep their 100-part limit. Deleted IDs are removed from local selection when workspace data reloads.
 
 ## Preview and apply
 
@@ -25,6 +27,19 @@ Enable only the fields to change. Disabled fields retain their original values; 
 Location common edits cover kind, parent, target configuration, a published requirements set/revision, and notes. Parent choices exclude selected nodes and their descendants. The server also validates cycles, assignments and references. Changing a parent may change descendant display paths; previews report these additional paths and the PCs in the affected hierarchy. IDs and installed allocations remain unchanged.
 
 PC common edits cover installation assignment, notes, and Planning/Building/Maintenance/Parts only/Retired lifecycle states. Every edit uses the same lifecycle function as individual PC editing and records changes in each PC’s timeline. Changing assignment moves installed-part whereabouts with the PC while reserved stock stays at its home location; build plans and commissioning snapshots remain preserved. Commissioning and return to In service require their individual validated workflows. Parts-only units must return to Building before other active states. Retirement requires removing all installed parts and reservations.
+
+Other common edits:
+
+| Table | Editable fields | Deletion |
+| --- | --- | --- |
+| Component catalog | Manufacturer, source, verification | Only when no current records depend on the components |
+| Component inventory | Stock home location, condition, supplier, reorder level, notes | Retire through a condition edit; counts, identities, allocations and history remain preserved |
+| Requirements sets | Set description | Only unpublished, unreferenced sets; published revisions are retained |
+| Storage planner | Configuration description and notes | Only configurations without current dependencies |
+| Assigned PCs at a location | The same PC fields as PC inventory | The same allocation checks as PC inventory |
+| Vacant locations | The same location fields as installation locations | Current retired PC assignments still block deletion |
+
+Stock edits use the individual stock editor’s audit function and append movement events when metadata changes. Configuration edits use the individual configuration save function, increment revisions, and preserve approval history. Their storage plans and placements remain unchanged.
 
 Notes can be appended independently to each record or replaced; an empty Replace value clears notes.
 
@@ -73,7 +88,13 @@ Deletion applies only to explicitly selected IDs. It does not select descendants
 { "collection": "installationLocations", "action": "delete", "ids": ["empty-line", "empty-station"] }
 ```
 
-Delete requests also accept collection `pcs`. Edit patches require at least one supported field, and omitted fields remain untouched. Empty `parentId`, `targetConfigurationId`, or `installationLocationId` clears that binding. To clear requirements, use `{ "setId": "", "revision": 0 }`. Canonical requirement snapshots are captured by the server, not accepted from the caller. IDs must be unique and already exist.
+Delete requests also accept `pcs`, `components`, `requirementsSets`, and `configurations`. Inventory deletion is not a bulk operation. Edit requests additionally accept these strict patches:
+
+- `components`: `manufacturer`, `source`, `verified`.
+- `inventory`: `location`, `condition`, `supplier`, `reorderLevel`, `notes`.
+- `requirementsSets`: `description`.
+- `configurations`: `description`, `notes`.
+ Edit patches require at least one supported field, and omitted fields remain untouched. Empty `parentId`, `targetConfigurationId`, or `installationLocationId` clears that binding. To clear requirements, use `{ "setId": "", "revision": 0 }`. Canonical requirement snapshots are captured by the server, not accepted from the caller. IDs must be unique and already exist.
 
 After reviewing a valid preview, call `PUT /api/bulk/apply` with `If-Match: <preview.revision>` and:
 

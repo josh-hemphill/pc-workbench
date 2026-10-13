@@ -21,7 +21,7 @@ export async function buildBackend() {
  await collect(path.join(root,'dist'));
  if(!assets['/index.html'])throw Error('Frontend build missing: run deno task build.');
  try {
-  await build({stdin:{contents:`export {createApp} from './server/app.ts';\nexport {resolveRuntimeConfig} from './server/runtime-config.ts';\nimport {Buffer} from 'node:buffer';\nconst encoded=${JSON.stringify(assets)};\nexport const assets=Object.fromEntries(Object.entries(encoded).map(([name,value])=>[name,{data:Buffer.from(value.base64,'base64'),mime:value.mime}]));`,resolveDir:root,sourcefile:'deno-server-entry.ts',loader:'ts'},outfile:bundlePath,bundle:true,platform:'node',format:'esm',target:'es2022',minifyWhitespace:true,legalComments:'none',banner:{js:"import {createRequire as __denoCreateRequire} from 'node:module'; const require=__denoCreateRequire(import.meta.url);"},logLevel:'warning'});
+  await build({stdin:{contents:`export {createApp} from './server/app.ts';\nexport {resolveRuntimeConfig} from './server/runtime-config.ts';\nexport {assertSettingsSeparation} from './server/settings.ts';\nimport {Buffer} from 'node:buffer';\nconst encoded=${JSON.stringify(assets)};\nexport const assets=Object.fromEntries(Object.entries(encoded).map(([name,value])=>[name,{data:Buffer.from(value.base64,'base64'),mime:value.mime}]));`,resolveDir:root,sourcefile:'deno-server-entry.ts',loader:'ts'},outfile:bundlePath,bundle:true,platform:'node',format:'esm',target:'es2022',minifyWhitespace:true,legalComments:'none',banner:{js:"import {createRequire as __denoCreateRequire} from 'node:module'; const require=__denoCreateRequire(import.meta.url);"},logLevel:'warning'});
  } finally {stop();}
  console.log(`Deno backend bundle: ${bundlePath}`);
 }

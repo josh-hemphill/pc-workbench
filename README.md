@@ -18,7 +18,7 @@ deno task build
 deno task start
 ```
 
-Open **http://127.0.0.1:3001**. `deno task test` executes all 231 application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
+Open **http://127.0.0.1:3001**. `deno task test` executes all application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
 
 ```sh
 deno task desktop          # Native local WebView
@@ -28,13 +28,21 @@ deno task package:windows:single # Build a single self-extracting .exe on Window
 
 The package embeds the frontend and backend inside the Deno runtime. Its launcher/runtime DLL need no Node executable or external npm dependencies. See [Deno setup and packaging](docs/DENO.md) and [evaluation evidence](docs/DESKTOP-LIMITATIONS.md). Windows unsaved-close and native navigation/popup protections remain blockers for production adoption; save drafts before closing.
 
-The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port (update the Vite proxy if changed in development). `BENCH_DATA_DIR=/absolute/path` changes the storage directory.
+The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port; development reads the same configuration for its Vite proxy. `BENCH_DATA_DIR=/absolute/path` changes the storage directory.
+
+## Configuration transition prototype
+
+**Configuration transitions** plans general hardware changes across multiple configurations or installation scopes. Map each hardware group to a saved destination configuration, including bays, cages, adapters, controllers and other components, or use the SSD replacement assistant. It checks measured capacity targets and full-build compatibility, pools installed/reserved/free stock into a complete parts estimate, and stages pilot/rollout waves. Plans export as portable JSON with draft target configurations; order estimates export as CSV. Live PCs and inventory stay unchanged. See [workflow and limits](docs/CONFIGURATION-TRANSITIONS.md).
 
 ## User settings and Windows desktop executable
 
 Configure a private per-user `config.json` with `dataDir` and an optional `port`. On Windows it lives at `%APPDATA%\pc-workbench\config.json`, and the desktop default database is under `%LOCALAPPDATA%\pc-workbench\data`. The Deno window manages its in-process server and SQLite shutdown; CSV import/export remains available. See [settings, packaging and data migration instructions](docs/STANDALONE.md).
 
-Choose **System theme**, **Light theme**, or **Dark theme** from the header. System theme follows operating-system changes. The preference is saved in the workspace SQLite database separately from inventory records; CSV exports and JSON data backups do not include appearance settings.
+Open **Settings** beside **Data & imports** for user appearance and local app storage/runtime settings. **User settings → Appearance** previews Bench green, Slate blue and Graphite with System/Light/Dark modes, custom color editing, reset and JSON export. **Apply appearance** saves the palette and both modes’ color edits for the OS user; **Cancel preview** restores the saved appearance. The header retains a quick mode selector, disabled while previewing. Navigation and reload guard unsaved settings. Review custom colors for contrast before adoption.
+
+User preferences are saved in **`user-settings.json`** in the user profile, separately from **`config.json`** (workspace directory and API port) and **`workbench.sqlite`** (portable records/history). Neither settings file nor browser cache belongs inside the workspace. Opening another workspace does not change appearance. A legacy workspace theme is offered for explicit import only when user preferences do not yet exist.
+
+**App settings → Storage & runtime** shows saved/effective locations and environment overrides. Enter an absolute workspace directory and API port, **Validate & preview**, then **Save for next launch**. These changes require restarting; they never move, merge or delete the active workspace. Use Data & imports backup/restore or a whole-directory copy with the app stopped to transfer records. CSV and workspace JSON backups exclude personal settings. See [storage and settings details](docs/STANDALONE.md).
 
 ## Features
 
@@ -177,3 +185,5 @@ A dual SATA cage routes two tray channels to two motherboard/controller ports wh
 Reservations, installed stock, planned-versus-installed comparisons and commissioning snapshots preserve the same physical bay and SATA wiring assignments, resolving planned provider IDs to installed allocations. See [the migration specification](docs/MIGRATION.md) for CSV/JSON field definitions and a complete cage example.
 
 Component list specifications use multi-select comboboxes with catalog suggestions, including shared socket and board-form vocabularies. Suggestions reuse existing spellings after trimming and case-insensitive matching; you can still enter a new value. These helpers do not infer that different manufacturer identifiers are equivalent. Numeric M.2 lengths remain numeric arrays in CSV/JSON.
+
+CSV imports in Data & imports now preview additions, updates, unchanged records and conflicts before applying the reviewed file. Applying requires both the exact reviewed file and its workspace revision. Related-record links between PCs, stock, configurations and installations include a return control that restores the source filters and detail tab. Mobile navigation opens from the Menu button. Configuration transition plans and valid draft edits are stored in portable workspace SQLite data and included in JSON backups; user settings remain separate.

@@ -23,12 +23,12 @@ watch(field,()=>{value.value=selectedField.value?.kind==='array'?[]:selectedFiel
 watch(commonFields,fields=>{if(!fields.some(f=>f.key===field.value))field.value='';});
 function toggle(id:string,checked:boolean){selected.value=checked?[...new Set([...selected.value,id])]:selected.value.filter(x=>x!==id);}
 function selectVisible(){selected.value=[...new Set([...selected.value,...rows.value.map(r=>r.component.id)])].slice(0,100);}
-function hasUnsavedChanges(){return !!field.value&&!isMissing(value.value)||Object.keys(urls.value).length>0||Object.values(files.value).some(Boolean);}
-function confirmDiscard(){if(hasUnsavedChanges()&&!window.confirm('Discard pending catalog fill values and queue URLs?'))return false;field.value='';urls.value={};files.value={};return true;}
+function hasUnsavedChanges(){return busy.value||!!field.value&&!isMissing(value.value)||Object.keys(urls.value).length>0||Object.values(files.value).some(Boolean);}
+function confirmDiscard(){if(busy.value)return false;if(hasUnsavedChanges()&&!window.confirm('Discard pending catalog fill values and queue URLs?'))return false;field.value='';urls.value={};files.value={};return true;}
 defineExpose({hasUnsavedChanges,confirmDiscard});
 function beforeUnload(event:BeforeUnloadEvent){if(hasUnsavedChanges()){event.preventDefault();event.returnValue='';}}
 async function request(url:string,body:unknown){const response=await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json','If-Match':props.revision},body:JSON.stringify(body)});const result=await response.json();if(!response.ok)throw Error(result.error||'Request failed');return result;}
-async function perform(action:()=>Promise<void>){busy.value=true;error.value='';try{await action();}catch(e){error.value=e instanceof Error?e.message:String(e);}finally{busy.value=false;}}
+async function perform(action:()=>Promise<void>){if(busy.value)return;busy.value=true;error.value='';try{await action();}catch(e){error.value=e instanceof Error?e.message:String(e);}finally{busy.value=false;}}
 async function poll(){try{const r=await fetch('/api/enrichment');if(!r.ok)return;const data=await r.json();jobs.value=data.jobs;running.value=data.running;for(const j of jobs.value){if(j.state!=='review'||!j.proposal){delete reviewKeys.value[j.id];continue;}const keys=Object.keys(j.proposal.patch);reviewKeys.value[j.id]=reviewKeys.value[j.id]?reviewKeys.value[j.id].filter(key=>keys.includes(key)):keys;}}catch{/* Explicit queue actions report connection failures. */}}
 function labelTables(){for(const wrapper of document.querySelectorAll<HTMLElement>('.catalog-maintenance .v-table__wrapper')){wrapper.tabIndex=0;wrapper.setAttribute('role','region');wrapper.setAttribute('aria-label',`${wrapper.querySelector('caption')?.textContent?.trim()||'Catalog data'}; scroll to view all columns`);}}
 onUpdated(labelTables);

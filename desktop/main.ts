@@ -1,12 +1,16 @@
 import { Backend, proxyRequest } from './backend.ts';
 import { startDesktopProxy } from './proxy-server.ts';
 // @deno-types="./server-bundle.d.mts"
-import { createApp, resolveRuntimeConfig, assets } from './server-bundle.mjs';
+import { createApp, resolveRuntimeConfig, assertSettingsSeparation, assets } from './server-bundle.mjs';
 
 const headless = Deno.env.get('BENCH_DENO_HEADLESS') === '1';
 if (!headless && typeof Deno.BrowserWindow !== 'function') {
   throw new Error('The native window requires Deno’s desktop runtime. Run deno task desktop from the repository root; ordinary deno run does not provide BrowserWindow.');
 }
+// Resolve settings before creating WebView: its cache must not follow the executable/workspace.
+const config = resolveRuntimeConfig({ standalone: true });
+assertSettingsSeparation(config);
+if (Deno.build.os === 'windows') Deno.env.set('WEBVIEW2_USER_DATA_FOLDER', config.cacheDir);
 const appWindow = headless ? undefined : new Deno.BrowserWindow({ title: 'PC Workbench (save before closing)', width: 1440, height: 960 });
 appWindow?.setTitle('PC Workbench (save before closing)');
 let backend: Backend | undefined;
@@ -34,8 +38,7 @@ if (Deno.build.os !== 'windows') {
   Deno.addSignalListener('SIGINT', () => { void close(); });
 }
 try {
-  const config = resolveRuntimeConfig({ standalone: true });
-  backend = new Backend(() => createApp(config.dataDir, { assets }), { port: config.port });
+  backend = new Backend(() => createApp(config.dataDir, { assets, runtimeConfig: config }), { port: config.port });
   backendOrigin = await backend.ready;
   // Native startup gives up waiting after 15 s; explicitly refresh when ready.
   // Explicit navigation replaces any earlier startup/error document.

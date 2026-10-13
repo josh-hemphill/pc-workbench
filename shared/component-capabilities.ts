@@ -27,6 +27,7 @@ export function componentCapabilities(component:Component) {
 export function retainedAdvancedFields(component:Component):string[] {
  const c=componentCapabilities(component),spec=component.specs,hidden:string[]=[];
  const hide=(allowed:boolean,keys:(keyof Specs)[])=>{if(!allowed)for(const key of keys)if(spec[key]!==undefined)hidden.push(key);};
+ hide(component.category==='Drive'&&!c.optical,['storageMedium']);
  hide(component.category==='Chassis',['supportedForms','rearSlots','maxCardLengthMm','maxCardHeightMm','maxCoolerHeightMm','bays25','bays35','bays525','hotSwapBays']);
  hide(['CPU','Motherboard'].includes(component.category),['socket']);hide(['Memory','Motherboard'].includes(component.category),['memoryType']);hide(component.category==='Motherboard',['slots','dimmSlots','maxMemoryGb','m2Slots','m2Lengths','bifurcation']);
  hide(c.sataController,['sataPorts']);hide(component.category==='PSU',['sataPower','capacityW']);hide(component.category==='Cooler',['supportsSockets']);hide(component.category==='Drive',['driveInterface','driveSize']);hide(component.category==='Memory'||component.category==='Drive'&&!c.optical,['capacityGb']);

@@ -1,3 +1,6 @@
+import {checkConfiguration} from '../shared/compatibility';
+import {saveConfigurationRecord} from './configuration-record';
+import {saveStockRecord} from './inventory';
 import {createHash} from 'node:crypto';
 import {z} from 'zod';
 import type {Database,InstallationLocation,InventoryPC} from '../shared/types';
@@ -11,10 +14,16 @@ const ids=z.array(id).min(1).max(500).refine(v=>new Set(v).size===v.length,'Sele
 const notes=z.object({mode:z.enum(['replace','append']),value:z.string().max(10000)}).strict();
 const locationPatch=z.object({kind:z.enum(locationKinds).optional(),parentId:reference.optional(),targetConfigurationId:reference.optional(),requirements:z.object({setId:reference,revision:z.number().int().min(0).max(1000000)}).strict().optional(),notes:notes.optional()}).strict().refine(p=>Object.keys(p).length>0,'Choose at least one field to edit.');
 const pcPatch=z.object({installationLocationId:reference.optional(),lifecycle:z.enum(['Planning','Building','Maintenance','Parts only','Retired']).optional(),notes:notes.optional()}).strict().refine(p=>Object.keys(p).length>0,'Choose at least one field to edit.');
+const nonempty=(p:object)=>Object.keys(p).length>0;
+const text=z.string().max(10000);
 export const bulkSchema=z.union([
+ z.object({collection:z.literal('components'),action:z.literal('edit'),ids,patch:z.object({manufacturer:text.optional(),source:text.optional(),verified:z.boolean().optional()}).strict().refine(nonempty)}).strict(),
+ z.object({collection:z.literal('inventory'),action:z.literal('edit'),ids,patch:z.object({location:text.optional(),condition:z.enum(['Serviceable','Quarantined','Repair','Retired']).optional(),supplier:text.optional(),reorderLevel:z.number().int().min(0).max(1000000).optional(),notes:notes.optional()}).strict().refine(nonempty)}).strict(),
+ z.object({collection:z.literal('requirementsSets'),action:z.literal('edit'),ids,patch:z.object({description:text.optional()}).strict().refine(nonempty)}).strict(),
+ z.object({collection:z.literal('configurations'),action:z.literal('edit'),ids,patch:z.object({description:text.optional(),notes:notes.optional()}).strict().refine(nonempty)}).strict(),
  z.object({collection:z.literal('installationLocations'),action:z.literal('edit'),ids,patch:locationPatch}).strict(),
  z.object({collection:z.literal('pcs'),action:z.literal('edit'),ids,patch:pcPatch}).strict(),
- z.object({collection:z.enum(['installationLocations','pcs']),action:z.literal('delete'),ids}).strict(),
+ z.object({collection:z.enum(['installationLocations','pcs','components','requirementsSets','configurations']),action:z.literal('delete'),ids}).strict(),
 ]);
 export const bulkToken=(request:BulkRequest,revision:string)=>createHash('sha256').update(JSON.stringify({request,revision})).digest('hex');
 const editNotes=(before:string,edit:NotesEdit)=>edit.mode==='append'?[before,edit.value].filter(Boolean).join('\n'):edit.value;
@@ -32,7 +41,7 @@ export function buildBulkCandidate(input:BulkRequest,db:Database){
    if(!selected.has(l.id))return l;const {requirements,notes,...patch}=request.patch;const updated={...l,...patch,...(notes?{notes:editNotes(l.notes,notes)}:{}),...(requirements?{requirementSetId:requirements.setId,requirementRevision:requirements.revision}: {})};
    return prepareInstallationRecord('installationLocations',updated,db) as InstallationLocation;
   });
- }else{
+ }else if(request.collection==='pcs'){
   if(request.action==='delete'){
    const allocations=db.inventory.flatMap(s=>s.allocations).filter(a=>selected.has(a.pcId));
    if(allocations.length)throw Error(`Cannot delete: ${allocations.length} reservations or installed allocations still reference selected PCs. PCs: ${[...new Set(allocations.map(a=>db.pcs.find(p=>p.id===a.pcId)?.name||a.pcId))].slice(0,5).join(", ")}. Remove installed parts and release reservations first.`);
@@ -42,11 +51,38 @@ export function buildBulkCandidate(input:BulkRequest,db:Database){
    return savePCRecord({...pc,...patch,...(notes?{notes:editNotes(pc.notes,notes)}:{})},db);
   });
  }
+ if(!['installationLocations','pcs'].includes(request.collection)){
+  if(request.action==='delete'){
+   if(request.collection==='requirementsSets'&&db.requirementsSets.some(s=>selected.has(s.id)&&s.versions.length))throw Error('Published requirement revisions cannot be deleted. Retain their history and edit metadata instead.');
+   (next[request.collection] as {id:string}[])=db[request.collection].filter(r=>!selected.has(r.id));
+  }else{
+   const records=db[request.collection].map(record=>{
+    if(!selected.has(record.id))return record;
+    const patch=request.patch as Record<string,unknown>,notes=patch.notes as NotesEdit|undefined;
+    const updated={...record,...patch,...(notes?{notes:editNotes('notes' in record?String(record.notes):'',notes)}:{})};
+    if(request.collection==='inventory')return saveStockRecord(updated,db);
+    if(request.collection==='configurations')return saveConfigurationRecord({...updated,updatedAt:new Date().toISOString()} as Database['configurations'][number],db);
+    return prepareInstallationRecord(request.collection,updated,db);
+   });
+   (next[request.collection] as unknown[])=records;
+  }
+ }
+ if(request.collection==='configurations')for(const config of next.configurations)if(config.status==='Approved'&&checkConfiguration(config,next).status==='Conflicts')throw Error(`${config.name}: resolve compatibility conflicts before approval`);
  const rows:BulkPreviewRow[]=request.ids.map(id=>{
   if(request.collection==='installationLocations'){
    const before=db.installationLocations.find(l=>l.id===id)!,after=next.installationLocations.find(l=>l.id===id);
    const describe=(l:InstallationLocation,d:Database)=>`${locationPath(l.id,d)} | ${l.kind} | target: ${d.configurations.find(c=>c.id===l.targetConfigurationId)?.name||'None'} | requirements: ${d.requirementsSets.find(s=>s.id===l.requirementSetId)?.name||'None'} r${l.requirementRevision} | notes: ${l.notes||'None'}`;
    return {id,name:before.name,before:describe(before,db),after:after?describe(after,next):'Delete location record'};
+  }
+  if(request.collection!=='pcs'){
+   const before=db[request.collection].find(r=>r.id===id)!,after=next[request.collection].find(r=>r.id===id);
+   const describe=(r:typeof before)=>{
+    if('componentId' in r)return `${r.serial||r.assetTag||r.id} | ${r.quantity} units | stock location: ${r.location||'None'} | ${r.condition} | supplier: ${r.supplier||'None'} | reorder level: ${r.reorderLevel||0} | notes: ${r.notes||'None'}`;
+    if('manufacturer' in r)return `${r.name} | manufacturer: ${r.manufacturer||'None'} | source: ${r.source||'None'} | ${r.verified?'Verified':'Needs verification'}`;
+    if('versions' in r)return `${r.name} | description: ${r.description||'None'} | ${r.versions.length} published revisions (unchanged)`;
+    return `${r.name} | ${r.status} | revision ${r.revision||0} | description: ${r.description||'None'} | notes: ${r.notes||'None'} | ${r.approvalHistory?.length||0} approved revisions retained`;
+   };
+   return {id,name:'name' in before?String(before.name):'componentId' in before?`${db.components.find(c=>c.id===before.componentId)?.name||before.componentId} · ${before.serial||before.assetTag||id}`:id,before:describe(before),after:after?describe(after):'Delete record'};
   }
   const before=db.pcs.find(p=>p.id===id)!,after=next.pcs.find(p=>p.id===id);
   const describe=(pc:InventoryPC)=>`${pc.name} | ${locationPath(pc.installationLocationId||'',db)||'Unassigned'} | ${pc.lifecycle||'Planning'} | notes: ${pc.notes||'None'}`;

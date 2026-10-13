@@ -9,11 +9,15 @@ The authoritative definitions are [`server/schema.ts`](../server/schema.ts), [`s
 | Mode | Behavior | Use |
 | --- | --- | --- |
 | Whole-workspace JSON | Validates all collections/references together; replaces the entire workspace in one SQLite transaction. Writes a safety backup first. | Preferred for an initial Excel migration, or a coordinated change spanning several collections. |
-| Collection CSV | Merges rows by `id`. An imported row replaces the entire existing record with that ID. IDs absent from the file remain. Each request is atomic; a sequence of imports is not. | Additive/incremental imports into an existing workspace. |
+| Collection CSV | Merges rows by `id`. Imported rows merge by ID; existing operational records retain managed history and follow editor rules. IDs absent from the file remain. Each request is atomic; a sequence of imports is not. | Additive/incremental imports into an existing workspace. |
 | Record/movement APIs | Apply operational rules, generating inventory history, PC timeline and approval/commissioning records where applicable. | New receipts, reservations, installations and changes after migration. |
 | Legacy CSV startup migration | On first initialization only, reads collection CSV files in the data directory and validates/migrates them into SQLite. Existing files are preserved. | Upgrade an existing PC Workbench workspace, not the preferred Excel ingestion route. |
 
-For JSON replacement, build a complete candidate from an exported backup if existing records must be retained. For CSV, include every field you intend to preserve on each replaced record: omitted optional values may disappear or become defaults. Import is not a field-level patch. Never infer that rows missing from an Excel extract should be deleted.
+For JSON replacement, build a complete candidate from an exported backup if existing records must be retained. For CSV, include every field you intend to preserve on each updated record: omitted optional values may disappear or become defaults. Import is not a field-level patch. Never infer that rows missing from an Excel extract should be deleted.
+
+CSV merges cannot rewrite existing stock counts, allocations or movement history, or PC commissioning/timeline history. Use inventory operations for count and allocation changes; use a reviewed whole-workspace restore when replacing historical data intentionally. New IDs can still carry evidenced migration history. Existing PC updates generate timeline entries, and existing configuration updates advance revisions while retaining prior approvals.
+
+All inventory movement/receipt/adjustment/serialization endpoints require the workspace revision in `If-Match`, like ordinary record writes. Read the revision before opening an action, not immediately before submitting an old draft.
 
 Configuration CSV import checks every Approved configuration in the merged collection for engineering Conflicts, including existing approved records absent from the CSV. An unrelated import may therefore fail if an existing approved plan has become conflicted. Whole-workspace JSON validation does not perform that approval check; engineering review remains a separate migration gate.
 

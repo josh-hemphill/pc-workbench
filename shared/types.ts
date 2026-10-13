@@ -20,7 +20,7 @@ export interface StorageBindings { bayTargetIds?: string[]; sataDataConnections?
 export interface DriveTarget { id: string; mount: Placement['mount']; driveSizes?: string[]; interfaces?: string[]; m2Lengths?: number[]; hotSwap?: boolean; bootable?: boolean; bayId?: string; sataDataInputId?: string; sataPowerInputId?: string }
 export interface LaneRule { id: string; slots: string[]; maxLanes?: number; exclusive?: boolean; disableM2Slots?: number; disableSataPorts?: number; disableSataPortIds?: string[] }
 export interface Specs {
-  storageAdapterKind?: 'controller'|'pcie-sled'|'bay-cage'|'mount-adapter'; driveKind?: 'disk'|'optical';
+  storageMedium?: 'HDD'|'SSD'; storageAdapterKind?: 'controller'|'pcie-sled'|'bay-cage'|'mount-adapter'; driveKind?: 'disk'|'optical';
   sataDataPorts?: SataDataPort[]; sataPowerConnectors?: SataPowerConnector[]; sataDataInputs?: SataInput[]; sataPowerInputs?: SataInput[];
   bayTargets?: BayTarget[]; baySize?: BaySize; bayUnits?: number; sataPowerPlugs?: number; ports?: Port[]; driveTargets?: DriveTarget[]; laneRules?: LaneRule[]; pciVoltage?: PciVoltage; pciBits?: 32|64; bifurcationMode?: string; supportedOS?: string[]; requiredDriver?: string; requiredFirmware?: string; bootable?: boolean; hotPlug?: boolean;
   socket?: string; formFactor?: string; supportedForms?: string[]; memoryType?: string; dimmSlots?: number; maxMemoryGb?: number; capacityGb?: number;
