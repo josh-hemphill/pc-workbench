@@ -70,7 +70,7 @@ export function transitionCohorts(db:Database,scenario:TransitionScenario):Trans
   const pc=db.pcs.find(p=>p.id===pcId);if(!pc)continue;
   const baseline=transitionBaseline(pc,db),cfg=baseline.configuration;
   const placementIndex=new Map(cfg?.placements.map((p,i)=>[p.id,`position-${i}`])||[]);
-  const normalize=(value:unknown):string=>JSON.stringify(value,(key,value)=>typeof value==='string'&&(key==='controllerPlacementId'||key==='cablePlacementId'||key==='powerProviderPlacementId'||key==='adapterPlacementId'||key==='placementId')?(placementIndex.get(value)||value):value);
+  const normalize=(value:unknown):string=>JSON.stringify(value,(key,value)=>typeof value==='string'&&(key==='providerPlacementId'||key==='controllerPlacementId'||key==='cablePlacementId'||key==='powerProviderPlacementId'||key==='adapterPlacementId'||key==='placementId')?(placementIndex.get(value)||value):value);
   const signature=normalize({locationRequirements:resolveRequirementVersion(db.installationLocations.find(l=>l.id===pc.installationLocationId)||{},db),source:pc.configurationId,provisional:baseline.provisional,placements:cfg?.placements.map(({id:_,...p})=>p),storage:cfg?.storage,systemId:cfg?.systemId,software:cfg?.software,portMappings:cfg?.portMappings,requirements:cfg&&resolveRequirementVersion(cfg,db),minimumBoot:baseline.minimumBoot,minimumData:baseline.minimumData});
   if(!groups.has(signature))groups.set(signature,{id:signature,name:db.configurations.find(c=>c.id===pc.configurationId)?.name||'Unlinked installed hardware',members:[],segments:segmentsFor(baseline,db)});
   groups.get(signature)!.members.push(baseline);

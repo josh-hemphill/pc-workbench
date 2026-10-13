@@ -7,7 +7,7 @@ import { schemas, stockActionSchema } from './schema';
 
 function clearPhysicalBindings(allocation:StockAllocation){
   if(allocation.bayTargetIds?.includes(allocation.targetId||''))allocation.targetId='';
-  for(const field of ['bayTargetIds','sataDataConnections','sataPowerConnections'] as const)delete allocation[field];
+  for(const field of ['bayTargetIds','sataDataConnections','sataPowerConnections','sffConnections'] as const)delete allocation[field];
 }
 
 function event(stock: StockRecord, action: StockEvent['action'], quantity: number, db: Database, allocation?: StockAllocation, notes = '', linkage: Pick<StockEvent, 'sourceAllocationId' | 'targetStockId'> = {}) {
@@ -66,7 +66,7 @@ export function applyStockOperation(original: StockRecord, input: unknown, db: D
       id: randomUUID(), pcId: pc.id, quantity: action.quantity, state: action.action === 'reserve' ? 'reserved' : 'installed',
       plannedPlacementId: action.plannedPlacementId, role: action.role || planned?.role || 'general',
       mount: action.mount || planned?.mount || 'auto', slotId: action.slotId ?? planned?.slotId ?? '',
-      ...mapStorageBindings({bayTargetIds:action.bayTargetIds??(inheritBindings?planned.bayTargetIds:undefined),sataDataConnections:action.sataDataConnections??(inheritBindings?planned.sataDataConnections:undefined),sataPowerConnections:action.sataPowerConnections??(inheritBindings?planned.sataPowerConnections:undefined)}),
+      ...mapStorageBindings({sffConnections:action.sffConnections??(inheritBindings?planned.sffConnections:undefined),bayTargetIds:action.bayTargetIds??(inheritBindings?planned.bayTargetIds:undefined),sataDataConnections:action.sataDataConnections??(inheritBindings?planned.sataDataConnections:undefined),sataPowerConnections:action.sataPowerConnections??(inheritBindings?planned.sataPowerConnections:undefined)}),
       notes: action.notes, createdAt: now, updatedAt: now,
       owner: action.owner || '', workOrder: action.workOrder || '', dueAt: action.dueAt || '', expiresAt: action.expiresAt || '',
       group: action.group ?? planned?.group ?? '', targetId: action.targetId ?? (planned&&!inheritBindings&&planned.bayTargetIds?.includes(planned.targetId||'')?'':planned?.targetId??''), adapterPlacementId: action.adapterPlacementId ?? planned?.adapterPlacementId ?? '', controllerPlacementId: action.controllerPlacementId ?? planned?.controllerPlacementId ?? '',

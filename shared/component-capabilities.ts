@@ -1,6 +1,6 @@
 import type {Component,Specs} from './types';
-export type StorageAdapterKind='controller'|'pcie-sled'|'bay-cage'|'mount-adapter';
-export const storageAdapterKinds=[{title:'SATA / storage controller',value:'controller'},{title:'PCIe NVMe sled',value:'pcie-sled'},{title:'Bay-mounted drive cage / backplane',value:'bay-cage'},{title:'Passive mounting adapter',value:'mount-adapter'}];
+export type StorageAdapterKind='controller'|'pcie-sled'|'bay-cage'|'mount-adapter'|'m2-converter';
+export const storageAdapterKinds=[{title:'M.2 to SFF adapter',value:'m2-converter'},{title:'SATA / storage controller',value:'controller'},{title:'PCIe NVMe sled',value:'pcie-sled'},{title:'Bay-mounted drive cage / backplane',value:'bay-cage'},{title:'Passive mounting adapter',value:'mount-adapter'}];
 export function storageAdapterKind(component:Component):StorageAdapterKind|undefined {
  if(component.category!=='Storage adapter')return undefined;
  const specs=component.specs as Specs&{storageAdapterKind?:StorageAdapterKind};
@@ -14,13 +14,13 @@ export function componentCapabilities(component:Component) {
  const optical=category==='Drive'&&(specs.driveKind?specs.driveKind==='optical':String(specs.driveSize)==='5.25');
  const slotCard=['GPU','Scientific card','Network card'].includes(category)||category==='Storage adapter'&&(adapter==='controller'||adapter==='pcie-sled');
  const software=['Motherboard','CPU','GPU','Scientific card','Network card','Drive'].includes(category)||category==='Storage adapter'&&adapter==='controller'||category==='Bay accessory'&&!!(specs.ports?.length||specs.requiredDriver||specs.requiredFirmware);
- return {adapter,optical,slotCard,pci:slotCard&&specs.slotBus==='PCI',pcie:slotCard&&specs.slotBus!=='PCI',software,
+ return {sffProvider:category==='Motherboard'||adapter==='controller'||adapter==='m2-converter',sff:category==='Motherboard'||category==='Storage adapter'||category==='Drive'&&specs.driveSize!=='M.2'&&!optical||category==='Bay accessory',m2Converter:adapter==='m2-converter',adapter,optical,slotCard,pci:slotCard&&specs.slotBus==='PCI',pcie:slotCard&&specs.slotBus!=='PCI',software,
  ports:['Motherboard','GPU','Scientific card','Network card','Bay accessory'].includes(category)||category==='Storage adapter'&&adapter==='controller',
- driveTargets:category==='Chassis'||category==='Motherboard'||category==='Storage adapter',laneRules:category==='Motherboard',
+ driveTargets:category==='Chassis'||category==='Motherboard'||category==='Storage adapter'&&adapter!=='m2-converter',laneRules:category==='Motherboard',
  bayConsumer:category==='Bay accessory'||category==='Storage adapter'&&(adapter==='bay-cage'||adapter==='mount-adapter')||optical,
  bayProvider:category==='Chassis'||category==='Storage adapter'&&adapter==='mount-adapter',
  sataController:category==='Motherboard'||category==='Storage adapter'&&adapter==='controller',
- m2:category==='Drive'&&specs.driveSize==='M.2'&&!optical,nvmeSled:adapter==='pcie-sled',controller:category==='Motherboard'||adapter==='controller',
+ m2:category==='Drive'&&specs.driveSize==='M.2'&&!optical||adapter==='m2-converter',nvmeSled:adapter==='pcie-sled',controller:category==='Motherboard'||adapter==='controller',
  };
 }
 /** Report retained records that this category-specific form deliberately leaves in JSON. */

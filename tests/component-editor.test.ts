@@ -126,8 +126,8 @@ test("validation issue paths route to the relevant selected-record section", () 
       ["slots", "expansion"],
       ["laneRules", "expansion"],
       ["sataDataInputs", "storage"],
-      ["driveTargets", "physical"],
-      ["bayTargets", "physical"],
+      ["driveTargets", "storage"],
+      ["bayTargets", "review"],
     ] as const
   ) assert.equal(issueSection(["specs", key, 17, "id"], board), section);
   assert.equal(issueSection(["name"], board), "basics");

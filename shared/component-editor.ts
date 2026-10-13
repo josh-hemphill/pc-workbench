@@ -1,6 +1,8 @@
 import type { Component, Database, PortKind, Specs } from "./types";
 import type { ComponentSection } from "./component-fields";
 export type ComponentCollection =
+  | "sffPorts"
+  | "sffInputs"
   | "ports"
   | "slots"
   | "bayTargets"
@@ -57,7 +59,11 @@ export function issueSection(
       "sledHotSwap",
     ].includes(key)
   ) return "expansion";
-  if (key.startsWith("sata") || ["m2Slots", "m2Lengths"].includes(key)) {
+  if (
+    key.startsWith("sff") ||
+    key === "driveTargets" && component.category === "Motherboard" ||
+    key.startsWith("sata") || ["m2Slots", "m2Lengths"].includes(key)
+  ) {
     return "storage";
   }
   if (
@@ -80,7 +86,7 @@ export function issueSection(
       "heightMm",
       "widthMm",
     ].includes(key) && !["Cable", "Consumable"].includes(component.category)
-  ) return "physical";
+  ) return component.category === "Motherboard" ? "review" : "physical";
   return key === "notes" ? "review" : "basics";
 }
 /** IDs referenced by current plans/installed hardware must stay stable. Historical snapshots retain their own catalog. */
@@ -93,6 +99,7 @@ export function componentReferences(
   const refs = new Set<string>(), spec = component.specs;
   for (const target of spec.driveTargets || []) {
     if (
+      collection === "sffInputs" && target.sffInputId === id ||
       collection === "bayTargets" && target.bayId === id ||
       collection === "sataDataInputs" && target.sataDataInputId === id ||
       collection === "sataPowerInputs" && target.sataPowerInputId === id
@@ -114,6 +121,11 @@ export function componentReferences(
       targetId?: string;
       adapterPlacementId?: string;
       bayTargetIds?: string[];
+      sffConnections?: {
+        providerPlacementId: string;
+        portId: string;
+        inputId?: string;
+      }[];
       sataDataConnections?: {
         controllerPlacementId: string;
         portId?: string;
@@ -150,13 +162,24 @@ export function componentReferences(
       ) refs.add(name);
       if (
         collection === "driveTargets" && row.targetId === id &&
-        owns(row.adapterPlacementId || "", "Chassis")
+        owns(
+          row.adapterPlacementId || "",
+          component.category === "Motherboard" ? "Motherboard" : "Chassis",
+        )
       ) refs.add(name);
       if (
         collection === "bayTargets" &&
         (row.bayTargetIds?.includes(id) || row.targetId === id) &&
         owns(row.adapterPlacementId || "", "Chassis")
       ) refs.add(name);
+      for (const connection of row.sffConnections || []) {
+        if (
+          collection === "sffPorts" && connection.portId === id &&
+            owns(connection.providerPlacementId, "Motherboard") ||
+          collection === "sffInputs" && row.componentId === component.id &&
+            connection.inputId === id
+        ) refs.add(name);
+      }
       for (const connection of row.sataDataConnections || []) {
         if (
           collection === "sataDataPorts" && connection.portId === id &&

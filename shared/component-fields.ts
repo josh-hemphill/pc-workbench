@@ -91,7 +91,7 @@ const specFields: Record<
       key: "driveInterface",
       label: "Interface",
       kind: "select",
-      items: ["SATA", "NVMe"],
+      items: ["SATA", "SAS", "NVMe"],
     },
     {
       key: "driveSize",
@@ -111,7 +111,7 @@ const specFields: Record<
       key: "cableProtocol",
       label: "Cable protocol",
       kind: "select",
-      items: ["SATA", "SAS", "SATA/SAS", "Power", "Other"],
+      items: ["SATA", "SAS", "SATA/SAS", "NVMe", "Power", "Other"],
     },
     {
       key: "connectorA",
@@ -182,12 +182,17 @@ export function componentFields(component: Component) {
       { key: "widthMm" as const, label: "Width (mm)" },
     ];
   fields = fields.filter((field) =>
+    !(c === "Motherboard" && component.specs.driveTargets !== undefined &&
+      ["m2Slots", "m2Lengths"].includes(field.key)) &&
     !(field.key === "lengthMm" && cap.bayConsumer) &&
     !(field.key === "m2Length" && !cap.m2) &&
     !(["capacityGb", "storageMedium"].includes(field.key) && cap.optical) &&
     !(["slotWidth", "requiredLanes", "minGeneration"].includes(field.key) &&
       cap.pci)
   );
+  if (cap.m2Converter) {
+    fields.push({ key: "m2Length", label: "M.2 adapter module length (mm)" });
+  }
   if (c === "Drive") {
     fields = fields.map((field) =>
       field.key === "driveSize"
@@ -273,11 +278,12 @@ export function componentSections(component: Component) {
     section === "expansion" &&
       (component.category === "Motherboard" || cap.slotCard) ||
     section === "storage" &&
-      (cap.sataController || component.category === "PSU" ||
+      (cap.sff || cap.sataController || component.category === "PSU" ||
         cap.adapter === "bay-cage" ||
         component.specs.sataPowerInputs !== undefined ||
         component.specs.sataPowerPlugs !== undefined) ||
     section === "physical" &&
-      (cap.bayProvider || cap.bayConsumer || cap.driveTargets)
+      (cap.bayProvider || cap.bayConsumer ||
+        cap.driveTargets && component.category !== "Motherboard")
   );
 }

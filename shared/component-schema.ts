@@ -21,11 +21,29 @@ const sataInputs = z.array(z.object({ id }).strict()).max(1000).refine(
   (rows) => new Set(rows.map((row) => row.id)).size === rows.length,
   "SATA input IDs must be unique",
 );
+const sffEndpoints = z.array(
+  z.object({
+    id,
+    connector: z.string().trim().min(1).max(200),
+    protocols: z.array(z.enum(["SATA", "SAS", "NVMe"])).max(3).refine(
+      (values) => new Set(values).size === values.length,
+      "Protocols must be unique",
+    ).optional(),
+    channels: z.number().int().min(1).max(32).optional(),
+    pcieLanes: z.number().int().min(1).max(32).optional(),
+    disabled: z.boolean().optional(),
+  }).strict(),
+).max(1000).refine(
+  (rows) => new Set(rows.map((row) => row.id)).size === rows.length,
+  "SFF connector IDs must be unique",
+);
 const specs = z.object({
+  sffPorts: sffEndpoints.optional(),
+  sffInputs: sffEndpoints.optional(),
   consumableKind: str.optional(),
   stockUnit: str.optional(),
   thicknessMm: z.number().positive().max(1000).optional(),
-  cableProtocol: z.enum(["SATA", "SAS", "SATA/SAS", "Power", "Other"])
+  cableProtocol: z.enum(["SATA", "SAS", "SATA/SAS", "NVMe", "Power", "Other"])
     .optional(),
   connectorA: str.optional(),
   connectorB: str.optional(),
@@ -41,6 +59,7 @@ const specs = z.object({
     "pcie-sled",
     "bay-cage",
     "mount-adapter",
+    "m2-converter",
   ]).optional(),
   driveKind: z.enum(["disk", "optical"]).optional(),
   sataDataPorts: z.array(
@@ -100,6 +119,9 @@ const specs = z.object({
     z.object({
       id,
       mount,
+      pcieLanes: z.number().int().min(1).max(16).optional(),
+      disabled: z.boolean().optional(),
+      sffInputId: str.optional(),
       driveSizes: z.array(str).optional(),
       interfaces: z.array(str).optional(),
       m2Lengths: z.array(count).optional(),
@@ -171,7 +193,7 @@ const specs = z.object({
   ethernet: count.optional(),
   powerW: count.optional(),
   capacityW: count.optional(),
-  driveInterface: z.enum(["SATA", "NVMe"]).optional(),
+  driveInterface: z.enum(["SATA", "SAS", "NVMe"]).optional(),
   driveSize: z.enum(["2.5", "3.5", "5.25", "M.2"]).optional(),
   m2Length: count.optional(),
   sledDrives: count.optional(),
@@ -183,10 +205,15 @@ const specs = z.object({
 }).strict().superRefine((spec, ctx) => {
   for (const [targetIndex, target] of (spec.driveTargets || []).entries()) {
     for (
-      const [field, rows] of [["bayId", spec.bayTargets], [
-        "sataDataInputId",
-        spec.sataDataInputs,
-      ], ["sataPowerInputId", spec.sataPowerInputs]] as const
+      const [field, rows] of [
+        ["bayId", spec.bayTargets],
+        [
+          "sataDataInputId",
+          spec.sataDataInputs,
+        ],
+        ["sataPowerInputId", spec.sataPowerInputs],
+        ["sffInputId", spec.sffInputs],
+      ] as const
     ) {
       if (target[field] && !rows?.some((row) => row.id === target[field])) {
         ctx.addIssue({

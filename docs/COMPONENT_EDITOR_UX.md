@@ -11,15 +11,15 @@ The previous form mixed identity, aggregate capacities, physical endpoint catalo
 | Basics | Model identity, category, manufacturer/source, category role, socket/memory/capacity and basic power specifications | Every component |
 | Ports | Aggregate USB/Ethernet budgets, physical ports, connector/protocol/rating and optional electrical details | Port providers or categories with aggregate port fields |
 | Expansion | Card requirements, motherboard slots, explicit bifurcation support, lane-sharing rules | Motherboards and expansion cards |
-| Storage | M.2 budgets/lengths, independent SATA data and power connector catalogs | Storage providers and consumers |
-| Physical | Size/clearance, mounting bays, drive positions and backplane tray routing | Components with dimensions, bays or targets |
+| Storage | One selected catalog: named M.2 slots and per-slot lengths/lanes, SATA data/power connectors, or SFF inputs/outputs | Storage providers and consumers |
+| Physical | Size/clearance, mounting bays, drive positions and backplane tray routing | Chassis, backplanes and other components with applicable dimensions/bays; motherboard slots live in Storage |
 | Review | Firmware/OS requirements, controller boot/hot-plug support, notes, source verification and raw JSON | Every component |
 
 Sections adapt to category and adapter role; this is a reference editor rather than a step-by-step wizard. Users can move directly between sections. Section addresses use the editor URL (for example `#/catalog/components?edit=component&record=board-atx&section=ports`); browser Back/Forward preserves the active draft and restores the prior section and selected record. Changing category retains existing specifications. Retained fields are identified in Review and remain accessible through JSON.
 
 ## Repeated records
 
-Ports, slots, lane rules, SATA connectors, mounting bays and drive positions use a compact searchable list and one selected record. The list shows the ID and a short capability summary, eight records per page. Desktop presents list and detail side by side. Mobile stacks a bounded list above the selected record. Only the selected record renders its fields.
+Ports, slots, lane rules, SATA/SFF connectors, mounting bays and drive positions use a compact searchable list and one selected record. The list shows the ID and a short capability summary, eight records per page. Desktop presents list and detail side by side. Mobile stacks a bounded list above the selected record. Only the selected record renders its fields.
 
 New ports can be added in batches after choosing their interface type. New slots select PCI/PCIe before creation. IDs use type prefixes such as `USB_A_1`, `SERIAL_1`, `PCIE_1`, `SATA_DATA_1` and `SATA_POWER_IN_1`, with collision checks. Changing a newly generated record's type refreshes its automatic ID until the user edits the ID manually. Existing records are never automatically renamed or renumbered.
 
@@ -40,3 +40,5 @@ Blank values remain unknown; zero, false and empty complete named catalogs are i
 ## Validation scope
 
 Regression checks cover typed ID collision handling, capability-based section selection, current-record reference discovery and explicit unsupported bifurcation. Browser verification covers editing a large port catalog, batch creation, one-record rendering, state retained between sections, errors in an unselected record, JSON discard guards, unsupported bifurcation, category variants, named SATA catalogs, cage routing and narrow-screen Save/Cancel visibility. The existing application and desktop suites and production build remain required.
+
+The SFF and M.2 conversion model and configuration/inventory workflow are documented in [SFF storage](SFF_STORAGE.md).

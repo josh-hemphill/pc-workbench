@@ -71,7 +71,7 @@ export function checkStorageConnections(config:Configuration,db:Database,slotAss
   return;
  }
  // Power inputs belong to the cage/accessory itself, including empty cages.
- for(const row of rows)if(row.c.category!=='Drive') {
+ for(const row of rows)if(row.c.category!=='Drive'||row.c.specs.driveInterface!=='SATA') {
   const named=row.c.specs.sataPowerInputs;
   if(named!==undefined&&row.c.specs.sataPowerPlugs!==undefined&&named.length!==row.c.specs.sataPowerPlugs)add('warning','SATA power input catalog differs from count',`${row.c.name}: named power inputs override legacy plug count.`);
   if(named)for(const input of named)powerSinks.set(key(row,input.id),{row,id:input.id,quantity:row.p.quantity});
@@ -81,7 +81,8 @@ export function checkStorageConnections(config:Configuration,db:Database,slotAss
   const cage=compatibleCage(row);
   let sharedData=false,sharedPower=false;
   if(cage) {
-   const dataId=targetInput(cage.row,cage.target.sataDataInputId,'data',row);
+   const dataId=cage.target.sffInputId?undefined:targetInput(cage.row,cage.target.sataDataInputId,'data',row);
+   if(cage.target.sffInputId)sharedData=true;
    if(dataId) {
     const sinkKey=key(cage.row,dataId);sharedData=true;
     const sink:Sink=dataSinks.get(sinkKey)||{row:cage.row,id:dataId,quantity:cage.row.p.quantity,legacySource:cage.row.p.controllerPlacementId};
@@ -89,7 +90,7 @@ export function checkStorageConnections(config:Configuration,db:Database,slotAss
     if(row.p.controllerPlacementId)(sink.downstreamControllers??=new Set()).add(row.p.controllerPlacementId);
     const uses=(dataInputUses.get(sinkKey)||0)+row.p.quantity;dataInputUses.set(sinkKey,uses);
     if(uses>cage.row.p.quantity)add('error','SATA cage data input shared',`${cage.row.c.name} / ${dataId}: multiple drives cannot share one SATA channel; record separate inputs or verified controller hardware.`);
-   }else add('warning','SATA cage data routing unconfirmed',`${row.c.name}: no verified cage input route; conservatively count a separate host channel.`);
+   }else if(!cage.target.sffInputId)add('warning','SATA cage data routing unconfirmed',`${row.c.name}: no verified cage input route; conservatively count a separate host channel.`);
    const powerId=targetInput(cage.row,cage.target.sataPowerInputId,'power',row);
    if(powerId&&cage.row.c.specs.sataPowerInputs===undefined&&cage.row.c.specs.sataPowerPlugs!==undefined)sharedPower=true;
    else if(powerId) {
@@ -104,6 +105,8 @@ export function checkStorageConnections(config:Configuration,db:Database,slotAss
   }
   if(sharedData&&row.p.sataDataConnections?.length)add('error','SATA drive data route bypasses cage',`${row.c.name}: route the declared cage input instead of assigning another host channel to its downstream drive.`);
   if(sharedPower&&row.p.sataPowerConnections?.length)add('error','SATA drive power route bypasses cage',`${row.c.name}: power is supplied through its cage input; remove the duplicate direct PSU route.`);
+  const sffProvider=byId.get(row.p.adapterPlacementId||''),sffTarget=sffProvider?.c.specs.driveTargets?.find(target=>target.id===row.p.targetId);
+  if(row.p.sffConnections?.length||sffTarget?.sffInputId)sharedData=true;
   if(!sharedData)dataSinks.set(key(row,''),{row,id:'',quantity:row.p.quantity,legacySource:row.p.controllerPlacementId||cage?.row.p.controllerPlacementId});
   // SATA M.2 modules use slot power, not a PSU SATA end plug.
   if(!sharedPower&&row.c.specs.driveSize!=='M.2')powerSinks.set(key(row,''),{row,id:'',quantity:row.p.quantity});
@@ -204,7 +207,7 @@ export function checkStorageConnections(config:Configuration,db:Database,slotAss
      const used=cableUse.get(cable.p.id)||new Map<number,number>();used.set(channel,(used.get(channel)||0)+sink.quantity);cableUse.set(cable.p.id,used);
      if(used.get(channel)!>1)add('error','SATA cable channel double booked',`${cable.c.name} / channel ${channel}: one channel cannot connect several inputs.`);
     }
-    if(cable.c.specs.cableProtocol==='Power')add('error','SATA data cable protocol invalid',`${cable.c.name}: a power cable cannot carry SATA data.`);
+    if(cable.c.specs.cableProtocol==='Power'||cable.c.specs.cableProtocol==='NVMe')add('error','SATA data cable protocol invalid',`${cable.c.name}: a power cable cannot carry SATA data.`);
     else if(cable.c.specs.cableProtocol==='Other'||!cable.c.specs.cableProtocol)add('warning','SATA cable protocol unconfirmed',`${cable.c.name}: verify SATA data support.`);
     if(cable.c.specs.cableProtocol!=='SATA'||cable.c.specs.cableDirection&&cable.c.specs.cableDirection!=='bidirectional')add('warning','Storage cable connector and direction review',`${cable.c.name}: verify controller/backplane connectors, pinout and breakout direction. Connector names do not establish SAS drive support.`);
    }

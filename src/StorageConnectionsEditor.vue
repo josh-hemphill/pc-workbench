@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import SffConnectionsEditor from './SffConnectionsEditor.vue';
 import StorageConnectionsSummary from './StorageConnectionsSummary.vue';
 import type { Component, Configuration, Database, Placement, Specs, StorageBindings, SataDataConnection } from '../shared/types';
 import { componentCapabilities } from '../shared/component-capabilities';
@@ -105,6 +106,7 @@ const routeOptions = (key: 'sataDataInputs' | 'sataPowerInputs') => [{ title: 'N
   </template>
   <template v-if="cageInputs && component.specs.driveTargets?.length"><h3 class="mt-5">Tray connection routing</h3><div v-for="target in component.specs.driveTargets" :key="target.id" class="panel pa-4 mt-3"><strong>{{target.id}}</strong><div class="form-grid mt-3"><v-select v-model="target.sataDataInputId" label="Tray SATA data input" :items="keepRecorded(routeOptions('sataDataInputs'),target.sataDataInputId)" /><v-select v-model="target.sataPowerInputId" label="Tray SATA power input" :items="keepRecorded(routeOptions('sataPowerInputs'),target.sataPowerInputId)" /></div></div></template>
  </section>
+ <SffConnectionsEditor v-if="configuration" :configuration="configuration" :db="db" :placement="placement" @update:bindings="bindings=>emit('update:bindings',bindings)" />
  <StorageConnectionsSummary v-if="configuration" :configuration="configuration" :db="db" />
  <section v-if="configuration && consumers.length" class="mt-6">
   <h3>SATA data & power wiring</h3><p class="form-hint">Assign physical data ports and power end plugs independently. A connected empty cage input still reserves its controller port. Drives bound to routed cage trays share the cage's power input rather than consuming another PSU plug. Split quantities into individual units before mapping named connections.</p>

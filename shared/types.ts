@@ -11,24 +11,27 @@ export interface SoftwareSettings { os?: string; image?: string; equipmentSoftwa
 export interface Slot { id: string; bus: Bus; physical: number; lanes: number; generation: number; position: number; bifurcationModes?: string[]; pciVoltage?: PciVoltage; pciBits?: 32|64 }
 export type BaySize = '2.5'|'3.5'|'5.25';
 export interface BayTarget { id: string; size: BaySize; group?: string; position?: number; maxDepthMm?: number }
+export type StorageProtocol = 'SATA'|'SAS'|'NVMe';
+export interface SffEndpoint { id:string; connector:string; protocols?:StorageProtocol[]; channels?:number; pcieLanes?:number; disabled?:boolean }
+export interface SffConnection { inputId?:string; providerPlacementId:string; portId:string; sourceChannel?:number; channels?:number; pcieLanes?:number; cablePlacementId?:string; cableChannel?:number }
 export interface SataDataPort { id: string; disabled?: boolean }
 export interface SataPowerConnector { id: string; harness?: string }
 export interface SataInput { id: string }
 export interface SataDataConnection { inputId?: string; controllerPlacementId: string; portId?: string; cablePlacementId?: string; cableChannel?: number }
 export interface SataPowerConnection { inputId?: string; powerProviderPlacementId: string; connectorId?: string }
-export interface StorageBindings { bayTargetIds?: string[]; sataDataConnections?: SataDataConnection[]; sataPowerConnections?: SataPowerConnection[] }
-export interface DriveTarget { id: string; mount: Placement['mount']; driveSizes?: string[]; interfaces?: string[]; m2Lengths?: number[]; hotSwap?: boolean; bootable?: boolean; bayId?: string; sataDataInputId?: string; sataPowerInputId?: string }
+export interface StorageBindings { sffConnections?:SffConnection[]; bayTargetIds?: string[]; sataDataConnections?: SataDataConnection[]; sataPowerConnections?: SataPowerConnection[] }
+export interface DriveTarget { pcieLanes?:number; disabled?:boolean; sffInputId?:string; id: string; mount: Placement['mount']; driveSizes?: string[]; interfaces?: string[]; m2Lengths?: number[]; hotSwap?: boolean; bootable?: boolean; bayId?: string; sataDataInputId?: string; sataPowerInputId?: string }
 export interface LaneRule { id: string; slots: string[]; maxLanes?: number; exclusive?: boolean; disableM2Slots?: number; disableSataPorts?: number; disableSataPortIds?: string[] }
 export interface Specs {
-  consumableKind?: string; stockUnit?: string; thicknessMm?: number; cableProtocol?: 'SATA'|'SAS'|'SATA/SAS'|'Power'|'Other'; connectorA?: string; connectorB?: string; cableChannels?: number; cableDirection?: 'bidirectional'|'forward-breakout'|'reverse-breakout';
-  storageMedium?: 'HDD'|'SSD'; storageAdapterKind?: 'controller'|'pcie-sled'|'bay-cage'|'mount-adapter'; driveKind?: 'disk'|'optical';
-  sataDataPorts?: SataDataPort[]; sataPowerConnectors?: SataPowerConnector[]; sataDataInputs?: SataInput[]; sataPowerInputs?: SataInput[];
+  consumableKind?: string; stockUnit?: string; thicknessMm?: number; cableProtocol?: 'SATA'|'SAS'|'SATA/SAS'|'NVMe'|'Power'|'Other'; connectorA?: string; connectorB?: string; cableChannels?: number; cableDirection?: 'bidirectional'|'forward-breakout'|'reverse-breakout';
+  storageMedium?: 'HDD'|'SSD'; storageAdapterKind?: 'controller'|'pcie-sled'|'bay-cage'|'mount-adapter'|'m2-converter'; driveKind?: 'disk'|'optical';
+  sffPorts?:SffEndpoint[]; sffInputs?:SffEndpoint[]; sataDataPorts?: SataDataPort[]; sataPowerConnectors?: SataPowerConnector[]; sataDataInputs?: SataInput[]; sataPowerInputs?: SataInput[];
   bayTargets?: BayTarget[]; baySize?: BaySize; bayUnits?: number; sataPowerPlugs?: number; ports?: Port[]; driveTargets?: DriveTarget[]; laneRules?: LaneRule[]; pciVoltage?: PciVoltage; pciBits?: 32|64; bifurcationMode?: string; supportedOS?: string[]; requiredDriver?: string; requiredFirmware?: string; bootable?: boolean; hotPlug?: boolean;
   socket?: string; formFactor?: string; supportedForms?: string[]; memoryType?: string; dimmSlots?: number; maxMemoryGb?: number; capacityGb?: number;
   slots?: Slot[]; slotBus?: Bus; slotWidth?: number; requiredLanes?: number; minGeneration?: number; bracketWidth?: number;
   lengthMm?: number; heightMm?: number; widthMm?: number; maxCardLengthMm?: number; maxCardHeightMm?: number; maxCoolerHeightMm?: number; rearSlots?: number;
   bays25?: number; bays35?: number; bays525?: number; hotSwapBays?: number; sataPorts?: number; m2Slots?: number; m2Lengths?: number[]; sataPower?: number;
-  usbA?: number; usbC?: number; ethernet?: number; powerW?: number; capacityW?: number; driveInterface?: 'SATA'|'NVMe'; driveSize?: '2.5'|'3.5'|'5.25'|'M.2'; m2Length?: number;
+  usbA?: number; usbC?: number; ethernet?: number; powerW?: number; capacityW?: number; driveInterface?: 'SATA'|'SAS'|'NVMe'; driveSize?: '2.5'|'3.5'|'5.25'|'M.2'; m2Length?: number;
   sledDrives?: number; requiresBifurcation?: boolean; bifurcation?: boolean; sledHotSwap?: boolean; supportsSockets?: string[]; notes?: string;
 }
 export interface Component { id: string; name: string; category: Category; manufacturer: string; specs: Specs; source: string; verified: boolean }

@@ -1,3 +1,4 @@
+import {checkSffConnections,onboardM2Count} from './sff-connections';
 import type { Configuration, Database, Finding, Report, Resource, Component, Placement, StorageGroup, RequirementVersion, PCBuildSettings, Port, PortRequirement, Connection } from './types';
 
 import { componentCapabilities } from './component-capabilities';
@@ -164,7 +165,7 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
       }
       const activeRules=(board?.specs.laneRules||[]).filter(rule=>instances.some(r=>rule.slots.includes(slotAssignments[r.key])));
       const m2Used=rows.filter(r=>r.c.category==='Drive'&&r.c.specs.driveSize==='M.2'&&r.p.mount!=='rear-sled'&&!adapterMounted(r.p)).reduce((n,r)=>n+r.p.quantity,0);
-      if(activeRules.length&&board?.specs.m2Slots!==undefined&&m2Used>Math.max(0,board.specs.m2Slots-activeRules.reduce((n,r)=>n+(r.disableM2Slots||0),0)))return false;
+      if(activeRules.length&&onboardM2Count(board)!==undefined&&m2Used+rows.filter(r=>componentCapabilities(r.c).m2Converter).reduce((n,r)=>n+r.p.quantity,0)>Math.max(0,onboardM2Count(board)!-activeRules.reduce((n,r)=>n+(r.disableM2Slots||0),0)))return false;
       if(activeRules.some(r=>r.disableSataPorts||r.disableSataPortIds?.length)) {
         const activeSlots=new Set(Object.values(slotAssignments));
         const key=sataSharingRules.flatMap((rule,index)=>rule.slots.some(slot=>activeSlots.has(slot))?[index]:[]).join(',');
@@ -232,8 +233,8 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
     const s=c.specs;
     if(!s.driveInterface||!s.driveSize||(!componentCapabilities(c).optical&&s.capacityGb===undefined)) add('warning','Drive specifications incomplete',`Enter interface, size and capacity for ${c.name}.`);
     if(p.mount==='rear-sled') { rear+=p.quantity; if(s.driveInterface!=='NVMe'||s.driveSize!=='M.2') add('error','Rear sled drive mismatch',`${c.name}: this planner's rear sleds accept M.2 NVMe drives.`); }
-    else if(s.driveSize==='M.2') { if(!adapterMounted(p))m2+=p.quantity; if(p.mount==='front-hot-swap') add('error','M.2 front bay unsupported','Front bays are modeled for SATA 2.5/3.5 inch drives. U.2/U.3 needs a separately verified adapter/backplane.'); if(!adapterMounted(p)&&s.m2Length!==undefined&&board?.specs.m2Lengths&&!board.specs.m2Lengths.includes(s.m2Length)) add('error','M.2 length unsupported',`${c.name}: ${s.m2Length} mm is not supported.`); if(!adapterMounted(p)&&s.driveInterface!=='NVMe') add('warning','M.2 protocol review','Board M.2 slots are modeled as NVMe. Verify support for SATA M.2 manually.'); }
-    else if(p.mount==='front-hot-swap') { if(!adapterMounted(p))front+=p.quantity; if(s.driveInterface!=='SATA') add('error','Front bay interface mismatch','Declared front hot-swap bays support SATA drives only.'); }
+    else if(s.driveSize==='M.2') { if(!adapterMounted(p))m2+=p.quantity; if(p.mount==='front-hot-swap') add('error','M.2 front bay unsupported','Front bays are modeled for SATA 2.5/3.5 inch drives. U.2/U.3 needs a separately verified adapter/backplane.'); if(!adapterMounted(p)&&board?.specs.driveTargets===undefined&&s.m2Length!==undefined&&board?.specs.m2Lengths&&!board.specs.m2Lengths.includes(s.m2Length)) add('error','M.2 length unsupported',`${c.name}: ${s.m2Length} mm is not supported.`); if(!adapterMounted(p)&&s.driveInterface!=='NVMe'&&(!p.targetId||board?.specs.driveTargets===undefined)) add('warning','M.2 protocol review','Board M.2 slots are modeled as NVMe. Verify support for SATA M.2 manually.'); }
+    else if(p.mount==='front-hot-swap') { if(!adapterMounted(p))front+=p.quantity; if(s.driveInterface!=='SATA'&&!p.sffConnections?.length&&!rows.some(r=>r.p.id===p.adapterPlacementId&&r.c.specs.driveTargets?.find(t=>t.id===p.targetId)?.sffInputId)) add('error','Front bay interface mismatch','Declared front hot-swap bays support SATA drives only.'); }
 
   }
   const occupiedTargets=new Set<string>();
@@ -259,7 +260,7 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
         if(p.role==='boot'&&target.bootable===false)add('error','Drive target cannot boot',`${c.name}: ${target.id} is not bootable.`);
         if(p.mount==='front-hot-swap'&&target.hotSwap!==true)add(target.hotSwap===false?'error':'warning','Drive target hot-swap unconfirmed',`${target.id}: verify live removal support.`);
       }
-    }else if(p.mount==='rear-sled'||p.mount==='front-hot-swap')add('warning','Individual drive target unrecorded',`${c.name}: bind each drive to a specific sled or bay for servicing.`);
+    }else if(p.mount==='rear-sled'||p.mount==='front-hot-swap'||c.specs.driveSize==='M.2'&&provider?.c.specs.driveTargets!==undefined)add('warning','Individual drive target unrecorded',`${c.name}: bind each drive to a specific sled or bay for servicing.`);
     if(p.adapterPlacementId&&provider?.c.category==='Storage adapter') {
       if(p.mount!=='rear-sled'&&!provider.c.specs.driveTargets?.some(t=>t.id===p.targetId&&t.mount===p.mount))add('warning','Drive adapter routing review',`${c.name}: selected adapter is recorded but confirm controller routing and mount.`);
       if(p.role==='boot'&&provider.c.specs.bootable===false)add('error','Storage adapter cannot boot',`${provider.c.name} does not support boot drives.`);
@@ -276,8 +277,8 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
   const adapterDrives=new Map<string,number>();
   for(const {p} of drives)if(p.adapterPlacementId)adapterDrives.set(p.adapterPlacementId,(adapterDrives.get(p.adapterPlacementId)||0)+p.quantity);
   for(const [adapterId,used] of adapterDrives) {const adapter=rows.find(r=>r.p.id===adapterId);if(adapter?.c.category==='Storage adapter')resource(`Adapter ${adapter.c.name} drive positions`,used,adapter.c.specs.sledDrives??adapter.c.specs.driveTargets?.length);}
-  for(const report of [checkBayTopology(config,db),checkStorageConnections(config,db,slotAssignments)]) {findings.push(...report.findings);resources.push(...report.resources);}
-  resource('Onboard M.2 slots',m2,board?.specs.m2Slots===undefined?undefined:Math.max(0,board.specs.m2Slots-disabledM2));
+  for(const report of [checkBayTopology(config,db),checkStorageConnections(config,db,slotAssignments),checkSffConnections(config,db,slotAssignments)]) {findings.push(...report.findings);resources.push(...report.resources);}
+  resource('Onboard M.2 slots',m2+rows.filter(r=>componentCapabilities(r.c).m2Converter).reduce((n,r)=>n+r.p.quantity,0),onboardM2Count(board)===undefined?undefined:Math.max(0,onboardM2Count(board)!-disabledM2));
   resource('Rear sled positions',rear,sleds.reduce((n,r)=>n+(r.c.specs.sledDrives??r.c.specs.driveTargets?.filter(t=>t.mount==='rear-sled').length??0)*r.p.quantity,0));
   for(const {p,c} of sleds) { const assigned=slots.find(s=>s.id===slotAssignments[`${p.id}:0`]); if(c.specs.requiresBifurcation&&board?.specs.bifurcation!==false&&!assigned?.bifurcationModes&&!board?.specs.bifurcation) add('warning','PCIe bifurcation required',`${c.name} requires motherboard firmware support for lane splitting.`); if(rear>0&&!c.specs.sledHotSwap) add('warning','Rear sled is not declared hot-swappable',`${c.name}: shut down before servicing unless the vendor explicitly supports live removal.`); }
   if(front>0)add('warning','Hot-swap backplane review','Verify backplane drive size, controller hot-plug support and power connections. Front bays are counted separately from internal bays.');
