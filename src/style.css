@@ -159,3 +159,5 @@ body{background:var(--bench-background)}
 .page-content{min-width:0;max-width:100%;overflow-wrap:anywhere}
 .systems-grid>*,.data-grid>*,.builder-meta>*{min-width:0}
 .card-title strong{min-width:0;overflow-wrap:anywhere}
+
+.component-dialog-form{display:flex;flex-direction:column;max-height:90vh;min-height:0}.component-dialog-card{display:flex;flex-direction:column;max-height:90vh;min-height:0}.component-dialog-card>.dialog-body{overflow-y:auto;min-height:0}.component-dialog-card>.dialog-head,.component-dialog-card>.dialog-footer{flex-shrink:0}.component-save-hint{margin-left:12px}@media(max-width:650px){.component-save-hint{display:none}.component-dialog-card .dialog-head h2{font-size:20px}}

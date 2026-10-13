@@ -35,7 +35,7 @@ test('new schema fields remain optional for legacy records and preserve new engi
  const {db,config}=setup();assert.ok(schemas.configurations.safeParse(config).success);assert.ok(schemas.pcs.safeParse(db.pcs[0]).success);config.storage.groups=[{id:'data',name:'Data',raid:'mirror'}];config.software={os:'Linux',drivers:{daq:'3'}};assert.deepEqual(schemas.configurations.parse(config).storage.groups,config.storage.groups);
 });
 test('slot-specific bifurcation supports a sled without a global board flag',()=>{
- const db=structuredClone(seed),config=db.configurations[2],board=db.components.find(c=>c.id==='board-atx')!,sled=db.components.find(c=>c.category==='Storage adapter')!;sled.specs.bifurcationMode='x4/x4';board.specs.bifurcation=false;for(const slot of board.specs.slots!)slot.bifurcationModes=['x4/x4'];
+ const db=structuredClone(seed),config=db.configurations[2],board=db.components.find(c=>c.id==='board-atx')!,sled=db.components.find(c=>c.category==='Storage adapter')!;sled.specs.bifurcationMode='x4/x4';delete board.specs.bifurcation;for(const slot of board.specs.slots!)slot.bifurcationModes=['x4/x4'];
  let r=checkConfiguration(config,db);assert.ok(!errors(r,'PCIe bifurcation required'));assert.ok(!errors(r,'Slot bifurcation mismatch'));
  for(const slot of board.specs.slots!)slot.bifurcationModes=[];r=checkConfiguration(config,db);assert.ok(errors(r,'No compatible expansion slot'));
 });
@@ -59,4 +59,11 @@ test('topology rules cannot silently reference nonexistent slots',()=>{
 });
 test('partial explicit port catalog preserves aggregate counts without double counting',()=>{
  const {db,config,board}=setup();board.specs.ports=[{id:'LAN1',kind:'Ethernet'}];const r=checkConfiguration(config,db);assert.equal(r.resources.find(r=>r.name==='USB-A ports')?.available,board.specs.usbA);assert.ok(!errors(r,'USB-A ports capacity exceeded'));assert.equal(r.resources.find(r=>r.name==='Ethernet ports')?.available,(board.specs.ethernet||0)+(db.components.find(c=>c.id==='nic')!.specs.ethernet||0));
+});
+
+test('explicit unsupported motherboard bifurcation overrides retained slot modes',()=>{
+ const db=structuredClone(seed),config=db.configurations[2],board=db.components.find(c=>c.id==='board-atx')!,sled=db.components.find(c=>c.category==='Storage adapter')!;sled.specs.bifurcationMode='x4/x4';board.specs.bifurcation=false;for(const slot of board.specs.slots!)slot.bifurcationModes=['x4/x4'];
+ assert.ok(errors(checkConfiguration(config,db),'PCIe bifurcation required'));
+ board.specs.bifurcation=true;assert.ok(!errors(checkConfiguration(config,db),'PCIe bifurcation required'));
+ assert.deepEqual(board.specs.slots![0].bifurcationModes,['x4/x4']);
 });

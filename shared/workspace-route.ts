@@ -17,6 +17,7 @@ export interface WorkspaceRoute {
   id: string;
   editor: "" | "component" | "system" | "pc";
   editorId: string;
+  editorView: string;
 }
 const defaults: Record<RoutePage, string> = {
   "Configurations": "components",
@@ -40,7 +41,14 @@ const views: Partial<Record<RoutePage, string[]>> = {
 export function workspaceRoute(
   page: RoutePage = "Configurations",
 ): WorkspaceRoute {
-  return { page, view: defaults[page], id: "", editor: "", editorId: "" };
+  return {
+    page,
+    view: defaults[page],
+    id: "",
+    editor: "",
+    editorId: "",
+    editorView: "",
+  };
 }
 export function parseWorkspaceRoute(hash: string): WorkspaceRoute {
   const [path, query = ""] = hash.replace(/^#\/?/, "").split("?"),
@@ -80,6 +88,13 @@ export function parseWorkspaceRoute(hash: string): WorkspaceRoute {
   if (editor && ["component", "system", "pc"].includes(editor)) {
     route.editor = editor as WorkspaceRoute["editor"];
     route.editorId = params.get("record") || "new";
+    if (editor === "component") {
+      route.editorView =
+        ["basics", "ports", "expansion", "storage", "physical", "review"]
+            .includes(params.get("section") || "")
+          ? params.get("section")!
+          : "basics";
+    }
   }
   return route;
 }
@@ -113,6 +128,10 @@ export function encodeWorkspaceRoute(route: WorkspaceRoute): string {
   if (route.editor) {
     params.set("edit", route.editor);
     params.set("record", route.editorId || "new");
+    if (
+      route.editor === "component" && route.editorView &&
+      route.editorView !== "basics"
+    ) params.set("section", route.editorView);
   }
   return "#/" + parts.join("/") + (params.size ? "?" + params.toString() : "");
 }
