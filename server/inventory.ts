@@ -40,7 +40,16 @@ export function applyStockOperation(original: StockRecord, input: unknown, db: D
   const stock = structuredClone(original);
   let additionalStock: StockRecord | undefined;
   const now = new Date().toISOString();
-  if (action.action === 'reserve' || action.action === 'install') {
+  if (action.action === 'consume') {
+    const component=db.components.find(c=>c.id===stock.componentId);
+    if(!component||!['Cable','Consumable'].includes(component.category))throw Error('Record usage is for cables and consumables.');
+    if(stock.tracking!=='bulk'||stock.condition!=='Serviceable')throw Error('Only serviceable bulk stock can be consumed.');
+    if(action.quantity>stockCounts(stock).available)throw Error('Usage exceeds available stock; reserved and installed units cannot be consumed.');
+    if(action.pcId&&!db.pcs.some(pc=>pc.id===action.pcId))throw Error('PC not found.');
+    stock.quantity-=action.quantity;
+    event(stock,'consume',-action.quantity,db,undefined,`Work order: ${action.workOrder||'none'}. ${action.notes}`);
+    Object.assign(stock.history.at(-1)!,{pcId:action.pcId,pcName:db.pcs.find(pc=>pc.id===action.pcId)?.name||'',actor:action.actor});
+  } else if (action.action === 'reserve' || action.action === 'install') {
     if (stock.condition !== 'Serviceable') throw Error('Only serviceable stock can be reserved or installed.');
     if (action.quantity > stockCounts(stock).available) throw Error('Insufficient available stock. Other reservations and installations already consume these units.');
     const pc = db.pcs.find(p => p.id === action.pcId);

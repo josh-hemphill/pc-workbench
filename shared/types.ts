@@ -1,5 +1,5 @@
-export type Category = 'Chassis'|'Motherboard'|'CPU'|'Memory'|'GPU'|'Scientific card'|'Network card'|'Storage adapter'|'Bay accessory'|'Drive'|'PSU'|'Cooler';
-export const categories: Category[] = ['Chassis','Motherboard','CPU','Memory','GPU','Scientific card','Network card','Storage adapter','Bay accessory','Drive','PSU','Cooler'];
+export type Category = 'Chassis'|'Motherboard'|'CPU'|'Memory'|'GPU'|'Scientific card'|'Network card'|'Storage adapter'|'Bay accessory'|'Drive'|'PSU'|'Cooler'|'Cable'|'Consumable';
+export const categories: Category[] = ['Chassis','Motherboard','CPU','Memory','GPU','Scientific card','Network card','Storage adapter','Bay accessory','Drive','PSU','Cooler','Cable','Consumable'];
 export type Bus = 'PCI'|'PCIe';
 export type PciVoltage = '3.3V'|'5V'|'universal';
 export const portKinds = ['USB-A','USB-C','Ethernet','Serial','Parallel','Custom'] as const;
@@ -14,12 +14,13 @@ export interface BayTarget { id: string; size: BaySize; group?: string; position
 export interface SataDataPort { id: string; disabled?: boolean }
 export interface SataPowerConnector { id: string; harness?: string }
 export interface SataInput { id: string }
-export interface SataDataConnection { inputId?: string; controllerPlacementId: string; portId?: string }
+export interface SataDataConnection { inputId?: string; controllerPlacementId: string; portId?: string; cablePlacementId?: string; cableChannel?: number }
 export interface SataPowerConnection { inputId?: string; powerProviderPlacementId: string; connectorId?: string }
 export interface StorageBindings { bayTargetIds?: string[]; sataDataConnections?: SataDataConnection[]; sataPowerConnections?: SataPowerConnection[] }
 export interface DriveTarget { id: string; mount: Placement['mount']; driveSizes?: string[]; interfaces?: string[]; m2Lengths?: number[]; hotSwap?: boolean; bootable?: boolean; bayId?: string; sataDataInputId?: string; sataPowerInputId?: string }
 export interface LaneRule { id: string; slots: string[]; maxLanes?: number; exclusive?: boolean; disableM2Slots?: number; disableSataPorts?: number; disableSataPortIds?: string[] }
 export interface Specs {
+  consumableKind?: string; stockUnit?: string; thicknessMm?: number; cableProtocol?: 'SATA'|'SAS'|'SATA/SAS'|'Power'|'Other'; connectorA?: string; connectorB?: string; cableChannels?: number; cableDirection?: 'bidirectional'|'forward-breakout'|'reverse-breakout';
   storageMedium?: 'HDD'|'SSD'; storageAdapterKind?: 'controller'|'pcie-sled'|'bay-cage'|'mount-adapter'; driveKind?: 'disk'|'optical';
   sataDataPorts?: SataDataPort[]; sataPowerConnectors?: SataPowerConnector[]; sataDataInputs?: SataInput[]; sataPowerInputs?: SataInput[];
   bayTargets?: BayTarget[]; baySize?: BaySize; bayUnits?: number; sataPowerPlugs?: number; ports?: Port[]; driveTargets?: DriveTarget[]; laneRules?: LaneRule[]; pciVoltage?: PciVoltage; pciBits?: 32|64; bifurcationMode?: string; supportedOS?: string[]; requiredDriver?: string; requiredFirmware?: string; bootable?: boolean; hotPlug?: boolean;
@@ -32,7 +33,7 @@ export interface Specs {
 }
 export interface Component { id: string; name: string; category: Category; manufacturer: string; specs: Specs; source: string; verified: boolean }
 export interface Connection { id: string; name: string; usbA: number; usbC: number; ethernet: number; notes: string; requirements?: PortRequirement[] }
-export interface System { id: string; name: string; location: string; description: string; connections: Connection[] }
+export interface System { installationLocationId?: string; id: string; name: string; location: string; description: string; connections: Connection[] }
 export interface Placement extends StorageBindings { id: string; componentId: string; quantity: number; slotId: string; role: 'boot'|'data'|'general'; mount: 'auto'|'internal'|'front-hot-swap'|'rear-sled'; group: string; targetId?: string; adapterPlacementId?: string; controllerPlacementId?: string }
 export type Raid = 'none'|'mirror'|'raid5'|'raid6'|'raid10';
 export interface StorageGroup { id: string; name: string; raid: Raid; controllerPlacementId?: string; notes?: string }
@@ -59,7 +60,7 @@ export interface StockAllocation extends StorageBindings {
   notes: string; createdAt: string; updatedAt: string;
 }
 export interface StockEvent {
-  id: string; at: string; action: 'receive'|'adjust'|'edit'|'reserve'|'install'|'release'|'remove'|'configure'|'transfer-in'|'transfer-out';
+  id: string; at: string; action: 'receive'|'adjust'|'edit'|'reserve'|'install'|'release'|'remove'|'configure'|'transfer-in'|'transfer-out'|'consume';
   quantity: number; pcId: string; pcName: string; allocationId: string; sourceAllocationId?: string; targetStockId?: string; sourceStockId?: string; actor?: string; notes: string;
 }
 export interface StockRecord {

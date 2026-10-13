@@ -185,5 +185,33 @@ export function checkStorageConnections(config:Configuration,db:Database,slotAss
   resource(`SATA power supply ${pool.row.c.name}`,pool.used,pool.available);
   if(pool.endpoints)for(const [id,endpoint] of pool.endpoints)resources.push({name:`SATA power endpoint ${pool.row.c.name} / ${id}`,used:endpoint.booked,available:pool.row.p.quantity});
  }
- return {findings,resources};
+ const cableUse=new Map<string,Map<number,number>>();
+ const links=[...dataSinks.values()].map(sink=>{
+  const route=sink.route as DataRoute|undefined,sourceId=route?.controllerPlacementId||sink.legacySource||board?.p.id||'';
+  const source=byId.get(sourceId),cable=route?.cablePlacementId?byId.get(route.cablePlacementId):undefined;
+  const external=!(sink.row.c.category==='Drive'&&sink.row.c.specs.driveSize==='M.2');
+  if(route?.cableChannel&&!route.cablePlacementId)add('error','SATA cable missing','A cable channel requires a cable placement.');
+  if(route?.cablePlacementId){
+   if(!cable||cable.c.category!=='Cable')add('error','SATA cable invalid',`${sink.row.c.name}: select a cable from this build.`);
+   else {
+    if(!external)add('error','SATA M.2 cable invalid',`${sink.row.c.name}: an onboard M.2 connection does not use an external SATA cable.`);
+    if(cable.p.quantity!==1)add('error','Ambiguous SATA cable instance',`${cable.c.name}: split cable placements into individual assemblies before assigning channels.`);
+    const channels=cable.c.specs.cableChannels,channel=route.cableChannel||(channels===1?1:0);
+    if(channels===undefined)add('warning','SATA cable capacity unknown',`${cable.c.name}: record the number of data channels.`);
+    if(!channel)add('warning','SATA cable channel unrecorded',`${cable.c.name}: select a specific fan-out channel.`);
+    else {
+     if(channels!==undefined&&channel>channels)add('error','SATA cable channel unavailable',`${cable.c.name}: channel ${channel} exceeds ${channels} channels.`);
+     const used=cableUse.get(cable.p.id)||new Map<number,number>();used.set(channel,(used.get(channel)||0)+sink.quantity);cableUse.set(cable.p.id,used);
+     if(used.get(channel)!>1)add('error','SATA cable channel double booked',`${cable.c.name} / channel ${channel}: one channel cannot connect several inputs.`);
+    }
+    if(cable.c.specs.cableProtocol==='Power')add('error','SATA data cable protocol invalid',`${cable.c.name}: a power cable cannot carry SATA data.`);
+    else if(cable.c.specs.cableProtocol==='Other'||!cable.c.specs.cableProtocol)add('warning','SATA cable protocol unconfirmed',`${cable.c.name}: verify SATA data support.`);
+    if(cable.c.specs.cableProtocol!=='SATA'||cable.c.specs.cableDirection&&cable.c.specs.cableDirection!=='bidirectional')add('warning','Storage cable connector and direction review',`${cable.c.name}: verify controller/backplane connectors, pinout and breakout direction. Connector names do not establish SAS drive support.`);
+   }
+  }
+  return {placementId:sink.row.p.id,inputId:sink.id,quantity:sink.quantity,source:source?.c.name||'Unknown controller',destination:sink.row.c.name,portId:route?.portId||'',cable:cable?.c.name||'',channel:route?.cableChannel||(cable?.c.specs.cableChannels===1?1:undefined),external,cableAssigned:!!cable&&cable.c.category==='Cable'};
+ });
+ for(const row of rows.filter(row=>row.c.category==='Cable'))if(cableUse.has(row.p.id))resource(`SATA cable channels ${row.c.name} / ${row.p.id}`,[...cableUse.get(row.p.id)!.values()].reduce((n,value)=>n+value,0),row.c.specs.cableChannels);
+ const summary={dataChannels:[...dataSinks.values()].reduce((n,sink)=>n+sink.quantity,0),powerPlugs:totalPower,motherboardChannels:board?dataPools.get(board.p.id)?.used||0:0,controllerChannels:[...dataPools.values()].filter(pool=>pool.row.c.category!=='Motherboard').reduce((n,pool)=>n+pool.used,0),backplaneChannels:[...dataSinks.values()].filter(sink=>cageIds.has(sink.row.p.id)).reduce((n,sink)=>n+sink.quantity,0),externalChannels:links.filter(link=>link.external).reduce((n,link)=>n+link.quantity,0),cabledChannels:links.filter(link=>link.external&&link.cableAssigned).reduce((n,link)=>n+link.quantity,0)};
+ return {findings,resources,summary,links};
 }

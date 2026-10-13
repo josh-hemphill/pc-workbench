@@ -126,3 +126,29 @@ test('legacy cage controller defaults route downstream channels without pretendi
  db.components.push(component('hba','Storage adapter',{storageAdapterKind:'controller',sataPorts:2}));config.placements.push(place('hba'));cp.controllerPlacementId='hba';
  const report=checkStorageConnections(config,db,{});assert.equal(value(report,'SATA ports').used,0);assert.equal(value(report,'SATA controller hba').used,1);assert.ok(has(report,'SATA cage data routing unconfirmed'));
 });
+
+test('fan-out cable channels connect separate backplane inputs without double counting downstream trays',()=>{
+ const f=cageFixture();f.db.components.push(component('fanout','Cable',{cableProtocol:'SATA/SAS',cableChannels:4,cableDirection:'forward-breakout'}));f.config.placements.push(place('fanout',{role:'general'}));
+ f.config.placements.push({...f.p,id:'second-drive',targetId:'BAY2'});
+ f.cp.sataDataConnections!.forEach((connection,i)=>Object.assign(connection,{cablePlacementId:'fanout',cableChannel:i+1}));
+ const report=checkStorageConnections(f.config,f.db,{});assert.deepEqual(errors(report),[]);
+ assert.equal(report.summary.dataChannels,2);assert.equal(report.summary.backplaneChannels,2);assert.equal(report.summary.powerPlugs,1);assert.equal(report.summary.cabledChannels,2);
+ assert.equal(report.summary.motherboardChannels,2);assert.equal(report.links.length,2);assert.equal(value(report,'SATA cable channels fanout / fanout').used,2);
+ f.cp.sataDataConnections![1].cableChannel=1;assert.ok(has(checkStorageConnections(f.config,f.db,{}),'SATA cable channel double booked'));
+ f.cp.sataDataConnections![1].cableChannel=5;assert.ok(has(checkStorageConnections(f.config,f.db,{}),'SATA cable channel unavailable'));
+});
+test('cable bindings reject ambiguous assemblies, power-only cables and missing cable references',()=>{
+ const f=setup();const cable=component('data-cable','Cable',{cableProtocol:'SATA',cableChannels:1});const cp=place('data-cable',{role:'general'});f.db.components.push(cable);f.config.placements.push(cp);
+ f.p.sataDataConnections=[{controllerPlacementId:'board',portId:'S1',cablePlacementId:'data-cable'}];
+ assert.deepEqual(errors(checkStorageConnections(f.config,f.db,{})),[]);
+ cp.quantity=2;assert.ok(has(checkStorageConnections(f.config,f.db,{}),'Ambiguous SATA cable instance'));cp.quantity=1;
+ cable.specs.cableProtocol='Power';assert.ok(has(checkStorageConnections(f.config,f.db,{}),'SATA data cable protocol invalid'));
+ f.p.sataDataConnections[0].cablePlacementId='missing';assert.ok(has(checkStorageConnections(f.config,f.db,{}),'SATA cable invalid'));
+ f.p.sataDataConnections[0].cablePlacementId='';f.p.sataDataConnections[0].cableChannel=1;assert.ok(has(checkStorageConnections(f.config,f.db,{}),'SATA cable missing'));
+});
+
+test('connection summary distinguishes motherboard channels from active controller card channels',()=>{
+ const f=setup();f.db.components.push(component('controller','Storage adapter',{storageAdapterKind:'controller',sataDataPorts:[{id:'C1'}]}));f.config.placements.push(place('controller',{role:'general'}));
+ f.p.sataDataConnections=[{controllerPlacementId:'controller',portId:'C1'}];
+ const report=checkStorageConnections(f.config,f.db,{});assert.deepEqual(errors(report),[]);assert.equal(report.summary.dataChannels,1);assert.equal(report.summary.motherboardChannels,0);assert.equal(report.summary.controllerChannels,1);assert.equal(report.links[0].source,'controller');
+});

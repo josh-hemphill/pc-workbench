@@ -13,6 +13,8 @@ export function catalogFields(c:Component):CatalogField[] {
  case 'Chassis':add(field('supportedForms','Supported motherboard forms','array'),field('rearSlots','Rear expansion positions'),field('maxCardLengthMm','Maximum card length (mm)'),field('maxCoolerHeightMm','Maximum cooler height (mm)'),field('bays25','2.5-inch bays'),field('bays35','3.5-inch bays'),field('bays525','5.25-inch bays'));break;
  case 'Drive':add(field('driveSize','Drive size','text',['2.5','3.5','5.25','M.2']),field('driveInterface','Drive interface','text',['SATA','NVMe']));if(!cap.optical)add(field('capacityGb','Capacity (GB)'));if(cap.m2)add(field('m2Length','M.2 length (mm)'));break;
  case 'PSU':add(field('capacityW','Supply capacity (W)'),field('sataPower','SATA power connectors'));break;
+ case 'Cable':add(field('cableProtocol','Cable protocol','text',['SATA','SAS','SATA/SAS','Power','Other']),field('connectorA','End A connector','text'),field('connectorB','End B connector','text'),field('cableChannels','Data channels'),field('lengthMm','Cable length (mm)'),field('cableDirection','Breakout direction','text',['bidirectional','forward-breakout','reverse-breakout']));break;
+ case 'Consumable':add(field('consumableKind','Consumable type','text'),field('stockUnit','Stock unit','text'));break;
  case 'Cooler':add(field('supportsSockets','Supported sockets','array'),field('heightMm','Height (mm)'));break;
  }
  if(cap.slotCard)add(field('slotBus','Slot bus','text',['PCI','PCIe']),field('slotWidth','Physical slot width'),field('requiredLanes','Required lanes'),field('bracketWidth','Rear bracket positions'),field('lengthMm','Length (mm)'),field('heightMm','Height (mm)'),field('powerW','Power (W)'));

@@ -124,7 +124,7 @@ components:
 id,name,category,manufacturer,specs,source,verified
 
 systems:
-id,name,location,description,connections
+id,name,location,description,connections,installationLocationId
 
 requirementsSets:
 id,name,description,versions
@@ -164,7 +164,7 @@ CSV parser errors identify record numbers beginning at `CSV row 2`; multiline fi
 | Field | Contract |
 | --- | --- |
 | `id`, `name` | R identity and catalog display name. |
-| `category` | R: Chassis, Motherboard, CPU, Memory, GPU, Scientific card, Network card, Storage adapter, Bay accessory, Drive, PSU, Cooler. |
+| `category` | R: Chassis, Motherboard, CPU, Memory, GPU, Scientific card, Network card, Storage adapter, Bay accessory, Drive, PSU, Cooler, Cable, Consumable. |
 | `manufacturer`, `source` | R text; empty allowed. `source` can cite manufacturer evidence or workbook/sheet. |
 | `specs` | R object; all properties below optional. Unknown keys rejected. |
 | `verified` | R boolean. Use false for unverified Excel specifications. True needs documented verification evidence. |
@@ -480,3 +480,13 @@ Before approving or commissioning migrated data, reconcile named endpoint counts
 Use **Installations → Location operations** to reconcile structured assignment and installed/reserved totals, inspect repair conditions, and review vacant destinations. Use **Catalog data** for category-specific core gaps and missing-only bulk fills. Exact PCPartPicker product URLs can be queued for reviewed enrichment or saved HTML ingestion; source evidence is retained in specification notes, changed components stay unverified, and existing values are preserved. See [workflow and API payloads](CATALOG-ENRICHMENT.md). Keep workbook/cell provenance and unresolved topology/wiring exceptions separately; scraped details do not resolve uncertain identity or physical allocation joins.
 
 Production locations do not need a room number or Room level. For example: Site `Plant 1` → Area `B` → Line `2` → Station `4` → System `Camera controller`. Levels may be omitted or repeated according to source needs. Existing Room records retain their IDs and assignments; use previewed bulk type edits to convert them to Area when appropriate. This preserves references and captured historical snapshots. See [bulk actions and native table selection](BULK-RECORDS.md).
+
+### Equipment location links and consumable stock
+
+`systems[].installationLocationId` optionally links equipment to any node of the installation hierarchy. `location` remains a legacy/free-text note. Old systems CSVs and backups remain valid. Linked locations cannot be deleted while a system references them. Equipment filtering can include descendant locations; grouping uses the exact linked location.
+
+Use category `Cable` for SATA/SAS/SFF cable assemblies and `Consumable` for thermal pads and other supplies. Cable specs support `cableProtocol` (`SATA`, `SAS`, `SATA/SAS`, `Power`, `Other`), `connectorA`, `connectorB`, integer `cableChannels` (1–32), `cableDirection` (`bidirectional`, `forward-breakout`, `reverse-breakout`) and `lengthMm`. Consumable specs support `consumableKind`, positive decimal `thicknessMm`, `lengthMm`, `widthMm` and `stockUnit`. A stock unit is an integer-counted piece, sheet, pack or assembly; do not mix unit definitions for one component model.
+
+Receive these models as bulk lots. Reusable cables can be planned, reserved and installed as BOM parts, including fleet stock/readiness and ordering. For material used up, POST `/api/inventory/:id/action` with `action: consume`, a positive integer `quantity`, required nonblank `notes`, and optional `pcId`, `actor` and `workOrder`. The workspace revision in `If-Match` is required. Usage deducts only free serviceable bulk stock and appends a negative-quantity `consume` movement; reservations and installations cannot be consumed. History is exported and survives backup/restore.
+
+A SATA data connection can include `cablePlacementId` and one-based `cableChannel`. These reference a single cable assembly in the planned or installed build, independently of its controller/port and consumer/input. A four-channel fan-out is one cable assembly with four individually bookable data channels. Split cable BOM quantities into individual placements before mapping them. Installed references resolve to allocation IDs; wiring and cable channels are retained in snapshots and drift comparison. Duplicate channel use, invalid channels, missing cables and power cables used for data produce conflicts. Backplane inputs are counted once, including connected empty inputs; routed trays reuse those channels and shared cage power. SAS/SFF connector names do not establish SAS drive/controller compatibility: verify connectors, pinout, protocol and breakout direction against manufacturer documentation.
