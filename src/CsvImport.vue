@@ -16,8 +16,8 @@ function inspect(){void run(async()=>{preview.value=null;if(!file.value)return;i
 function apply(){void run(async()=>{if(!preview.value?.valid||stale.value)return;const result=await request('/api/import/apply',{collection:collection.value,csv:csv.value,token:preview.value.token},preview.value.revision);preview.value=null;file.value=null;emit('reload');emit('notify',`Imported ${result.imported} changed records; ${result.unchanged} unchanged.`);});}
 </script>
 <template>
-<section class="panel data-section"><h2>Import CSV</h2><p>Preview additions, updates and conflicts before applying the whole file. Records absent from the file are kept.</p>
-<v-select v-model="collection" label="Collection" :items="['components','systems','requirementsSets','configurations','installationLocations','pcs','inventory']" :disabled="busy" class="mb-5" />
+<section class="panel data-section control-stack"><h2>Import CSV</h2><p>Preview additions, updates and conflicts before applying the whole file. Records absent from the file are kept.</p>
+<v-select v-model="collection" label="Collection" :items="['components','systems','requirementsSets','configurations','installationLocations','pcs','inventory']" :disabled="busy"  />
 <v-file-input v-model="file" label="Choose CSV file" accept=".csv,text/csv" :disabled="busy" />
 <v-btn variant="outlined" :disabled="!file||busy" :loading="busy" @click="inspect">Preview CSV changes</v-btn>
 <v-alert v-if="error||preview?.error" type="error" role="alert" class="my-4">{{error||preview?.error}} No records were imported.</v-alert>
@@ -25,7 +25,7 @@ function apply(){void run(async()=>{if(!preview.value?.valid||stale.value)return
 <v-alert v-if="stale" type="warning" class="mb-4">The workspace changed. Preview this file again before applying it.</v-alert>
 <RecordTable label="CSV change preview" :headers="[{title:'Record',key:'name'},{title:'Change',key:'status'},{title:'Changed fields',key:'fields'},{title:'Details',key:'details',sortable:false}]" :items="preview.rows.map(row=>({...row,details:''}))">
 <template #details="{item}"><p v-if="item.error">{{item.error}}</p><details v-else-if="item.status!=='Unchanged'"><summary>Before and after</summary><h3>Before</h3><pre class="snapshot-json" tabindex="0">{{JSON.stringify(item.before,null,2)}}</pre><h3>After</h3><pre class="snapshot-json" tabindex="0">{{JSON.stringify(item.after,null,2)}}</pre></details></template>
-</RecordTable><v-btn color="primary" class="mt-4" :disabled="!preview.valid||stale||!changes||busy" @click="apply">Apply reviewed import</v-btn></template>
+</RecordTable><v-btn color="primary"  :disabled="!preview.valid||stale||!changes||busy" @click="apply">Apply reviewed import</v-btn></template>
 <small class="import-order">For workspace transfers, import components and systems, then requirements sets and configurations, then locations, PCs and inventory. Existing audit histories are protected.</small>
 </section>
 </template>

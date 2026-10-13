@@ -161,3 +161,15 @@ body{background:var(--bench-background)}
 .card-title strong{min-width:0;overflow-wrap:anywhere}
 
 .component-dialog-form{display:flex;flex-direction:column;max-height:90vh;min-height:0}.component-dialog-card{display:flex;flex-direction:column;max-height:90vh;min-height:0}.component-dialog-card>.dialog-body{overflow-y:auto;min-height:0}.component-dialog-card>.dialog-head,.component-dialog-card>.dialog-footer{flex-shrink:0}.component-save-hint{margin-left:12px}@media(max-width:650px){.component-save-hint{display:none}.component-dialog-card .dialog-head h2{font-size:20px}}
+
+/* Space whole controls, not Vuetify's internal field, tab or toggle elements. */
+:root{--bench-field-gap:16px;--bench-action-gap:12px}
+.control-stack,.dialog-body{display:flex;flex-direction:column;gap:var(--bench-field-gap);min-width:0}
+.control-stack>*,.dialog-body>*{flex-shrink:0;min-width:0}
+.control-stack>.v-btn,.dialog-body>.v-btn{align-self:flex-start}
+.action-row{display:flex;align-items:center;flex-wrap:wrap;gap:var(--bench-action-gap);min-width:0}
+.spec-heading{gap:var(--bench-action-gap)}
+/* Older engineering forms use separate grids and individual controls in normal flow. */
+:where(:not(.control-stack):not(.dialog-body))>.form-grid+:is(.form-grid,.v-input,.v-btn),
+:where(:not(.control-stack):not(.dialog-body))>.v-input+.form-grid{margin-top:var(--bench-field-gap)}
+.bulk-record-editor .form-grid>div{display:flex;flex-direction:column;gap:var(--bench-field-gap);min-width:0}

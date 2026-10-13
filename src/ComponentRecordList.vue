@@ -13,6 +13,6 @@ watch(pages,count=>page.value=Math.min(page.value,count));
 <template>
  <div class="component-record-layout">
   <aside class="component-record-list"><v-text-field :model-value="search" @update:model-value="v=>search=String(v??'')" :label="`Search ${label.toLowerCase()}`" clearable hide-details density="compact" /><p class="form-hint my-2">{{matches.length}} / {{items.length}} records</p><v-list :aria-label="label" density="compact"><v-list-item v-for="item in visible" :key="item.index" :active="item.index===modelValue" :title="item.id||'Unnamed record'" :subtitle="item.summary" @click="emit('update:modelValue',item.index)" /></v-list><v-pagination v-if="pages>1" v-model="page" :length="pages" :total-visible="3" density="compact" :aria-label="`${label} pages`" /></aside>
-  <div class="component-record-detail"><slot v-if="modelValue>=0&&modelValue<items.length" /><p v-else class="form-hint">Add a record or select one from the list to edit its details.</p></div>
+  <div class="component-record-detail control-stack"><slot v-if="modelValue>=0&&modelValue<items.length" /><p v-else class="form-hint">Add a record or select one from the list to edit its details.</p></div>
  </div>
 </template>
