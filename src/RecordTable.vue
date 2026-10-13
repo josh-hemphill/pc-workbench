@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {computed,ref,watch,onBeforeUnmount,onMounted} from 'vue';
+import {computed,ref,watch,onBeforeUnmount,onMounted,nextTick} from 'vue';
 import type {Database} from '../shared/types';
 import type {BulkRequest} from '../shared/bulk-records';
 import BulkRecordEditor from './BulkRecordEditor.vue';
-const props=defineProps<{items:Record<string,any>[];headers:{title:string;key:string;sortable?:boolean}[];label:string;db?:Database;collection?:BulkRequest['collection'];itemValue?:string;searchable?:boolean}>();
+const props=withDefaults(defineProps<{items:Record<string,any>[];headers:{title:string;key:string;sortable?:boolean}[];label:string;db?:Database;collection?:BulkRequest['collection'];itemValue?:string;searchable?:boolean}>(),{searchable:true});
 const emit=defineEmits<{reload:[];notify:[message:string]}>();
 const search=ref('');
 const tableItems=computed(()=>props.items.filter(item=>props.headers.map(header=>String(item[header.key]??'')).join(' ').toLowerCase().includes(search.value.toLowerCase())));
@@ -19,11 +19,13 @@ function confirmDiscard(){return editor.value?.confirmDiscard()??true;}
 function hasUnsavedChanges(){return editor.value?.hasUnsavedChanges()??false;}
 function beforeUnload(e:BeforeUnloadEvent){if(hasUnsavedChanges()){e.preventDefault();e.returnValue='';}}
 onMounted(()=>window.addEventListener('beforeunload',beforeUnload));onBeforeUnmount(()=>window.removeEventListener('beforeunload',beforeUnload));
-defineExpose({confirmDiscard,hasUnsavedChanges});
+function getContext(){return {search:search.value,page:page.value,bulkMode:bulkMode.value,selection:[...selection.value]};}
+function restoreContext(context:ReturnType<typeof getContext>){search.value=context.search;bulkMode.value=context.bulkMode;const ids=new Set(props.items.map(item=>item[key.value]));selection.value=context.selection.filter(id=>ids.has(id));void nextTick(()=>page.value=context.page);}
+defineExpose({confirmDiscard,hasUnsavedChanges,getContext,restoreContext});
 </script>
 <template>
 <div class="record-table" :data-table-name="label">
-<v-text-field v-if="searchable!==false" v-model="search" :label="`Search ${label.toLowerCase()}`" hide-details class="record-table-search" />
+<v-text-field v-if="searchable!==false" :model-value="search" @update:model-value="v=>search=String(v??'')" clearable :label="`Search ${label.toLowerCase()}`" hide-details class="record-table-search" />
 <v-switch v-if="collection" v-model="bulkMode" label="Bulk actions" color="primary" hide-details @update:model-value="selection=[]" />
 <div v-if="bulkMode" class="bulk-toolbar">
 <v-btn variant="outlined" :disabled="!tableItems.length||new Set([...selection,...tableItems.map(item=>item[key])]).size>500" @click="selectMatches">Add all {{tableItems.length}} matching records</v-btn>

@@ -149,12 +149,16 @@ export function useTransitionPlans(
     autosaveState.value =
       "New plan. Changes will autosave as a workspace draft.";
   }
-  function newPlan() {
-    if (confirmDiscard()) resetPlan();
+  function newPlan(confirmed = false) {
+    if (confirmed === true || confirmDiscard()) resetPlan();
   }
-  async function openWorkspacePlan(id: string, savedOnly = false) {
+  async function openWorkspacePlan(
+    id: string,
+    savedOnly = false,
+    confirmed = false,
+  ) {
     await ready;
-    if (disposed || !confirmDiscard()) return;
+    if (disposed || (confirmed !== true && !confirmDiscard())) return;
     planLoading.value = true;
     try {
       await reloadPlans();
@@ -166,7 +170,11 @@ export function useTransitionPlans(
     }
     if (disposed) return;
     const plan = plans.value.find((p) => p.id === id);
-    if (!plan) return;
+    if (!plan) {
+      plansError.value =
+        "This workspace plan was not found. It may have been deleted.";
+      return;
+    }
     activeId.value = id;
     remember(plan);
     const inputs = savedOnly ? plan.scenario : plan.draft ?? plan.scenario;
@@ -237,6 +245,7 @@ export function useTransitionPlans(
     clearTimeout(timer);
   });
   return {
+    awaitReady: () => ready,
     plans,
     activeId,
     selectedPlan,

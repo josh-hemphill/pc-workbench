@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import {createWorkspaceHistory} from './workspace-history';
+import {workspaceRoute,encodeWorkspaceRoute,type WorkspaceRoute,type RoutePage} from '../shared/workspace-route';
 import type {RelatedRecord} from '../shared/record-navigation';
 import CsvImport from './CsvImport.vue';
 import RecordTable from './RecordTable.vue';
@@ -46,7 +48,7 @@ function changeAppearance(event:Event){const value=(event.target as HTMLSelectEl
 const db=ref<Database>({components:[],systems:[],configurations:[],pcs:[],inventory:[],requirementsSets:[],installationLocations:[]});
 const transitionsWorkspace=ref<InstanceType<typeof TransitionsWorkspace>|null>(null);
 const settingsWorkspace=ref<{hasUnsavedChanges:()=>boolean;confirmDiscard:()=>boolean}|null>(null);
-const catalogMaintenance=ref<{hasUnsavedChanges:()=>boolean;confirmDiscard:()=>boolean}|null>(null);
+const catalogMaintenance=ref<InstanceType<typeof CatalogMaintenance>|null>(null);
 const installationsWorkspace=ref<InstanceType<typeof InstallationsWorkspace>|null>(null);
 const inventoryWorkspace=ref<InstanceType<typeof InventoryWorkspace>|null>(null);
 const recoveryRequired=ref(false);
@@ -55,6 +57,7 @@ const restoreFile=ref<File|null>(null), restorePreview=ref<{counts:Record<string
 const loading=ref(true), failure=ref(''), busy=ref(false), notices=ref<string[]>([]);
 const refreshEpoch=ref(0);
 function closeMobileNav(){if(!smAndDown.value)return;navigationOpen.value=false;nextTick(()=>document.getElementById('mobile-nav-toggle')?.focus());}
+const catalogView=ref('components');
 const page=ref('Configurations'), search=ref(''), filter=ref('All configurations'), categoryFilter=ref('All components');
 const working=ref<Configuration|null>(null), original=ref(''), detailTab=ref('components');
 const componentDraft=ref<Component|null>(null), systemDraft=ref<System|null>(null), pcDraft=ref<InventoryPC|null>(null);
@@ -70,7 +73,7 @@ const jsonSpecs=ref(''), advanced=ref(false), confirmDelete=ref<{collection:stri
 watch(confirmDelete,(value,old)=>{if(value&&!old&&document.activeElement instanceof HTMLElement)dialogOpeners.set('delete',document.activeElement);},{flush:'sync'});
 const addCategory=ref<Category>('Scientific card'), addPart=ref(''), addQty=ref(1);
 const importing=ref(false);
-const navigation=[{name:'Configurations',icon:mdiViewDashboardOutline},{name:'Component catalog',icon:mdiMemory},{name:'Catalog data',icon:mdiDatabaseOutline},{name:'Component inventory',icon:mdiCubeOutline},{name:'Equipment systems',icon:mdiLan},{name:'PC inventory',icon:mdiDesktopTowerMonitor},{name:'Storage planner',icon:mdiHarddisk},{name:'Configuration transitions',icon:mdiArrowRight},{name:'Installations',icon:mdiLan}];
+const navigation=[{name:'Configurations',icon:mdiViewDashboardOutline},{name:'Component catalog',icon:mdiMemory},{name:'Component inventory',icon:mdiCubeOutline},{name:'Equipment systems',icon:mdiLan},{name:'PC inventory',icon:mdiDesktopTowerMonitor},{name:'Storage planner',icon:mdiHarddisk},{name:'Configuration transitions',icon:mdiArrowRight},{name:'Installations',icon:mdiLan}];
 const uid=()=>crypto.randomUUID();
 const clone=<T,>(v:T):T=>v===undefined?v:JSON.parse(JSON.stringify(v));
 function toast(text:string){notices.value.push(text);}
@@ -83,25 +86,79 @@ function confirmWorkspaceDiscard(){
  if((dirty.value||editorDirty.value)&&!window.confirm('Discard unsaved configuration or record changes?'))return false;
  if(!workspaces.every(workspace=>!workspace||workspace.confirmDiscard()))return false;componentDraft.value=null;systemDraft.value=null;pcDraft.value=null;return true;
 }
-function navigate(name:string){if(page.value===name&&!working.value){if(smAndDown.value)navigationOpen.value=false;return;}if(!confirmWorkspaceDiscard())return;relatedTrail.value=[];page.value=name;working.value=null;search.value='';if(smAndDown.value)navigationOpen.value=false;nextTick(()=>document.getElementById('main-content')?.focus());}
-type ViewContext={page:string;search:string;filter:string;categoryFilter:string;configurationId?:string;detailTab:string;inventory?:ReturnType<InstanceType<typeof InventoryWorkspace>['getContext']>;installation?:ReturnType<InstanceType<typeof InstallationsWorkspace>['getContext']>;transition?:ReturnType<InstanceType<typeof TransitionsWorkspace>['getContext']>;scroll:number};
+function navigate(name:string){void workspaceHistory.navigate(workspaceRoute(name as RoutePage));}
+function changeCatalogView(view:string){if(view===catalogView.value)return;if(catalogMaintenance.value&&!catalogMaintenance.value.confirmDiscard())return;if(recordTable2.value&&!recordTable2.value.confirmDiscard())return;catalogView.value=view;}
+type ViewContext={page:string;search:string;filter:string;categoryFilter:string;catalogView?:string;catalogTable?:ReturnType<InstanceType<typeof RecordTable>['getContext']>;storageTable?:ReturnType<InstanceType<typeof RecordTable>['getContext']>;catalog?:ReturnType<InstanceType<typeof CatalogMaintenance>['getContext']>;configurationId?:string;detailTab:string;inventory?:ReturnType<InstanceType<typeof InventoryWorkspace>['getContext']>;installation?:ReturnType<InstanceType<typeof InstallationsWorkspace>['getContext']>;transition?:ReturnType<InstanceType<typeof TransitionsWorkspace>['getContext']>;scroll:number};
 const relatedTrail=ref<ViewContext[]>([]);
-function captureView():ViewContext{return {page:page.value,search:search.value,filter:filter.value,categoryFilter:categoryFilter.value,configurationId:working.value?.id,detailTab:detailTab.value,inventory:inventoryWorkspace.value?.getContext(),installation:installationsWorkspace.value?.getContext(),transition:transitionsWorkspace.value?.getContext(),scroll:window.scrollY};}
+function captureView():ViewContext{return {page:page.value,search:search.value,filter:filter.value,categoryFilter:categoryFilter.value,catalogView:catalogView.value,catalogTable:recordTable2.value?.getContext(),storageTable:recordTable3.value?.getContext(),catalog:catalogMaintenance.value?.getContext(),configurationId:working.value?.id,detailTab:detailTab.value,inventory:inventoryWorkspace.value?.getContext(),installation:installationsWorkspace.value?.getContext(),transition:transitionsWorkspace.value?.getContext(),scroll:window.scrollY};}
+function readRoute():WorkspaceRoute {
+ const route=workspaceRoute(page.value as RoutePage);
+ if(page.value==='Configurations'&&working.value){route.id=db.value.configurations.some(c=>c.id===working.value?.id)?working.value.id:'new';route.view=detailTab.value;}
+ else if(page.value==='Component catalog')route.view=catalogView.value;
+ else if(page.value==='PC inventory'||page.value==='Component inventory'){const context=inventoryWorkspace.value?.getContext();route.id=(page.value==='PC inventory'?context?.pcId:context?.stockId)||'';if(route.id)route.view=(page.value==='PC inventory'?context?.tab:context?.stockTab)||route.view;}
+ else if(page.value==='Installations'){const context=installationsWorkspace.value?.getContext();route.view=context?.tab||'locations';route.id=route.view==='locations'?context?.locationId||'':'';}
+ else if(page.value==='Configuration transitions')route.id=transitionsWorkspace.value?.getContext().planId||'';
+ const editor=componentDraft.value?'component':systemDraft.value?'system':pcDraft.value?'pc':'';
+ if(editor){const draft=componentDraft.value||systemDraft.value||pcDraft.value;const records=editor==='component'?db.value.components:editor==='system'?db.value.systems:db.value.pcs;route.editor=editor;route.editorId=records.some(r=>r.id===draft?.id)?draft!.id:'new';}
+ return route;
+}
+function canLeaveRoute(from:WorkspaceRoute,to:WorkspaceRoute){
+ if(busy.value||importing.value)return false;
+ if(from.page!==to.page||from.id!==to.id)return confirmWorkspaceDiscard();
+ if(from.editor!==to.editor||from.editorId!==to.editorId){if(editorDirty.value&&!window.confirm('Discard unsaved changes in this editor?'))return false;}
+ if(from.page==='Component catalog'&&from.view!==to.view){if(catalogMaintenance.value&&!catalogMaintenance.value.confirmDiscard())return false;if(recordTable2.value&&!recordTable2.value.confirmDiscard())return false;}
+ if(from.page==='Installations'&&from.view!==to.view&&installationsWorkspace.value&&!installationsWorkspace.value.confirmDiscard())return false;
+ return true;
+}
+async function applyRoute(route:WorkspaceRoute,historyContext?:unknown){
+ const context=historyContext as ViewContext|undefined,previous=readRoute();
+ relatedTrail.value=[];
+ if(previous.page!==route.page||previous.id!==route.id)working.value=null;
+ if(previous.editor!==route.editor||previous.editorId!==route.editorId){componentDraft.value=null;systemDraft.value=null;pcDraft.value=null;}
+ page.value=route.page;catalogView.value=route.page==='Component catalog'?route.view:'components';
+ search.value=context?.search||'';filter.value=context?.filter||'All configurations';categoryFilter.value=context?.categoryFilter||'All components';
+ if(route.page==='Configurations'){
+  if(!route.id)working.value=null;
+  else if(!working.value){const configuration=db.value.configurations.find(c=>c.id===route.id);if(configuration)openConfig(configuration);else if(route.id==='new')newConfig();else toast('Configuration not found. It may have been deleted.');}
+  detailTab.value=route.view;
+ }
+ await nextTick();
+ if(route.page==='PC inventory'||route.page==='Component inventory'){
+  const inventory=inventoryWorkspace.value;if(inventory){const settings={...inventory.getContext(),...(context?.inventory||{}),pcId:route.page==='PC inventory'?route.id:'',stockId:route.page==='Component inventory'?route.id:'',tab:route.page==='PC inventory'?route.view:'parts',stockTab:route.page==='Component inventory'?route.view:'allocations'};
+   if(settings.pcId&&!db.value.pcs.some(p=>p.id===settings.pcId)){toast('PC not found.');settings.pcId='';}if(settings.stockId&&!db.value.inventory.some(stock=>stock.id===settings.stockId)){toast('Stock record not found.');settings.stockId='';}
+   inventory.restoreContext(settings);
+  }
+ }
+ if(route.page==='Installations'&&installationsWorkspace.value){const installation=installationsWorkspace.value;const locationId=route.id&&db.value.installationLocations.some(l=>l.id===route.id)?route.id:'';if(route.id&&!locationId)toast('Installation location not found.');installation.restoreContext({...installation.getContext(),...(context?.installation||{}),tab:route.view,locationId});}
+ if(route.page==='Component catalog'&&context?.catalogTable)recordTable2.value?.restoreContext(context.catalogTable);
+ if(route.page==='Storage planner'&&context?.storageTable)recordTable3.value?.restoreContext(context.storageTable);
+ if(route.page==='Component catalog'&&catalogMaintenance.value)catalogMaintenance.value.restoreContext({...catalogMaintenance.value.getContext(),...(context?.catalog||{}),tab:route.view});
+ if(route.page==='Configuration transitions'&&(previous.page!==route.page||previous.id!==route.id))await transitionsWorkspace.value?.openRoute(route.id,context?.transition);
+ if(route.editor&&!componentDraft.value&&!systemDraft.value&&!pcDraft.value){
+  if(route.editor==='component'){const component=db.value.components.find(c=>c.id===route.editorId);if(component||route.editorId==='new')editComponent(component);else toast('Component not found.');}
+  else if(route.editor==='system'){const system=db.value.systems.find(s=>s.id===route.editorId);if(system||route.editorId==='new')editSystem(system);else toast('Equipment system not found.');}
+  else {const pc=db.value.pcs.find(p=>p.id===route.editorId);if(pc||route.editorId==='new')editPC(pc);else toast('PC not found.');}
+ }
+ if(smAndDown.value)navigationOpen.value=false;
+ await nextTick();document.getElementById('main-content')?.focus();window.scrollTo(0,context?.scroll||0);
+}
 async function openRelated(record:RelatedRecord){
  const collection={pc:db.value.pcs,stock:db.value.inventory,configuration:db.value.configurations,location:db.value.installationLocations,component:db.value.components}[record.kind];
  if(!collection.some(item=>item.id===record.id)){toast('This related record no longer exists. Reload the workspace.');return;}
- const context=captureView();if(!confirmWorkspaceDiscard())return;
- relatedTrail.value.push(context);working.value=null;search.value='';if(smAndDown.value)navigationOpen.value=false;
- page.value={pc:'PC inventory',stock:'Component inventory',configuration:'Configurations',location:'Installations',component:'Component catalog'}[record.kind];
- await nextTick();
- if(record.kind==='configuration')openConfig(db.value.configurations.find(c=>c.id===record.id)!);
- else if(record.kind==='component')editComponent(db.value.components.find(c=>c.id===record.id)!);
- else if(record.kind==='location')installationsWorkspace.value?.openRecord(record);
- else inventoryWorkspace.value?.openRecord(record);
- document.getElementById('main-content')?.focus();window.scrollTo(0,0);
+ const context=captureView(),trail=[...relatedTrail.value];
+ const target=workspaceRoute({pc:'PC inventory',stock:'Component inventory',configuration:'Configurations',location:'Installations',component:'Component catalog'}[record.kind] as RoutePage);
+ if(record.kind==='component'){target.editor='component';target.editorId=record.id;}else target.id=record.id;
+ if(await workspaceHistory.navigate(target))relatedTrail.value=[...trail,context];
 }
-async function backToRelated(){if(!relatedTrail.value.length||!confirmWorkspaceDiscard())return;const context=relatedTrail.value.pop()!;working.value=null;page.value=context.page;search.value=context.search;filter.value=context.filter;categoryFilter.value=context.categoryFilter;await nextTick();if(context.configurationId){const configuration=db.value.configurations.find(c=>c.id===context.configurationId);if(configuration)openConfig(configuration);detailTab.value=context.detailTab;}if(context.inventory)inventoryWorkspace.value?.restoreContext(context.inventory);if(context.installation)installationsWorkspace.value?.restoreContext(context.installation);if(context.transition)await transitionsWorkspace.value?.restoreContext(context.transition);await nextTick();document.getElementById('main-content')?.focus();window.scrollTo(0,context.scroll);}
-
+async function backToRelated(){
+ const trail=[...relatedTrail.value],context=trail.at(-1);if(!context)return;const target=workspaceRoute(context.page as RoutePage);
+ if(context.configurationId){target.id=context.configurationId;target.view=context.detailTab;}
+ else if(context.inventory){target.id=target.page==='PC inventory'?context.inventory.pcId:context.inventory.stockId;target.view=target.page==='PC inventory'?context.inventory.tab:context.inventory.stockTab;}
+ else if(context.installation){target.view=context.installation.tab;target.id=context.installation.locationId;}
+ else if(context.transition)target.id=context.transition.planId;
+ else if(target.page==='Component catalog')target.view=context.catalogView||'components';
+ if(await workspaceHistory.navigate(target,context))relatedTrail.value=trail.slice(0,-1);
+}
 
 const dirty=computed(()=>!!working.value&&JSON.stringify(working.value)!==original.value);
 function openConfig(c:Configuration){configRevision.value=revision.value;working.value=clone(c);original.value=JSON.stringify(c);detailTab.value='components';page.value='Configurations';}
@@ -201,10 +258,23 @@ function selectPCRequirements(){if(!pcDraft.value?.buildSettings)return;const se
 function updatePCRequirements(){if(!pcDraft.value?.buildSettings)return;const settings=pcDraft.value.buildSettings;const version=db.value.requirementsSets.find(s=>s.id===settings.requirementSetId)?.versions.find(v=>v.revision===settings.requirementRevision);if(version)settings.requirementSnapshot=clone(version);else delete settings.requirementSnapshot;}
 function selectPCLocation(){if(!pcDraft.value)return;const location=db.value.installationLocations.find(l=>l.id===pcDraft.value!.installationLocationId);if(location&&!pcDraft.value.configurationId)pcDraft.value.configurationId=location.targetConfigurationId;}
 
-onMounted(async()=>{await load();const context=(document as Document&{modelContext?:{registerTool:(t:unknown)=>Promise<void>}}).modelContext;if(context){for(const tool of [{name:'list_configurations',description:'Read saved PC configurations and compatibility summaries.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute:()=>db.value.configurations.map(c=>({id:c.id,name:c.name,status:reports.value[c.id].status}))},{name:'check_configuration',description:'Read compatibility findings for a saved configuration.',inputSchema:{type:'object',properties:{id:{type:'string'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:true},execute:(input:{id:string})=>{const c=db.value.configurations.find(c=>c.id===input.id);if(!c)throw Error('Unknown configuration');return checkConfiguration(c,db.value);}}])try{await context.registerTool(tool);}catch{ /* Optional browser API. */ }}});
+onMounted(async()=>{await load();await workspaceHistory.start();const context=(document as Document&{modelContext?:{registerTool:(t:unknown)=>Promise<void>}}).modelContext;if(context){for(const tool of [{name:'list_configurations',description:'Read saved PC configurations and compatibility summaries.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute:()=>db.value.configurations.map(c=>({id:c.id,name:c.name,status:reports.value[c.id].status}))},{name:'check_configuration',description:'Read compatibility findings for a saved configuration.',inputSchema:{type:'object',properties:{id:{type:'string'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:true},execute:(input:{id:string})=>{const c=db.value.configurations.find(c=>c.id===input.id);if(!c)throw Error('Unknown configuration');return checkConfiguration(c,db.value);}}])try{await context.registerTool(tool);}catch{ /* Optional browser API. */ }}});
 
 const recordTable2=ref<InstanceType<typeof RecordTable>|null>(null);
 const recordTable3=ref<InstanceType<typeof RecordTable>|null>(null);
+function breadcrumbLink(title:string,target:WorkspaceRoute){return {title,href:encodeWorkspaceRoute(target),onClick:(event:Event)=>{const click=event as MouseEvent;if(click.metaKey||click.ctrlKey||click.shiftKey||click.altKey||click.button>0)return;event.preventDefault();void workspaceHistory.navigate(target);}};}
+const breadcrumbItems=computed(()=>{
+ const route=readRoute(),root=workspaceRoute(route.page),subpage=!!route.id||!!route.editor||route.view!==root.view;
+ const items:Array<{title:string;disabled?:boolean;href?:string;onClick?:(event:Event)=>void}>=[{title:'Workspace',disabled:true},subpage?breadcrumbLink(route.page,root):{title:route.page,disabled:true}];
+ const viewNames:Record<string,string>={components:'Components',gaps:'Missing data',queue:'Enrichment queue',connections:'Connections',storage:'Storage plan',checks:'Compatibility',parts:'Parts & reservations',readiness:'Build readiness',report:'Installed compatibility',history:'History',allocations:'Allocations',locations:'Installation locations',requirements:'Requirements sets',operations:'Location operations'};
+ if(route.id){const title=route.page==='Configurations'?working.value?.name:route.page==='PC inventory'?db.value.pcs.find(p=>p.id===route.id)?.name:route.page==='Component inventory'?part(db.value.inventory.find(stock=>stock.id===route.id)?.componentId||'')?.name:route.page==='Installations'?locationPath(route.id,db.value):'Transition plan';const recordRoute={...route,editor:'' as const,editorId:''};items.push(route.editor?breadcrumbLink(title||route.id,recordRoute):{title:title||route.id,disabled:true});}
+ if(route.view&&route.view!==root.view)items.push({title:viewNames[route.view]||route.view,disabled:true});
+ if(route.editor)items.push({title:route.editorId==='new'?`New ${route.editor}`:route.editor==='component'?db.value.components.find(c=>c.id===route.editorId)?.name||'Component':route.editor==='system'?db.value.systems.find(system=>system.id===route.editorId)?.name||'Equipment system':db.value.pcs.find(pc=>pc.id===route.editorId)?.name||'PC',disabled:true});
+ return items;
+});
+const workspaceHistory=createWorkspaceHistory({read:readRoute,capture:captureView,apply:applyRoute,canLeave:canLeaveRoute});
+watch(()=>JSON.stringify({route:readRoute(),context:captureView()}),()=>workspaceHistory.sync(),{flush:'post'});
+onBeforeUnmount(()=>workspaceHistory.stop());
 </script>
 
 <template>
@@ -217,7 +287,7 @@ const recordTable3=ref<InstanceType<typeof RecordTable>|null>(null);
   <v-app-bar class="workspace-app-bar" :order="smAndDown?0:1" :height="smAndDown?128:80" elevation="0" border="b">
    <div class="workspace-bar-path">
    <v-btn id="mobile-nav-toggle" :icon="mdiMenu" variant="text" aria-label="Toggle navigation" aria-controls="workspace-navigation" :aria-expanded="navigationOpen" @click="navigationOpen=!navigationOpen" />
-   <nav aria-label="Breadcrumb"><v-breadcrumbs :items="[{title:'Workspace',disabled:true},{title:page,disabled:!working,...(working?{href:'#',onClick:(event:Event)=>{event.preventDefault();navigate(page);}}:{})},...(working?[{title:working.name,disabled:true}]:[])]" /></nav>
+   <nav aria-label="Breadcrumb"><v-breadcrumbs :items="breadcrumbItems" /></nav>
    </div>
    <div class="workspace-app-actions"><label class="appearance-control"><span class="sr-only">Appearance</span><select :disabled="!!appearanceDraft||!settingsReady" :value="themePreference" aria-label="Appearance" @change="changeAppearance"><option value="system">System theme</option><option value="light">Light theme</option><option value="dark">Dark theme</option></select></label><v-btn variant="text" :icon="mdiRefresh" aria-label="Reload workspace" @click="refreshWorkspace" /></div>
   </v-app-bar>
@@ -251,24 +321,23 @@ const recordTable3=ref<InstanceType<typeof RecordTable>|null>(null);
     <template v-else-if="page==='Configurations'">
      <div class="page-heading"><div><div class="eyebrow">YOUR HARDWARE, IN HARMONY</div><h1>Configurations</h1><p>A home for every build. A clear path from parts to purpose.</p></div><v-btn color="primary" :prepend-icon="mdiPlus" @click="newConfig">New configuration</v-btn></div>
      <div class="overview-grid"><div class="stat-card"><div><span>Total configurations</span><v-icon aria-hidden="true" :icon="mdiDesktopTowerMonitor" size="19" /></div><strong>{{db.configurations.length.toString().padStart(2,'0')}}</strong><small>Designed for your equipment</small></div><div class="stat-card"><div><span>Components in catalog</span><v-icon aria-hidden="true" :icon="mdiMemory" size="19" /></div><strong>{{db.components.length.toString().padStart(2,'0')}}</strong><small>From chassis to scientific cards</small></div><div class="stat-card"><div><span>Connected systems</span><v-icon aria-hidden="true" :icon="mdiLan" size="19" /></div><strong>{{db.systems.length.toString().padStart(2,'0')}}</strong><small>Equipment requirements mapped</small></div><div class="stat-card attention"><div><span>Needs attention</span><v-icon aria-hidden="true" :icon="mdiAlertCircleOutline" size="19" /></div><strong>{{conflictCount.toString().padStart(2,'0')}}</strong><small>Builds with compatibility conflicts</small></div></div>
-     <div class="list-toolbar"><v-btn-toggle v-model="filter" mandatory class="configuration-filters" role="group" aria-label="Filter configurations" variant="outlined"><v-btn value="All configurations" :aria-pressed="filter==='All configurations'">All configurations <span class="filter-count">{{db.configurations.length}}</span></v-btn><v-btn value="Draft" :aria-pressed="filter==='Draft'">Drafts</v-btn><v-btn value="In review" :aria-pressed="filter==='In review'">In review</v-btn><v-btn value="Conflicts" :aria-pressed="filter==='Conflicts'">Conflicts</v-btn></v-btn-toggle><v-text-field v-model="search" placeholder="Search configurations…" :prepend-inner-icon="mdiMagnify" aria-label="Search configurations" hide-details class="search-input" /></div>
+     <div class="list-toolbar"><v-btn-toggle v-model="filter" mandatory class="configuration-filters" role="group" aria-label="Filter configurations" variant="outlined"><v-btn value="All configurations" :aria-pressed="filter==='All configurations'">All configurations <span class="filter-count">{{db.configurations.length}}</span></v-btn><v-btn value="Draft" :aria-pressed="filter==='Draft'">Drafts</v-btn><v-btn value="In review" :aria-pressed="filter==='In review'">In review</v-btn><v-btn value="Conflicts" :aria-pressed="filter==='Conflicts'">Conflicts</v-btn></v-btn-toggle><v-text-field :model-value="search" @update:model-value="v=>search=String(v??'')" clearable placeholder="Search configurations…" :prepend-inner-icon="mdiMagnify" aria-label="Search configurations" hide-details class="search-input" /></div>
      <div class="config-grid"><article v-for="c in configs" :key="c.id" class="config-card"><div class="config-card-top"><span class="config-icon"><v-icon aria-hidden="true" :icon="mdiDesktopTowerMonitor" size="24" /></span><span :class="['workflow-badge',c.status==='In review'?'in-review':c.status==='Approved'?'approved':'']"><span />{{c.status}}</span></div><button type="button" class="card-title" @click="openConfig(c)">{{c.name}}<v-icon aria-hidden="true" :icon="mdiArrowTopRight" size="19" /></button><p class="card-description">{{c.description}}</p><div class="system-label"><v-icon aria-hidden="true" :icon="mdiLan" size="16" />{{systemName(c.systemId)}}</div><div class="card-facts"><div><small>COMPONENTS</small><strong>{{quantity(c)}} <span>parts</span></strong></div><div><small>DATA STORAGE</small><strong>{{capacity(knownCapacity(c,'data',reports[c.id]?.usableDataGb||0))}}</strong></div></div><div :class="['card-health',errors(c.id)?'has-conflicts':'']"><v-icon aria-hidden="true" :icon="errors(c.id)?mdiAlertCircleOutline:mdiCheckCircleOutline" size="17" /><span>{{errors(c.id)?`${errors(c.id)} compatibility conflicts`:'No conflicts · review required'}}</span></div><div class="card-footer"><span>Updated {{new Date(c.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}}</span><button type="button" @click="openConfig(c)">Open build <v-icon aria-hidden="true" :icon="mdiArrowRight" size="16" /></button></div></article><button type="button" class="new-build-card" @click="newConfig"><span><v-icon aria-hidden="true" :icon="mdiPlus" size="26" /></span><h3>Your next configuration</h3><p>Start with a purpose.<br>Find the right parts.</p><strong>Create a new build <v-icon aria-hidden="true" :icon="mdiArrowRight" size="16" /></strong></button></div>
      <div v-if="!configs.length" class="empty-state"><h3>No configurations found</h3><p>Try a different search or create your first build.</p></div>
      <div class="bottom-note"><v-icon aria-hidden="true" :icon="mdiInformationOutline" size="16" />Example workspace included. Verify or replace illustrative specifications before using a build.</div>
     </template>
 
     <template v-else-if="page==='Component catalog'">
-     <div class="page-heading"><div><div class="eyebrow">THE PARTS THAT MAKE IT POSSIBLE</div><h1>Component catalog</h1><p>Dimensions, interfaces and capacity. Every detail in one place.</p></div><div class="heading-actions"><v-btn variant="outlined" :prepend-icon="mdiDownload" href="/api/export/components">Export CSV</v-btn><v-btn color="primary" :prepend-icon="mdiPlus" @click="editComponent()">Add component</v-btn></div></div>
-     <div class="catalog-toolbar"><v-text-field v-model="search" placeholder="Search parts or manufacturers…" :prepend-inner-icon="mdiMagnify" aria-label="Search components" hide-details /><v-select v-model="categoryFilter" :items="['All components',...categories]" label="Category" hide-details /><span>{{components.length}} components</span></div>
-     <section class="panel table-panel"><RecordTable :searchable="false" ref="recordTable2" :db="db" collection="components" @reload="load" @notify="toast" v-table-scroll="'Component catalog'" data-workspace-table="Component catalog" label="Component catalog" :headers="[{title:'Component',key:'c0',sortable:true},{title:'Category',key:'c1',sortable:true},{title:'Specification Snapshot',key:'c2',sortable:true},{title:'Verification',key:'c3',sortable:true},{title:'Actions',key:'c4',sortable:false}]" :items="(components).map((c)=>({id:(c.id),record:(c),c0:(c.name),c1:(c.category),c2:(summary(c)),c3:(c.verified?'Verified':'Needs verification'),c4:('')}))"><template #c0="{item:{record:c}}"><div><button type="button" class="table-name" @click="editComponent(c)">{{c.name}}</button><small>{{c.manufacturer||'Manufacturer not recorded'}}</small></div></template><template #c1="{item:{record:c}}"><div><span class="category-tag">{{c.category}}</span></div></template><template #c2="{item:{record:c}}"><div>{{summary(c)}}</div></template><template #c3="{item:{record:c}}"><div><span :class="['verification',c.verified?'verified':'']"><span />{{c.verified?'Verified':'Needs verification'}}</span></div></template><template #c4="{item:{record:c}}"><div><v-btn variant="text" :icon="mdiTrashCanOutline" size="small" aria-label="Delete component" @click="confirmDelete={collection:'components',id:c.id,name:c.name}" /></div></template></RecordTable><div v-if="!components.length" class="empty-state"><h3>No matching components</h3><p>Add a component or adjust your filters.</p></div></section><div class="bottom-note"><v-icon aria-hidden="true" :icon="mdiInformationOutline" size="16" />Blank specification fields mean unknown, not zero. Click a component to edit its dimensions, slots and connectors.</div>
+     <div class="page-heading"><div><div class="eyebrow">THE PARTS THAT MAKE IT POSSIBLE</div><h1>Component catalog</h1><p>Browse component models, fill missing specifications, and review enrichment.</p></div><div class="heading-actions"><v-btn variant="outlined" :prepend-icon="mdiDownload" href="/api/export/components">Export CSV</v-btn><v-btn color="primary" :prepend-icon="mdiPlus" @click="editComponent()">Add component</v-btn></div></div>
+     <v-tabs :model-value="catalogView" aria-label="Catalog views" class="content-tabs" @update:model-value="v=>changeCatalogView(String(v))"><v-tab value="components">Components</v-tab><v-tab value="gaps">Missing data</v-tab><v-tab value="queue">Enrichment queue</v-tab></v-tabs><template v-if="catalogView==='components'"><div class="catalog-toolbar"><v-text-field :model-value="search" @update:model-value="v=>search=String(v??'')" clearable placeholder="Search parts or manufacturers…" :prepend-inner-icon="mdiMagnify" aria-label="Search components" hide-details /><v-select v-model="categoryFilter" :items="['All components',...categories]" label="Category" hide-details /><span>{{components.length}} components</span></div>
+     <section class="panel table-panel"><RecordTable :searchable="false" ref="recordTable2" :db="db" collection="components" @reload="load" @notify="toast" v-table-scroll="'Component catalog'" data-workspace-table="Component catalog" label="Component catalog" :headers="[{title:'Component',key:'c0',sortable:true},{title:'Category',key:'c1',sortable:true},{title:'Specification Snapshot',key:'c2',sortable:true},{title:'Verification',key:'c3',sortable:true},{title:'Actions',key:'c4',sortable:false}]" :items="(components).map((c)=>({id:(c.id),record:(c),c0:(c.name),c1:(c.category),c2:(summary(c)),c3:(c.verified?'Verified':'Needs verification'),c4:('')}))"><template #c0="{item:{record:c}}"><div><button type="button" class="table-name" @click="editComponent(c)">{{c.name}}</button><small>{{c.manufacturer||'Manufacturer not recorded'}}</small></div></template><template #c1="{item:{record:c}}"><div><span class="category-tag">{{c.category}}</span></div></template><template #c2="{item:{record:c}}"><div>{{summary(c)}}</div></template><template #c3="{item:{record:c}}"><div><span :class="['verification',c.verified?'verified':'']"><span />{{c.verified?'Verified':'Needs verification'}}</span></div></template><template #c4="{item:{record:c}}"><div><v-btn variant="text" :icon="mdiTrashCanOutline" size="small" aria-label="Delete component" @click="confirmDelete={collection:'components',id:c.id,name:c.name}" /></div></template></RecordTable><div v-if="!components.length" class="empty-state"><h3>No matching components</h3><p>Add a component or adjust your filters.</p></div></section><div class="bottom-note"><v-icon aria-hidden="true" :icon="mdiInformationOutline" size="16" />Blank specification fields mean unknown, not zero. Click a component to edit its dimensions, slots and connectors.</div></template><CatalogMaintenance v-else ref="catalogMaintenance" embedded :view="catalogView" :db="db" :revision="revision" @view="v=>catalogView=v" @reload="load" @notify="toast" @edit-component="editComponent" />
     </template>
 
     <template v-else-if="page==='Equipment systems'">
-     <div class="page-heading"><div><div class="eyebrow">BEYOND THE COMPUTER</div><h1>Equipment systems</h1><p>Define what each PC needs to connect to and control.</p></div><v-btn color="primary" :prepend-icon="mdiPlus" @click="editSystem()">Add equipment system</v-btn></div><v-text-field v-model="search" placeholder="Search equipment systems…" :prepend-inner-icon="mdiMagnify" aria-label="Search equipment systems" hide-details class="system-search" />
+     <div class="page-heading"><div><div class="eyebrow">BEYOND THE COMPUTER</div><h1>Equipment systems</h1><p>Define what each PC needs to connect to and control.</p></div><v-btn color="primary" :prepend-icon="mdiPlus" @click="editSystem()">Add equipment system</v-btn></div><v-text-field :model-value="search" @update:model-value="v=>search=String(v??'')" clearable placeholder="Search equipment systems…" :prepend-inner-icon="mdiMagnify" aria-label="Search equipment systems" hide-details class="system-search" />
      <div class="systems-grid"><article v-for="s in systems" :key="s.id" class="panel system-card"><div class="system-card-head"><span class="config-icon"><v-icon aria-hidden="true" :icon="mdiLan" size="25" /></span><span class="neutral-badge">{{s.connections.length}} devices</span></div><h2>{{s.name}}</h2><small>{{s.location||'Location not recorded'}}</small><p>{{s.description}}</p><div class="port-summary"><div v-for="(total,i) in connectionPortTotals(s.connections)" :key="i"><strong>{{total.quantity}}</strong><span>{{total.label}}</span></div></div><div class="device-tags"><span v-for="connection in s.connections" :key="connection.id">{{connection.name}}</span></div><div class="card-footer"><span>{{db.configurations.filter(c=>c.systemId===s.id).length}} linked builds</span><button type="button" @click="editSystem(s)">Edit requirements <v-icon aria-hidden="true" :icon="mdiArrowRight" size="16" /></button></div></article></div><div v-if="!systems.length" class="empty-state"><h3>No equipment systems found</h3><p>Add equipment and its connection requirements.</p></div>
     </template>
 
-    <template v-else-if="page==='Catalog data'"><CatalogMaintenance ref="catalogMaintenance" :db="db" :revision="revision" @reload="load" @notify="toast" @edit-component="editComponent" /></template>
     <template v-else-if="page==='Installations'"><InstallationsWorkspace ref="installationsWorkspace" :db="db" :revision="revision" @reload="load" @notify="toast" @edit-pc="editPC" @open-related="openRelated" /></template>
     <template v-else-if="page==='PC inventory' || page==='Component inventory'">
      <InventoryWorkspace ref="inventoryWorkspace" :key="page" :db="db" :revision="revision" :mode="page==='PC inventory'?'pcs':'stock'" @reload="load" @notify="toast" @edit-pc="editPC" @open-related="openRelated" />

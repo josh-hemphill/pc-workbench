@@ -20,10 +20,29 @@ const maxCSVRecordSize=64*1024*1024;
 function spreadsheetCell(value:unknown) {return typeof value==='string'&&/^[\s]*[=+@-]/.test(value)?`'${value}`:value;}
 export function encodeCSV(collection:Collection,rows:unknown[],spreadsheet=false):string {return stringify(rows.map(row=>Object.fromEntries(Object.entries(row as object).map(([k,v])=>[k,spreadsheet?spreadsheetCell(nested.has(k)?JSON.stringify(v):typeof v==='boolean'?String(v):v):nested.has(k)?JSON.stringify(v):typeof v==='boolean'?String(v):v]))),{header:true,columns:fields[collection]});}
 export function decodeCSV(collection:Collection,text:string):unknown[] {
- const rows=parse(text,{columns:true,bom:true,skip_empty_lines:true,max_record_size:maxCSVRecordSize}) as Record<string,string>[];
- if(rows.length>10000)throw Error('CSV limit is 10,000 records.');
- if(new Set(rows.map(r=>r.id)).size!==rows.length)throw Error('CSV contains duplicate record IDs.');
- return rows.map((row:Record<string,string>,i:number)=>{try{const item:Record<string,unknown>={...row};for(const k of Object.keys(item)){if(nested.has(k)){if(!row[k]&&k!=='buildSettings'){delete item[k];continue;}item[k]=k==='buildSettings'&&!row[k]?null:JSON.parse(row[k]);}if(k==='requirementSetId'&&!row[k]&&collection!=='installationLocations'){delete item[k];continue;}if(['revision','lifecycle','reorderLevel','requirementRevision','installationLocationId'].includes(k)&&!row[k]){delete item[k];continue;}if(['revision','reorderLevel','requirementRevision'].includes(k)){if(!/^\d+$/.test(row[k]))throw Error(`${k} must be a nonnegative whole number`);item[k]=Number(row[k]);}if(k==='quantity'){if(!/^\d+$/.test(row[k]))throw Error('quantity must be a nonnegative whole number');item[k]=Number(row[k]);}if(k==='verified'){if(!['true','false','1','0'].includes(row[k]))throw Error('verified must be true or false');item[k]=['true','1'].includes(row[k]);}}return schemas[collection].parse(item);}catch(e){throw Error(`CSV row ${i+2}: ${e instanceof Error?e.message:e}`);}});
+ const normalize=(value:string)=>value.trim().replace(/[ _-]/g,'').toLowerCase();
+ const headers=new Map(fields[collection].map(field=>[normalize(field),field]));
+ if(collection==='installationLocations')headers.set('locationid','id');
+ const firstLine=text.replace(/^\uFEFF/,'').split(/\r?\n/).find(line=>line.trim())??'';
+ // Spreadsheet regional settings often use semicolons or tabs. Match known
+ // header names rather than guessing from punctuation in the data rows.
+ let delimiter=',',best=-1;
+ for(const candidate of [',',';','\t'])try{const cells=parse(firstLine,{delimiter:candidate})[0] as string[]|undefined;const score=cells?.filter(cell=>headers.has(normalize(cell))).length??0;if(score>best){best=score;delimiter=candidate;}}catch{ /* Let the full parser report malformed CSV. */ }
+ let headerSeen=false;
+ const records=parse(text,{delimiter,bom:true,skip_empty_lines:true,max_record_size:maxCSVRecordSize,info:true,columns:(columns:string[])=>{
+  headerSeen=true;const canonical=columns.map(column=>headers.get(normalize(column))??column.trim());
+  if(!canonical.includes('id'))throw Error('CSV is missing the ID column. Use id (or Location ID for installation locations).');
+  const seen=new Set<string>();for(const column of canonical){if(seen.has(column))throw Error(`CSV has duplicate column ${JSON.stringify(column)}. Keep one column for each field.`);seen.add(column);}
+  const unknown=canonical.filter(column=>!fields[collection].includes(column));if(unknown.length)throw Error(`Unknown CSV columns: ${unknown.join(', ')}. Use the exported ${collection} CSV as a template.`);
+  return canonical;
+ }}) as {record:Record<string,string>;info:{lines:number}}[];
+ if(!headerSeen)throw Error('CSV must include a header row with an ID column.');
+ const entries=records.filter(({record})=>Object.values(record).some(value=>value.trim()));
+ if(entries.length>10000)throw Error('CSV limit is 10,000 records.');
+ const seenIds=new Map<string,number>();
+ for(const {record,info} of entries){if(!record.id?.trim())throw Error(`CSV row ${info.lines}: missing record ID.`);const previous=seenIds.get(record.id);if(previous!==undefined)throw Error(`CSV contains duplicate record ID ${JSON.stringify(record.id)} on rows ${previous} and ${info.lines}.`);seenIds.set(record.id,info.lines);}
+ const rows=entries.map(entry=>entry.record);
+ return rows.map((row:Record<string,string>,i:number)=>{try{const item:Record<string,unknown>={...row};for(const k of Object.keys(item)){if(nested.has(k)){if(!row[k]&&k!=='buildSettings'){delete item[k];continue;}item[k]=k==='buildSettings'&&!row[k]?null:JSON.parse(row[k]);}if(k==='requirementSetId'&&!row[k]&&collection!=='installationLocations'){delete item[k];continue;}if(['revision','lifecycle','reorderLevel','requirementRevision','installationLocationId'].includes(k)&&!row[k]){delete item[k];continue;}if(['revision','reorderLevel','requirementRevision'].includes(k)){if(!/^\d+$/.test(row[k]))throw Error(`${k} must be a nonnegative whole number`);item[k]=Number(row[k]);}if(k==='quantity'){if(!/^\d+$/.test(row[k]))throw Error('quantity must be a nonnegative whole number');item[k]=Number(row[k]);}if(k==='verified'){if(!['true','false','1','0'].includes(row[k]))throw Error('verified must be true or false');item[k]=['true','1'].includes(row[k]);}}return schemas[collection].parse(item);}catch(e){throw Error(`CSV row ${entries[i].info.lines}: ${e instanceof Error?e.message:e}`);}});
 }
 export class PlanConflict extends Error {}
 export class WorkspaceRecoveryError extends Error {constructor(reason:string){super(`${reason} Stop and restart the server to recover the workspace before making more changes.`);}}
