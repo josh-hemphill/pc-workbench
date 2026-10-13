@@ -10,9 +10,9 @@
 body{line-height:1.55}
 h1{font-size:clamp(1.8rem,3vw,2.25rem);letter-spacing:-.04em}h2{font-size:1.4rem}h3{font-size:1.125rem}h4{font-size:1rem}
 .v-application{font-size:1rem!important;line-height:1.55!important}
-.v-btn{font-size:1rem!important;min-height:44px!important;max-width:100%;white-space:normal!important}
+.v-btn{font-size:1rem!important;max-width:100%;white-space:normal!important}
 .v-btn:not(.v-btn--icon){height:auto!important;padding-block:10px!important}.v-btn__content{white-space:normal!important;line-height:1.35}
-.v-btn--icon{min-width:44px!important;min-height:44px!important;width:44px!important;height:44px!important}
+.v-btn--icon{width:44px;height:44px}
 .v-field,.v-field__input,.v-label{font-size:1rem!important}.v-label{opacity:1!important;color:var(--bench-text)!important}
 .v-field__outline{--v-field-border-opacity:1;color:var(--bench-control-border)}.v-field--focused .v-field__outline{color:var(--bench-focus);--v-field-border-width:3px}
 .v-field__input{min-height:48px!important;line-height:1.5!important}input::placeholder,textarea::placeholder{color:var(--bench-muted)!important;opacity:1!important}
@@ -22,14 +22,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 /* Vuetify draws one focus border with a notch for its floating label. */
 .v-field:focus-visible,.v-field__input:focus-visible,.v-field input:focus-visible,.v-field textarea:focus-visible,.v-field select:focus-visible{outline:none!important}
 button,a,[tabindex]{scroll-margin-block:80px}
-.sidebar{width:272px;padding:24px 16px 0;background:var(--bench-surface);border-color:var(--bench-border);overflow-y:auto}
-.brand{font-size:30px;margin:0 8px 24px;letter-spacing:-1px}.workspace-name{margin-bottom:24px}
-.nav-label{font-size:.75rem;letter-spacing:.1em;font-weight:700;color:var(--bench-text)}
-.nav-item{font-size:1rem;min-height:48px;gap:12px;padding:12px;color:var(--bench-text);border-radius:8px;white-space:normal;line-height:1.35}
-.nav-item .v-icon{width:24px;height:24px;flex-shrink:0}.nav-item.active{background:var(--bench-soft);color:var(--bench-primary);font-weight:700;box-shadow:inset 4px 0 var(--bench-primary)}
-.nav-item:hover:not(.active){background:var(--bench-soft)}.nav-count{font-size:.875rem;color:var(--bench-text)}.data-nav{margin-top:16px}
-.sidebar-footer{font-size:.875rem;color:var(--bench-text);margin-top:auto}.side-note{margin:24px 12px;font-size:.875rem}.main{margin-left:272px;min-width:0}
-.topbar{font-size:.875rem;color:var(--bench-text)}.eyebrow{font-size:.75rem;letter-spacing:.1em;color:var(--bench-text)}
+.brand{font-size:30px;margin:0 8px 24px;letter-spacing:-1px}.eyebrow{font-size:.75rem;letter-spacing:.1em;color:var(--bench-text)}
 .page-heading{flex-wrap:wrap}.page-heading p{font-size:1rem;color:var(--bench-text);line-height:1.6;max-width:none}.heading-actions{flex-wrap:wrap;flex-shrink:1;max-width:none!important}
 .stat-card>div,.stat-card small,.card-description,.system-label,.card-footer,.form-hint,.bottom-note,.info-callout,.section-head p,.finding p,.source-section p,.data-section>p,.system-card>p{font-size:.9375rem;line-height:1.6;color:var(--bench-text)}
 .card-title,.table-name{font-size:1rem;min-height:44px}.table-name{padding-block:8px}.card-facts small,.card-facts strong span{font-size:.875rem;color:var(--bench-text)}
@@ -44,21 +37,21 @@ button,a,[tabindex]{scroll-margin-block:80px}
 .port-summary span{font-size:.875rem;color:var(--bench-text)}.resource>div:first-child,.resource strong{font-size:.875rem;color:var(--bench-text)}.resource .over,.stock-shortage{color:var(--bench-error)}
 .content-tabs .v-tab{font-size:.9375rem!important;min-height:48px;line-height:1.35}.toolbar-tabs button{font-size:.9375rem;min-height:44px;padding-inline:6px}.toolbar-tabs{flex-wrap:wrap}
 .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid>*{min-width:0}.spec-heading,.section-head{flex-wrap:wrap}.slot-form-row,.connection-form-top{min-width:0}
-.v-dialog>.v-overlay__content>.editor-dialog{display:flex;flex-direction:column;max-height:calc(100dvh - 48px);overflow:hidden}
-.dialog-head{flex:0 0 auto;gap:16px}.dialog-head h2{font-size:1.4rem;overflow-wrap:anywhere}.dialog-body{overflow:auto;min-height:0;flex:1 1 auto;padding:24px}.dialog-footer{flex:0 0 auto;flex-wrap:wrap;gap:12px;background:var(--bench-surface);border-top:1px solid var(--bench-border)}
+
+.dialog-head{flex:0 0 auto;gap:16px}.dialog-head h2{font-size:1.4rem;overflow-wrap:anywhere}.dialog-body{padding:24px;font-size:1rem;line-height:1.6}.dialog-footer{flex:0 0 auto;flex-wrap:wrap;gap:12px;background:var(--bench-surface);border-top:1px solid var(--bench-border)}
 .detail-back{font-size:.875rem;align-items:center;gap:16px;flex-wrap:wrap}.detail-back button{min-height:44px;padding-block:8px}.builder-section,.build-notes,.inventory-differences{min-width:0}
 .panel p,.panel strong,.bom-name,.connection-row>div{overflow-wrap:anywhere}.build-summary .panel{display:block}.workspace-banner button{display:flex;min-height:44px;font-size:.9375rem}
 .snapshot-json{font-size:.875rem}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .skip-link{position:fixed;z-index:10000;top:8px;left:8px;padding:12px 18px;background:var(--bench-surface);color:var(--bench-primary);border:2px solid var(--bench-border);border-radius:6px;transform:translateY(-180%)}.skip-link:focus{transform:translateY(0)}
-@media(max-width:1200px){.sidebar{width:248px}.main{margin-left:248px}.config-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.builder-grid{grid-template-columns:minmax(0,1fr)}.page-heading .heading-actions{flex-direction:row}.build-summary .panel{display:block}.add-component{grid-template-columns:1fr 1.5fr 80px 44px}.add-component .v-btn{width:44px;height:44px}}
-@media(max-width:760px){.sidebar{position:static;width:100%;padding:20px 16px 12px;overflow:visible}.sidebar nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:visible}.sidebar .nav-item{font-size:1rem;min-height:48px;margin:0;padding:10px 12px}.sidebar .nav-item .v-icon{width:24px;height:24px}.sidebar .data-nav{position:static;width:100%;margin-top:8px}.brand{margin-bottom:16px}.main{margin-left:0}.topbar{height:auto;min-height:56px;padding:12px 16px}.topbar .local-status{display:block}.page-content{padding:24px 16px}.page-heading{display:block}.page-heading p{font-size:1rem;max-width:none}.heading-actions{max-width:none;flex-direction:row!important;margin-top:16px}.page-heading>.v-btn{margin-top:16px}.overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.config-grid{grid-template-columns:1fr}.workspace-banner{padding:20px;display:block}.banner-illustration{display:none}.workspace-banner h2{font-size:1.3rem}.workspace-banner p{font-size:.9375rem}.workspace-banner button{display:flex;margin-top:12px}.list-toolbar,.toolbar-tabs{gap:8px}.toolbar-tabs{justify-content:flex-start}.builder-meta,.form-grid,.storage-options,.installed-summary{grid-template-columns:1fr}.add-component{grid-template-columns:1fr 80px 44px}.add-component>.v-input:first-child{grid-column:1/-1}.finding>span{display:block!important}.finding{flex-wrap:wrap}.dialog-head,.dialog-body,.dialog-footer{padding:20px}.dialog-footer .v-btn{flex:1 1 120px}.slot-form-row,.connection-form-top{grid-template-columns:1fr}.connection-form-top>.v-input:first-child{grid-column:auto}.content-tabs .v-tab{font-size:.9375rem!important;padding-inline:12px}.table-panel{overflow:hidden}.stock-counts strong{font-size:1.75rem!important}.stock-counts span{font-size:.875rem!important}}
-@media(max-width:400px){.sidebar nav{grid-template-columns:1fr}.overview-grid{grid-template-columns:1fr}.port-summary{flex-wrap:wrap;gap:16px}.port-summary>div{flex:1 1 40%;border:0}.heading-actions>.v-btn{flex:1 1 100%}.form-grid,.storage-capacities,.card-facts{grid-template-columns:1fr}.toolbar-tabs button{flex:1 1 40%}}
-@media(forced-colors:active){.nav-item.active{border:2px solid Highlight}.v-field__outline{color:CanvasText}.workflow-badge,.category-tag,.health-badge{border:1px solid CanvasText}.v-btn{border:1px solid ButtonText}}
+@media(max-width:1200px){.config-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.builder-grid{grid-template-columns:minmax(0,1fr)}.page-heading .heading-actions{flex-direction:row}.build-summary .panel{display:block}.add-component{grid-template-columns:1fr 1.5fr 80px 44px}.add-component .v-btn{width:44px;height:44px}}
+@media(max-width:760px){.brand{margin-bottom:16px}.page-content{padding:24px 16px}.page-heading{display:block}.page-heading p{font-size:1rem;max-width:none}.heading-actions{max-width:none;flex-direction:row!important;margin-top:16px}.page-heading>.v-btn{margin-top:16px}.overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.config-grid{grid-template-columns:1fr}.workspace-banner{padding:20px;display:block}.banner-illustration{display:none}.workspace-banner h2{font-size:1.3rem}.workspace-banner p{font-size:.9375rem}.workspace-banner button{display:flex;margin-top:12px}.list-toolbar,.toolbar-tabs{gap:8px}.toolbar-tabs{justify-content:flex-start}.builder-meta,.form-grid,.storage-options,.installed-summary{grid-template-columns:1fr}.add-component{grid-template-columns:1fr 80px 44px}.add-component>.v-input:first-child{grid-column:1/-1}.finding>span{display:block!important}.finding{flex-wrap:wrap}.dialog-head,.dialog-body,.dialog-footer{padding:20px}.dialog-footer .v-btn{flex:1 1 120px}.slot-form-row,.connection-form-top{grid-template-columns:1fr}.connection-form-top>.v-input:first-child{grid-column:auto}.content-tabs .v-tab{font-size:.9375rem!important;padding-inline:12px}.table-panel{overflow:hidden}.stock-counts strong{font-size:1.75rem!important}.stock-counts span{font-size:.875rem!important}}
+@media(max-width:400px){.overview-grid{grid-template-columns:1fr}.port-summary{flex-wrap:wrap;gap:16px}.port-summary>div{flex:1 1 40%;border:0}.heading-actions>.v-btn{flex:1 1 100%}.form-grid,.storage-capacities,.card-facts{grid-template-columns:1fr}.toolbar-tabs button{flex:1 1 40%}}
+@media(forced-colors:active){.v-field__outline{color:CanvasText}.workflow-badge,.category-tag,.health-badge{border:1px solid CanvasText}.v-btn{border:1px solid ButtonText}}
 summary{cursor:pointer;min-height:44px;padding:10px 6px;line-height:1.5;overflow-wrap:anywhere}summary:focus-visible{outline:3px solid var(--bench-focus);outline-offset:3px}
 .v-selection-control .v-icon{opacity:1}.v-dialog .v-alert{overflow-wrap:anywhere}
 
 .port-summary{flex-wrap:wrap}.port-summary>div{min-width:90px}.connection-row>span{max-width:40%;overflow-wrap:anywhere}
-@media(max-width:700px){.topbar{flex-wrap:wrap;gap:8px}.topbar>div:first-child{min-width:0;flex-wrap:wrap}.topbar>div:first-child span{overflow-wrap:anywhere}.topbar .local-status{display:flex;flex-wrap:wrap}}
+
 
 /* Configuration filters keep a visible selected state and wrap on narrow screens. */
 .list-toolbar:has(.configuration-filters){border-bottom:0;padding-block:8px;gap:16px}
@@ -69,13 +62,11 @@ summary{cursor:pointer;min-height:44px;padding:10px 6px;line-height:1.5;overflow
 .configuration-filters .v-btn[aria-pressed="true"] .filter-count{background:var(--bench-surface);color:var(--bench-primary)}
 @media(max-width:760px){.configuration-filters.v-btn-group{width:100%}.configuration-filters.v-btn-group>.v-btn{flex:1 1 auto}.list-toolbar:has(.configuration-filters) .search-input{margin-top:0}}
 
-/* Keep the utility navigation with the footer, even in short desktop windows. */
-.sidebar{overflow-y:auto}.sidebar>nav,.sidebar>.brand,.sidebar>.nav-label,.sidebar>.data-nav,.sidebar>.sidebar-footer{flex-shrink:0}
-.sidebar>.data-nav{margin-top:auto;margin-bottom:8px}.sidebar>.sidebar-footer{margin-top:0}
-.appearance-control select{min-height:44px;max-width:160px;padding:8px 28px 8px 12px;border:1px solid var(--bench-control-border);border-radius:8px;color:var(--bench-text);background:var(--bench-surface);font:inherit;cursor:pointer}
+/* Native appearance control retains an accessible target and themed surface. */
+.appearance-control select{min-height:44px;width:184px;max-width:100%;padding:8px 32px 8px 12px;border:1px solid var(--bench-control-border);border-radius:8px;color:var(--bench-text);background:var(--bench-surface);font:inherit;cursor:pointer}
 .appearance-control select:focus-visible{outline:3px solid var(--bench-focus);outline-offset:3px}
-.local-status{gap:8px;flex-wrap:wrap}.brand-mark span{color:var(--bench-on-primary)}
-@media(max-width:760px){.sidebar>.data-nav{margin-top:8px;margin-bottom:0}.sidebar>.sidebar-footer{margin-top:0}.sidebar{overflow:visible}.appearance-control select{max-width:150px}}
+.brand-mark span{color:var(--bench-on-primary)}
+
 
 /* Native action buttons inherit the surface rather than the browser dark widget paint. */
 :where(button:not(.v-btn)){background:transparent;border:0}
@@ -136,3 +127,35 @@ body{background:var(--bench-background)}
  .sidebar.mobile-nav-open .navigation-content{display:contents}
  .sidebar .brand{margin-bottom:0}
 }
+/* Vuetify owns shell sizing and scrollable dialog structure. */
+.workspace-main{min-width:0;max-width:100%}
+.workspace-drawer .v-navigation-drawer__content{padding:24px 12px 0}
+.workspace-drawer .brand{margin:0 12px 24px}
+.workspace-nav-item{width:100%;text-align:left;min-height:48px;white-space:normal}
+.workspace-nav-item .v-list-item-title{font-size:1rem;line-height:1.4;white-space:normal}
+.workspace-nav-item .v-list-item__prepend>.v-icon{opacity:1;margin-inline-end:16px}
+.workspace-nav-item.v-list-item--active{color:var(--bench-primary);font-weight:700}
+.workspace-storage{display:flex;align-items:center;gap:8px;padding:12px 24px 20px;font-size:.875rem}
+.workspace-app-bar .v-toolbar__content{padding-inline:16px;gap:8px}
+.workspace-bar-path{display:flex;align-items:center;gap:8px;flex:1;min-width:0}.workspace-app-bar nav{min-width:0;flex:1}.workspace-app-bar .v-breadcrumbs{padding:8px 0;flex-wrap:wrap;font-size:.875rem}.workspace-app-bar .v-breadcrumbs-item--disabled{opacity:1}
+.workspace-app-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.v-card-title.dialog-head{display:flex;align-items:center;justify-content:space-between;white-space:normal}
+.v-card-actions.dialog-footer{padding:20px 24px;gap:12px;flex-wrap:wrap}
+@media(max-width:600px){.v-card-actions.dialog-footer{padding:16px}}
+
+/* Header controls stay visible while the mobile drawer fills the area below them. */
+.workspace-app-bar .v-breadcrumbs-item{min-width:0;overflow-wrap:anywhere}
+@media(max-width:839.98px){
+ .workspace-app-bar .v-toolbar__content{flex-wrap:wrap;align-content:center;column-gap:8px;row-gap:8px;padding-inline:16px}
+ .workspace-bar-path{flex:1 1 100%;max-width:100%;gap:8px}
+ .workspace-app-bar .v-breadcrumbs{flex-wrap:nowrap;overflow:hidden;padding:0}
+ .workspace-app-bar .v-breadcrumbs-item:first-child,.workspace-app-bar .v-breadcrumbs-divider:nth-child(2){display:none}
+ .workspace-app-bar .v-breadcrumbs-item{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .workspace-app-actions{width:100%;min-width:0;justify-content:flex-end;gap:8px}
+ .appearance-control{min-width:0}
+}
+
+/* Long names and imported identifiers must not set a grid's minimum page width. */
+.page-content{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.systems-grid>*,.data-grid>*,.builder-meta>*{min-width:0}
+.card-title strong{min-width:0;overflow-wrap:anywhere}

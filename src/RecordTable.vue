@@ -34,7 +34,7 @@ defineExpose({confirmDiscard,hasUnsavedChanges});
 </div>
 <v-data-table v-model="selection" v-model:page="page" :headers="headers" :items="tableItems" :item-value="key" :show-select="bulkMode" select-strategy="page" :items-per-page="25" :items-per-page-options="[10,25,50,100]" :mobile="false" :aria-label="label" no-data-text="No matching records.">
 <template #caption><caption class="sr-only">{{label}}</caption></template>
-<template #item.data-table-select="{item,props:checkbox}"><v-checkbox-btn v-bind="checkbox" :aria-label="`Select ${item.c0||item.name||item[key]}`" /></template>
+<template #item.data-table-select="{item,internalItem,index,props:checkbox,toggleSelect}"><v-checkbox-btn v-bind="{...checkbox,onClick:undefined}" @click.stop="(event:MouseEvent)=>toggleSelect(internalItem,index,event)" :aria-label="`Select ${item.c0||item.name||item[key]}`" /></template>
 <template v-for="header in headers" :key="header.key" #[`item.${header.key}`]="{item}"><slot :name="header.key" :item="item">{{item[header.key]}}</slot></template>
 </v-data-table>
 <BulkRecordEditor v-if="db" ref="editor" :request="request" :db="db" @close="request=null" @reload="emit('reload')" @notify="message=>emit('notify',message)" @complete="selection=[]" />

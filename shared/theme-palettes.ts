@@ -39,7 +39,7 @@ export const presetPalettes: Record<PaletteName, Record<PaletteMode, Palette>> =
   },
 };
 
-export function paletteTheme(name: PaletteName, mode: PaletteMode, palette: Palette): ThemeDefinition {
+export function paletteTheme(name: PaletteName, mode: PaletteMode, palette: Palette) {
   const dark = mode === 'dark';
   return {
     dark,
@@ -54,7 +54,7 @@ export function paletteTheme(name: PaletteName, mode: PaletteMode, palette: Pale
       info: palette.focus, 'on-info': dark ? palette.background : '#ffffff',
       'on-warning': dark ? '#352409' : '#ffffff', 'on-error': dark ? '#41100b' : '#ffffff',
     },
-  };
+  } satisfies ThemeDefinition;
 }
 
 export function paletteCssVariables(palette: Palette, mode: PaletteMode): Record<string, string> {
