@@ -1,0 +1,95 @@
+# Node.js / pnpm and desktop packaging investigation
+
+Branch: `exploration/node-pnpm-desktop`, based on `main` at `1c9b756`. This is a runnable migration and packaging prototype. It does not replace main or the native Deno window yet.
+
+## Decision
+
+Move development, testing and backend packaging to Node 24 LTS and pnpm. Prefer **Tauri 2 with a Node SEA sidecar** for the next native-window experiment. Keep Neutralino as a comparison candidate if Rust build prerequisites prove too disruptive.
+
+The application already uses Express, Node filesystem APIs, `node:test`, and built-in `node:sqlite`. Its business logic, SQLite schema, CSV formats, workspace/user separation and Vue UI need no runtime rewrite. The desktop window is the remaining independent decision.
+
+The user supplied the [Deno / Cloudflare announcement](https://deno.com/blog/cloudflare) as the migration motivation. Direct access to that article is blocked by this execution environment's network proxy (403), so this assessment does not claim independent verification of its exact maintenance terms or dates. The migration provides a fallback regardless of those terms.
+
+## Packaging facts
+
+A single executable **still contains its runtime**. Deno's desktop package contains Deno/V8; Node SEA contains Node/V8. SEA avoids a separate Node installation, a loose Node executable plus node_modules, and dependency resolution on the user's machine. It does not eliminate runtime bytes.
+
+Measured on this Linux x64 workspace with Node 24.19.0:
+
+| Artifact | Measured size |
+| --- | ---: |
+| Node executable used as the SEA base | 125,989,464 bytes (120.15 MiB) |
+| PC Workbench SEA with frontend + Express + business logic | 130,026,688 bytes (124.00 MiB) |
+| Same executable streamed through default gzip | 44,130,608 bytes (42.09 MiB) |
+
+These are backend/server prototype measurements, not a complete native GUI bundle. They vary by OS, architecture and Node release. A Tauri/Neutralino host would add its own executable and installer overhead. System WebView prerequisites also vary by platform. Neither an unmeasured small download claim nor an Electron-like bundled browser is necessary to this approach.
+
+Node 24 SEA requires a bundled CommonJS entry and `postject` injection. This prototype deliberately disables snapshots and code cache. Package on the **target OS/architecture**; copying the current Node binary does not cross-compile it. macOS builds remove the original signature before injection and apply an ad-hoc signature afterward. Release signing/notarization and Windows installer delivery are separate from this prototype.
+
+## Desktop options
+
+| Option | What it provides | Fit for this application | Remaining cost / risk |
+| --- | --- | --- | --- |
+| **Tauri 2 + Node SEA sidecar** | System WebView, native lifecycle/navigation hooks, installers and updater tooling | Best next candidate: Vue stays unchanged, existing Express/SQLite/TS stays in the sidecar, no Chromium distribution or SQLite npm addon rebuild | Rust/toolchain + platform build prerequisites; one native host plus the embedded-Node sidecar; native close/child lifecycle integration must be tested |
+| **Neutralino + Node SEA extension/sidecar** | Small system-WebView host, JS tooling and native APIs | Promising alternative if Rust tooling is undesirable; keep the same backend bundle | Extension/authentication/readiness/termination integration is additional plumbing; native navigation and unsaved-close behavior need verification |
+| **Electrobun** | System WebView or optional bundled CEF; TypeScript-friendly desktop tooling | Attractive tooling UX, but not a drop-in Node runtime host | Official current docs use Bun by default and an experimental Cottontail alternative; choosing pnpm for builds does not make `node:sqlite` compatible. Re-run the entire backend compatibility investigation |
+| **Wails / custom Wry host** | Native system WebView with Go/Rust host code | Technically possible with the same sidecar | More custom host integration for our current TS backend; a backend rewrite would lose the low-change benefit |
+| **Electron / NW.js** | Node and Chromium with extensive desktop APIs | Functional fallback, not preferred given the user's integration concerns | Browser/runtime footprint and framework coupling |
+| **Tauri with a Rust backend rewrite** | Potentially remove the Node runtime entirely | The route to investigate only if embedded runtime size is unacceptable | Requires porting API, persistence, import, inventory and planning logic and preserving tested behavior; much larger migration than a shell change |
+
+Sources accessed for the comparison:
+
+- [Node 24 SEA documentation](https://nodejs.org/docs/latest-v24.x/api/single-executable-applications.html) — the version-specific API, rather than newer Node documentation with different packaging commands.
+- [Tauri official README](https://github.com/tauri-apps/tauri/blob/dev/README.md) — system WebView architecture, Rust host and bundling.
+- [Neutralino official README](https://github.com/neutralinojs/neutralinojs/blob/main/README.md) — OS browser library, WebSocket native API and extension model.
+- [Electrobun official README](https://github.com/blackboardsh/electrobun/blob/main/README.md) — current Hutch tooling, runtime choices and optional CEF.
+
+## Implemented branch workflow
+
+```sh
+pnpm install --frozen-lockfile
+pnpm dev                 # Vue HMR + watched Node API
+pnpm check               # Standard vue-tsc CLI, including templates/tests
+pnpm test                # Entire existing node:test application suite
+pnpm build               # Frontend + bundled production backend
+pnpm start               # One local server, embedded frontend
+pnpm package:sea         # One executable, current host OS/architecture
+pnpm test:sea            # Isolated actual-executable integration test
+```
+
+The generated `.standalone/server.cjs` includes all runtime JS dependencies and frontend assets. Runtime imports are Node built-ins, including SQLite. `bin/pc-workbench-node-<platform>-<arch>` requires no installed Node, node_modules or extracted JS/assets. It serves the local browser UI; **it currently has no native window**.
+
+The pnpm lockfile pins dependencies. Only esbuild's required build script is approved. Node type definitions target Node 24. The old Deno tasks, lockfile and native host remain for comparison until a replacement GUI passes platform parity checks.
+
+The Node CI workflow builds/tests the executable on Linux, Windows and macOS and publishes explicitly named **backend prototype** artifacts. Local evidence is Linux x64; other platform results must be obtained from CI and native OS testing.
+
+## Native-host contract for the next prototype
+
+```mermaid
+flowchart LR
+    Window[System WebView window] -->|same-origin HTTP| SEA[Node SEA: embedded UI + Express]
+    Host[Tauri native host] -->|spawn / readiness / shutdown| SEA
+    SEA --> Workspace[Portable workspace SQLite]
+    SEA --> Profile[Per-user settings outside workspace]
+```
+
+The sidecar is ready for a host lifecycle proof:
+
+- Spawn the fixed bundled executable with `--desktop` and piped stdin/stdout. Never accept an arbitrary executable or command from the renderer.
+- Read one JSON `{type:"ready", origin:"http://127.0.0.1:<port>", pid:...}` message with a bounded startup timeout. Validate loopback before navigating the window. Saved app configuration still selects the API port.
+- Serve the UI and API on the same origin, retain Host/Origin checks, and block external native-window navigation/popups; open permitted documentation links in the OS browser.
+- Implement the close guard: retain unsaved Vue drafts when the user cancels native close. Add only the narrowly scoped local capability needed for that decision; no general process/filesystem renderer bridge.
+- On accepted close, write `shutdown\n`, wait for the child to release SQLite and the workspace lock, then close the host. Closing the stdin pipe also stops the sidecar if the parent exits. Add a bounded termination fallback.
+- Validate WebView2 cache placement under the user profile, startup/locked-workspace/port-conflict failures, app focus on second launch, and native installers on Windows first. Preserve user-settings paths and portable workspace semantics.
+
+The Tauri CLI would wrap the existing pnpm frontend/backend/SEA commands. A native host has not been implemented or compiled here: this environment has neither a Rust toolchain nor the required Linux WebView development libraries. Adding an untested shell scaffold would not establish parity with the existing desktop experience.
+
+## Verification
+
+- Existing application suite passed under Node before application changes: 333 tests. The final suite, including the portable desktop-backend regression, passes 334 tests.
+- A stopped Deno review workspace, including named SFF catalogs and installed inventory, was copied and opened successfully under Node with the existing SQLite schema.
+- A Node desktop-backend test adds SQLite durability, revisioned edits through a streamed proxy, origin guards, shutdown/restart and lock release. Streaming required Node's `duplex: 'half'` fetch option, now supplied by the portable proxy.
+- The real SEA smoke test runs in an empty working directory with an empty PATH, verifies embedded UI/assets, saves a record, exports CSV and backup, restarts against SQLite, and checks shutdown-command, parent-EOF and occupied-port cleanup. No installed Node or loose application files are used by the child.
+- The standard Node vue-tsc CLI and production build pass. A deliberate temporary Vue template error was rejected, confirming template coverage; the Deno-specific compiler-program workaround is unnecessary on this branch. Artifact sizes above were measured, not estimated.
+
+Native-window behavior, Windows/macOS binaries, final download sizes and signing/installer UX remain explicit follow-up validation. Main keeps the Deno desktop while this branch makes the Node backend and packaging independently reviewable.

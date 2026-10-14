@@ -14,7 +14,8 @@
       "node",
       "vite/client"
     ],
-    "noEmit": true
+    "noEmit": true,
+    "allowImportingTsExtensions": true
   },
   "include": [
     "src/**/*.ts",
@@ -26,6 +27,7 @@
   ],
   "exclude": [
     "tools/deno/**",
-    "server/serve.ts"
+    "server/serve.ts",
+    "desktop/**"
   ]
 }

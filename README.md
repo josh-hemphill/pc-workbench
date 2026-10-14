@@ -1,32 +1,34 @@
 # Bench — PC configuration workbench
 
-PC Workbench runs the complete application pipeline with Deno 2.9.7: dependency installation, Vue/Vuetify development, Vite builds, type checking, tests and WebView desktop packaging. The Express backend and native `node:sqlite` run inside Deno. No Node installation, pnpm, Electron or Node server sidecar is required. Every collection remains importable/exportable as CSV.
+This branch explores **Node.js 24 + pnpm** while preserving the Vue/Vuetify application, Express API, built-in SQLite, existing workspaces, and user settings. The Deno desktop implementation remains available as a comparison baseline. Main is unchanged.
 
-## Run
+## Run the Node prototype
 
-Install Deno **2.9.7**, then run:
-
-```sh
-deno install --frozen
-deno task dev
-```
-
-Open **http://127.0.0.1:5173**. Vite proxies `/api` to the Deno API on port 3001. Both services stop with Ctrl+C; Vue supports HMR and the API watches source changes. For a single-server local installation:
+Install Node.js **24.19 or a later Node 24 release** and pnpm **11.19.0**, then run:
 
 ```sh
-deno task build
-deno task start
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-Open **http://127.0.0.1:3001**. `deno task test` executes all application tests under Deno and verifies individual JUnit counts. `deno task test:desktop` builds and runs seven additional desktop integration tests without subprocess permissions. `deno task check` runs Deno tool checks plus Vue/shared/backend checking using TypeScript 6's JavaScript compiler API inside Deno.
+Open **http://127.0.0.1:5173**. Vue supports HMR; Node watches API source changes. Vite reads the same API-port configuration as the server. Ctrl+C stops both services.
 
 ```sh
-deno task desktop          # Native local WebView
-deno task package:windows  # Cross-build Windows x64 ZIP
-deno task package:windows:single # Build a single self-extracting .exe on Windows x64
+pnpm test
+pnpm build
+pnpm start
 ```
 
-The package embeds the frontend and backend inside the Deno runtime. Its launcher/runtime DLL need no Node executable or external npm dependencies. See [Deno setup and packaging](docs/DENO.md) and [evaluation evidence](docs/DESKTOP-LIMITATIONS.md). Windows unsaved-close and native navigation/popup protections remain blockers for production adoption; save drafts before closing.
+The production server embeds the frontend and opens its API on the configured port (default **http://127.0.0.1:3001**). `pnpm check` checks Vue templates, shared/backend code and tests. No SQLite native npm addon is required.
+
+```sh
+pnpm package:sea  # Build one executable for the current OS/architecture
+pnpm test:sea     # Test it with empty PATH/cwd, persistence and shutdown
+```
+
+The executable requires no external Node installation, node_modules, frontend files or extraction directory. **It embeds Node and does not yet create a native window.** It is a server/desktop-sidecar packaging prototype, not a replacement desktop GUI. Read the [migration and desktop-shell assessment](docs/NODE_DESKTOP_MIGRATION.md) for measurements, native-window alternatives and the proposed Tauri integration.
+
+Deno tasks and [baseline desktop findings](docs/DESKTOP-LIMITATIONS.md) are retained for comparison. The Node CI workflow builds/tests SEA prototypes on Linux, Windows and macOS; platform results must be reviewed before native desktop adoption.
 
 The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port; development reads the same configuration for its Vite proxy. `BENCH_DATA_DIR=/absolute/path` changes the storage directory.
 
@@ -34,9 +36,9 @@ The API binds to loopback and rejects nonlocal Host/Origin requests. This is a s
 
 **Configuration transitions** plans general hardware changes across multiple configurations or installation scopes. Map each hardware group to a saved destination configuration, including bays, cages, adapters, controllers and other components, or use the SSD replacement assistant. It checks measured capacity targets and full-build compatibility, pools installed/reserved/free stock into a complete parts estimate, and stages pilot/rollout waves. Plans export as portable JSON with draft target configurations; order estimates export as CSV. Live PCs and inventory stay unchanged. See [workflow and limits](docs/CONFIGURATION-TRANSITIONS.md).
 
-## User settings and Windows desktop executable
+## User settings and portable workspace data
 
-Configure a private per-user `config.json` with `dataDir` and an optional `port`. On Windows it lives at `%APPDATA%\pc-workbench\config.json`, and the desktop default database is under `%LOCALAPPDATA%\pc-workbench\data`. The Deno window manages its in-process server and SQLite shutdown; CSV import/export remains available. See [settings, packaging and data migration instructions](docs/STANDALONE.md).
+Configure a private per-user `config.json` with `dataDir` and an optional `port`. On Windows it lives at `%APPDATA%\pc-workbench\config.json`, and the desktop default database is under `%LOCALAPPDATA%\pc-workbench\data`. The Node prototype closes SQLite and releases the workspace lock on shutdown; CSV import/export remains available. See [settings, packaging and data migration instructions](docs/STANDALONE.md).
 
 Open **Settings** beside **Data & imports** for user appearance and local app storage/runtime settings. **User settings → Appearance** previews Bench green, Slate blue and Graphite with System/Light/Dark modes, custom color editing, reset and JSON export. **Apply appearance** saves the palette and both modes’ color edits for the OS user; **Cancel preview** restores the saved appearance. The header retains a quick mode selector, disabled while previewing. Navigation and reload guard unsaved settings. Review custom colors for contrast before adoption.
 

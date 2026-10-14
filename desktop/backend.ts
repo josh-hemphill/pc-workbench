@@ -90,7 +90,7 @@ export async function proxyRequest(request: Request, backendOrigin: string): Pro
   const headers = new Headers(request.headers);
   for (const name of ['host', 'connection', 'keep-alive', 'transfer-encoding', 'upgrade', 'proxy-authorization']) headers.delete(name);
   try {
-    const response = await fetch(proxyTarget(request.url, backendOrigin), { method: request.method, headers, body: request.body, redirect: 'manual', signal: request.signal });
+    const response = await fetch(proxyTarget(request.url, backendOrigin), { method: request.method, headers, body: request.body, ...(request.body?{duplex:'half' as const}:{}), redirect: 'manual', signal: request.signal });
     const outputHeaders = new Headers(response.headers);
     for (const name of ['connection', 'keep-alive', 'transfer-encoding']) outputHeaders.delete(name);
     // Constrain web content; this is NOT a substitute for native navigation and popup hooks.

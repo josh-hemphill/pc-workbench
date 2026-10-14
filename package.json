@@ -3,5 +3,42 @@
   "private": true,
   "version": "0.2.0",
   "type": "module",
-  "description": "PC configuration, inventory and installation management with Deno and Vue/Vuetify."
+  "description": "PC configuration, inventory and installation management with Node.js, pnpm, Vue and Vuetify.",
+  "engines": {
+    "node": ">=24.19.0 <25"
+  },
+  "packageManager": "pnpm@11.19.0",
+  "dependencies": {
+    "@mdi/js": "7.4.47",
+    "csv-parse": "7.0.3",
+    "csv-stringify": "6.9.0",
+    "express": "5.3.0",
+    "vue": "3.5.43",
+    "vuetify": "4.2.4",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "24.19.2",
+    "@vitejs/plugin-vue": "6.0.10",
+    "esbuild": "0.28.2",
+    "postject": "1.0.0-alpha.6",
+    "tsx": "4.22.4",
+    "typescript": "6.0.3",
+    "vite": "8.3.4",
+    "vue-tsc": "3.3.13"
+  },
+  "scripts": {
+    "dev": "node --watch --import tsx tools/node/dev.ts",
+    "check": "vue-tsc --noEmit",
+    "build:web": "node --import tsx tools/node/frontend.ts build",
+    "build:backend": "node --import tsx tools/node/build-backend.ts",
+    "build": "pnpm check && pnpm build:web && pnpm build:backend",
+    "start": "node .standalone/server.cjs",
+    "test": "node tools/node/test.mjs",
+    "test:backend": "node --import tsx --test tests/node-desktop.test.ts",
+    "package:sea": "node tools/node/package-sea.mjs",
+    "test:sea": "node tools/node/sea-smoke.mjs",
+    "import:pcpartpicker": "node --import tsx tools/pcpartpicker.ts"
+  }
 }
