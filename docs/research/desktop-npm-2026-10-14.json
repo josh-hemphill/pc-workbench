@@ -1,0 +1,289 @@
+{
+  "retrieved_at": "2026-10-14T03:29:06.760514+00:00",
+  "method": "npm registry packuments and exact-name search. Direct download API blocked; search monthly/weekly windows have no explicit start/end dates.",
+  "packages": [
+    {
+      "package": "@tauri-apps/cli",
+      "version": "2.12.2",
+      "published": "2026-10-10T20:02:07.833Z",
+      "created": "2021-04-13T22:40:24.987Z",
+      "repository": {
+        "url": "git+https://github.com/tauri-apps/tauri.git",
+        "type": "git"
+      },
+      "deprecated": null,
+      "maintainers": 7,
+      "license": "Apache-2.0 OR MIT",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=%40tauri-apps/cli&size=30",
+      "search_downloads": {
+        "monthly": 10954685,
+        "weekly": 2727270
+      },
+      "search_updated": "2026-10-13T21:37:44.193Z",
+      "metadata_source": "https://registry.npmjs.org/@tauri-apps%2Fcli"
+    },
+    {
+      "package": "@neutralinojs/lib",
+      "version": "6.10.0",
+      "published": "2026-10-06T08:24:54.678Z",
+      "created": "2023-01-18T15:32:51.766Z",
+      "repository": {
+        "url": "git+https://github.com/neutralinojs/neutralino.js.git",
+        "type": "git"
+      },
+      "deprecated": null,
+      "maintainers": 1,
+      "license": "MIT",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=%40neutralinojs/lib&size=30",
+      "search_downloads": {
+        "monthly": 7079,
+        "weekly": 1887
+      },
+      "search_updated": "2026-10-13T08:27:11.826Z",
+      "metadata_source": "https://registry.npmjs.org/@neutralinojs%2Flib"
+    },
+    {
+      "package": "@neutralinojs/neu",
+      "version": "11.8.0",
+      "published": "2026-10-06T07:18:24.259Z",
+      "created": "2020-01-04T12:05:39.816Z",
+      "repository": {
+        "url": "git+https://github.com/neutralinojs/neutralinojs-cli.git",
+        "type": "git"
+      },
+      "deprecated": null,
+      "maintainers": 1,
+      "license": "MIT",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=%40neutralinojs/neu&size=30",
+      "search_downloads": {
+        "monthly": 15714,
+        "weekly": 4566
+      },
+      "search_updated": "2026-10-13T07:21:10.830Z",
+      "metadata_source": "https://registry.npmjs.org/@neutralinojs%2Fneu"
+    },
+    {
+      "package": "@webviewjs/webview",
+      "version": "0.4.7",
+      "published": "2026-09-24T16:10:34.061Z",
+      "created": "2024-10-03T06:50:33.950Z",
+      "repository": {
+        "url": "git+ssh://git@github.com/webviewjs/webview.git",
+        "type": "git"
+      },
+      "deprecated": null,
+      "maintainers": 1,
+      "license": "MIT",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=%40webviewjs/webview&size=30",
+      "search_downloads": {
+        "monthly": 267664,
+        "weekly": 7536
+      },
+      "search_updated": "2026-10-13T21:41:00.631Z",
+      "metadata_source": "https://registry.npmjs.org/@webviewjs%2Fwebview"
+    },
+    {
+      "package": "@nativewindow/webview",
+      "version": "1.0.6",
+      "published": "2026-04-04T17:10:58.536Z",
+      "created": "2026-03-02T20:40:39.791Z",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/nativewindow/webview.git"
+      },
+      "deprecated": null,
+      "maintainers": 1,
+      "license": "MIT",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=%40nativewindow/webview&size=30",
+      "search_downloads": {
+        "monthly": 436,
+        "weekly": 80
+      },
+      "search_updated": "2026-10-10T19:26:15.188Z",
+      "metadata_source": "https://registry.npmjs.org/@nativewindow%2Fwebview"
+    },
+    {
+      "package": "webview-nodejs",
+      "version": "0.5.0",
+      "published": "2026-06-30T04:03:00.642Z",
+      "created": "2022-09-07T15:33:55.875Z",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Winterreisender/webview-nodejs.git"
+      },
+      "deprecated": null,
+      "maintainers": 1,
+      "license": "Apache-2.0",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=webview-nodejs&size=30",
+      "search_downloads": {
+        "monthly": 432,
+        "weekly": 126
+      },
+      "search_updated": "2026-10-13T05:16:09.761Z",
+      "metadata_source": "https://registry.npmjs.org/webview-nodejs"
+    },
+    {
+      "package": "webview",
+      "version": "1.1.0",
+      "published": "2023-06-04T17:59:51.487Z",
+      "created": "2015-02-18T14:31:05.228Z",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/suchipi/webview-node.git"
+      },
+      "deprecated": null,
+      "maintainers": 1,
+      "license": "MIT",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=webview&size=30",
+      "search_downloads": {
+        "monthly": 557,
+        "weekly": 121
+      },
+      "search_updated": "2026-10-13T09:46:47.116Z",
+      "metadata_source": "https://registry.npmjs.org/webview"
+    },
+    {
+      "package": "electrobun",
+      "version": "2.0.2",
+      "published": "2026-09-29T22:16:20.644Z",
+      "created": "2024-08-08T21:37:56.784Z",
+      "repository": {
+        "url": "git+https://github.com/blackboardsh/electrobun.git",
+        "type": "git",
+        "directory": "npm/electrobun"
+      },
+      "deprecated": null,
+      "maintainers": 1,
+      "license": "MIT",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=electrobun&size=30",
+      "search_downloads": {
+        "monthly": 239914,
+        "weekly": 40443
+      },
+      "search_updated": "2026-10-14T02:42:08.035Z",
+      "metadata_source": "https://registry.npmjs.org/electrobun"
+    },
+    {
+      "package": "@gluon-framework/gluon",
+      "version": "0.14.0",
+      "published": "2023-05-10T13:05:01.864Z",
+      "created": "2022-12-14T11:18:18.484Z",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/gluon-framework/gluon.git"
+      },
+      "deprecated": null,
+      "maintainers": 1,
+      "license": "MIT",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=%40gluon-framework/gluon&size=30",
+      "search_downloads": {
+        "monthly": 101,
+        "weekly": 12
+      },
+      "search_updated": "2026-10-07T07:51:10.899Z",
+      "metadata_source": "https://registry.npmjs.org/@gluon-framework%2Fgluon"
+    },
+    {
+      "package": "deskgap",
+      "version": "0.2.0",
+      "published": "2019-12-04T15:52:21.178Z",
+      "created": "2019-01-27T17:42:02.029Z",
+      "repository": {
+        "url": "git+https://github.com/patr0nus/DeskGap.git",
+        "type": "git"
+      },
+      "deprecated": null,
+      "maintainers": 1,
+      "license": "MIT",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=deskgap&size=30",
+      "search_downloads": {
+        "monthly": 51,
+        "weekly": 13
+      },
+      "search_updated": "2026-10-09T09:51:10.853Z",
+      "metadata_source": "https://registry.npmjs.org/deskgap"
+    },
+    {
+      "package": "@webui-dev/node-webui",
+      "error": "HTTP Error 404: Not Found",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=%40webui-dev/node-webui&size=30",
+      "metadata_source": "https://registry.npmjs.org/@webui-dev%2Fnode-webui"
+    },
+    {
+      "package": "@webui-dev/bun-webui",
+      "version": "2.5.7",
+      "published": "2026-04-20T16:37:25.022Z",
+      "created": "2025-02-11T23:43:50.832Z",
+      "repository": null,
+      "deprecated": null,
+      "maintainers": 1,
+      "license": "MIT",
+      "download_error": "<urlopen error Tunnel connection failed: 403 Forbidden>",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=%40webui-dev/bun-webui&size=30",
+      "search_downloads": {
+        "monthly": 57,
+        "weekly": 14
+      },
+      "search_updated": "2026-10-12T18:41:14.483Z",
+      "metadata_source": "https://registry.npmjs.org/@webui-dev%2Fbun-webui"
+    },
+    {
+      "package": "node-neutralino",
+      "version": "2.0.0",
+      "published": "2024-08-27T11:08:44.176Z",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/neutralinojs-community/node-neutralino.git"
+      },
+      "maintainers": 1,
+      "license": "MIT",
+      "search_downloads": {
+        "monthly": 36,
+        "weekly": 11
+      },
+      "search_updated": "2026-10-07T19:46:31.802Z",
+      "search_source": "https://registry.npmjs.org/-/v1/search?text=node-neutralino&size=20",
+      "metadata_source": "https://registry.npmjs.org/node-neutralino"
+    }
+  ],
+  "discovery_queries": [
+    "webview node native desktop",
+    "keywords:desktop keywords:webview",
+    "node sea webview",
+    "neutralino alternative"
+  ],
+  "published_source_checks": {
+    "@webviewjs/webview@0.4.7": {
+      "tarball": "https://registry.npmjs.org/@webviewjs/webview/-/webview-0.4.7.tgz",
+      "integrity": "sha512-Olc0urFKJ96IF4T7GX2u32AQlcjJoOJq0qhQPaMqZOst/PWJ3AZlzPsnvE3q4wg1H5GVmX+vfDBtibhSo9RInQ==",
+      "gitHead": "ff35d93ed1fac7962f4c4f0fa155aff0380fcaa8",
+      "files": [
+        "package/cli/index.mjs",
+        "package/cli/build.mjs",
+        "package/index.js"
+      ],
+      "findings": [
+        "Published CLI rejects positional build command; accepts --build --input instead.",
+        "Node builder does not bundle JS or automatically embed/extract native addon.",
+        "Builder joins shell command arguments and invokes unpinned npx --yes postject.",
+        "JS wrapper contains synchronous close preventDefault and navigationHandler/newWindowHandler."
+      ],
+      "linux_x64_addon_bytes": 8682336,
+      "missing_host_libraries": [
+        "libwebkit2gtk-4.1.so.0",
+        "libjavascriptcoregtk-4.1.so.0",
+        "libxdo.so.3"
+      ]
+    }
+  }
+}

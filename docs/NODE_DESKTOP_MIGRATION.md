@@ -4,11 +4,11 @@ Branch: `exploration/node-pnpm-desktop`, based on `main` at `1c9b756`. This is a
 
 ## Decision
 
-Move development, testing and backend packaging to Node 24 LTS and pnpm. Prefer **Tauri 2 with a Node SEA sidecar** for the next native-window experiment. Keep Neutralino as a comparison candidate if Rust build prerequisites prove too disruptive.
+Move development, testing and backend packaging to Node 24 LTS and pnpm. Keep **Tauri 2 with a Node SEA sidecar** as the strongest distribution candidate. The [deeper desktop comparison](DESKTOP_FRAMEWORK_COMPARISON.md) also recommends a **WebviewJS** feasibility experiment for simpler Node-native development, and a current Neutralino host-project comparison. No native shell is selected for release yet.
 
 The application already uses Express, Node filesystem APIs, `node:test`, and built-in `node:sqlite`. Its business logic, SQLite schema, CSV formats, workspace/user separation and Vue UI need no runtime rewrite. The desktop window is the remaining independent decision.
 
-The user supplied the [Deno / Cloudflare announcement](https://deno.com/blog/cloudflare) as the migration motivation. Direct access to that article is blocked by this execution environment's network proxy (403), so this assessment does not claim independent verification of its exact maintenance terms or dates. The migration provides a fallback regardless of those terms.
+The user supplied the [Deno / Cloudflare announcement](https://deno.com/blog/cloudflare) as the migration motivation. Verified through web research on October 14, 2026: the October 9 announcement promises another year of monthly runtime bug-fix/security releases, after which the team will end its runtime development. Deno remains open source.
 
 ## Packaging facts
 
@@ -31,8 +31,9 @@ Node 24 SEA requires a bundled CommonJS entry and `postject` injection. This pro
 | Option | What it provides | Fit for this application | Remaining cost / risk |
 | --- | --- | --- | --- |
 | **Tauri 2 + Node SEA sidecar** | System WebView, native lifecycle/navigation hooks, installers and updater tooling | Best next candidate: Vue stays unchanged, existing Express/SQLite/TS stays in the sidecar, no Chromium distribution or SQLite npm addon rebuild | Rust/toolchain + platform build prerequisites; one native host plus the embedded-Node sidecar; native close/child lifecycle integration must be tested |
-| **Neutralino + Node SEA extension/sidecar** | Small system-WebView host, JS tooling and native APIs | Promising alternative if Rust tooling is undesirable; keep the same backend bundle | Extension/authentication/readiness/termination integration is additional plumbing; native navigation and unsaved-close behavior need verification |
-| **Electrobun** | System WebView or optional bundled CEF; TypeScript-friendly desktop tooling | Attractive tooling UX, but not a drop-in Node runtime host | Official current docs use Bun by default and an experimental Cottontail alternative; choosing pnpm for builds does not make `node:sqlite` compatible. Re-run the entire backend compatibility investigation |
+| **Neutralino + Node SEA extension/host project** | Small system-WebView host, JS tooling, native APIs, newer host-project and resource-embedding support | Serious alternative if Rust tooling is undesirable; keep the same backend bundle | Extension/token/readiness/termination integration remains; current close and popup policies are documented, while same-window navigation restriction needs verification |
+| **WebviewJS + Node SEA** | Tao/Wry N-API binding with async Node event pumping and native guards | Closest new fit to the existing Deno host API; could run Express and window in one Node process | Published 0.4.7 SEA CLI differs from current docs and needs bundling/addon extraction work; native behavior and distribution need verification |
+| **Electrobun** | System WebView or optional bundled CEF; TypeScript-friendly desktop tooling | Attractive tooling UX, but not a drop-in Node runtime host | Current 2.x docs default to Cottontail with Bun optional, and recognize a `node:sqlite` packaging capability. This does not prove our SQLite/API behavior; re-run the backend compatibility investigation |
 | **Wails / custom Wry host** | Native system WebView with Go/Rust host code | Technically possible with the same sidecar | More custom host integration for our current TS backend; a backend rewrite would lose the low-change benefit |
 | **Electron / NW.js** | Node and Chromium with extensive desktop APIs | Functional fallback, not preferred given the user's integration concerns | Browser/runtime footprint and framework coupling |
 | **Tauri with a Rust backend rewrite** | Potentially remove the Node runtime entirely | The route to investigate only if embedded runtime size is unacceptable | Requires porting API, persistence, import, inventory and planning logic and preserving tested behavior; much larger migration than a shell change |
