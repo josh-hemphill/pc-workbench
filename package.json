@@ -48,6 +48,7 @@
     "package:desktop": "node tools/node/package-sea.mjs --desktop-shell",
     "test:desktop-package": "node tools/node/sea-smoke.mjs --desktop-shell",
     "stage:tauri-sidecar": "node tools/node/stage-tauri-sidecar.mjs",
-    "probe:runtime": "node --import tsx tools/node/runtime-compatibility-probe.ts"
+    "probe:runtime": "node --import tsx tools/node/runtime-compatibility-probe.ts",
+    "test:desktop-native": "node --import tsx tools/node/native-webview-smoke.ts"
   }
 }

@@ -1,0 +1,23 @@
+{
+  "platform": "linux-x64",
+  "environment": "Debian 13; workspace-local Debian prerequisites; Xvfb; proot helper-path mapping",
+  "webkitgtk": "2.54.0",
+  "gtk": "3.24.49",
+  "webviewjs": "0.4.7",
+  "checks": {
+    "frontend_and_api_rendering": true,
+    "native_script_callback": true,
+    "os_close_cancel_retains_dirty_form": true,
+    "foreign_navigation_rejected": true,
+    "os_close_accept_releases_sqlite_lock": true,
+    "packaged_sea_opens_native_window": true,
+    "packaged_sea_exits_zero_on_os_close": true
+  },
+  "confirmation_dialog": "responses controlled in test renderer; native WM_DELETE_WINDOW delivery and callback transport are real",
+  "webview_sandbox_disabled": false,
+  "limits": [
+    "Windows/macOS unverified",
+    "File dialogs/downloads and second launch unverified",
+    "Use direct Node check or packaged executable with local path mapper; source async file serving and pnpm config reads encountered EFAULT"
+  ]
+}

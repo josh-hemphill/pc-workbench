@@ -28,7 +28,7 @@ pnpm test:sea     # Test it with empty PATH/cwd, persistence and shutdown
 
 The executable requires no external Node installation, node_modules, frontend files or extraction directory. **It embeds Node and does not yet create a native window.** It is a server/desktop-sidecar packaging prototype, not a replacement desktop GUI. Read the [migration and desktop-shell assessment](docs/NODE_DESKTOP_MIGRATION.md) for measurements, native-window alternatives and the proposed Tauri integration.
 
-Separate native-window experiments are now available: `pnpm build:desktop`, `pnpm package:desktop`, and `pnpm test:desktop-package`. WebviewJS is the default; a Neutralino host adapter and Tauri sidecar staging are also included. See [desktop prototype commands and validation limits](docs/DESKTOP_PROTOTYPES.md). Native GUI parity is not yet verified.
+Separate native-window experiments are now available: `pnpm build:desktop`, `pnpm package:desktop`, and `pnpm test:desktop-package`. WebviewJS is the default; a Neutralino host adapter and Tauri sidecar staging are also included. See [desktop prototype commands and validation limits](docs/DESKTOP_PROTOTYPES.md). Linux native rendering, navigation and close checks now pass under Xvfb; Windows/macOS parity remains unverified. See [Linux prerequisites and native checks](docs/WEBVIEWJS_LINUX_SETUP.md).
 
 Deno tasks and [baseline desktop findings](docs/DESKTOP-LIMITATIONS.md) are retained for comparison. The Node CI workflow builds/tests SEA prototypes on Linux, Windows and macOS; platform results must be reviewed before native desktop adoption.
 

@@ -2,6 +2,10 @@
 
 Follow-up to the [framework comparison](DESKTOP_FRAMEWORK_COMPARISON.md), on `exploration/node-pnpm-desktop`. Reviewed October 13, 2026 Pacific time.
 
+## Linux native follow-up
+
+The Linux prerequisites are now installed workspace-locally. Actual WebKitGTK/X11 checks passed for frontend rendering, script callbacks, canceled close retaining an edited form, blocked external navigation, and accepted close releasing SQLite. The packaged SEA also opened a native window and exited cleanly. See [setup and repeatable native checks](WEBVIEWJS_LINUX_SETUP.md). This supersedes the missing-Linux-libraries limitation below; Windows/macOS and broader native UX checks remain outstanding.
+
 ## Current result
 
 **WebviewJS is now a runnable Node desktop experiment with our own SEA packaging. Neutralino has a runnable Node-owned host adapter. Tauri has a verified, target-named backend sidecar input, but no Rust window host yet.** Main still uses the Deno implementation.
