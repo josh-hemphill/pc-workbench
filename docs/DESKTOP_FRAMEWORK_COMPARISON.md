@@ -111,4 +111,6 @@ The [build configuration](https://framework.blackboard.sh/electrobun/apis/cli/bu
 
 Compare clean-install developer steps, cold start, packaged download/installed size, import responsiveness, child cleanup, browser cache locations, updates/signing and Windows DPI/table behavior. Use the same workspace and user profile scenarios across shells. A candidate wins only if it preserves unsaved edits and workspace integrity as well as opening a window.
 
-This pass adds research and evidence only. No native framework dependency, GUI implementation or release switch is introduced. Existing Node backend verification remains 334 passing tests; native parity still needs the experiments above.
+Implementation follow-up: [desktop prototypes, commands and actual validation](DESKTOP_PROTOTYPES.md).
+
+This research pass added research and evidence only. No native framework dependency, GUI implementation or release switch is introduced. Existing Node backend verification remains 334 passing tests; native parity still needs the experiments above.

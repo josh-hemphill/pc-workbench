@@ -1,0 +1,61 @@
+{
+  "retrieved_at": "2026-10-14T04:17:32.322065+00:00",
+  "native_gui_validated": false,
+  "verification": {
+    "node_tests_passed": 342,
+    "backend_sea": "passed",
+    "desktop_sea_headless": "passed",
+    "chromium_close_decision": "passed",
+    "neutralino_protocol_fixture": "passed; native framework not run",
+    "runtime_compatibility_probe": "passed under Node only"
+  },
+  "artifacts": {
+    "node": {
+      "prototype": true,
+      "nodeVersion": "v24.19.0",
+      "platform": "linux",
+      "arch": "x64",
+      "bytes": 130026688,
+      "nodeRuntimeBytes": 125989464,
+      "sha256": "99aec0059a491763dd2d514aee7deed725d3de26486197f36be7e44de6394fdb",
+      "nativeWindow": false,
+      "windowValidated": false,
+      "embeddedNodeRuntime": true,
+      "externalNodeRequired": false,
+      "externalFrontendRequired": false,
+      "gzip_bytes": 44131555,
+      "gzip_method": "GNU gzip default; stdin stream without filename header"
+    },
+    "desktop": {
+      "prototype": true,
+      "nodeVersion": "v24.19.0",
+      "platform": "linux",
+      "arch": "x64",
+      "bytes": 138742976,
+      "nodeRuntimeBytes": 125989464,
+      "sha256": "6e5ea323c032cf97d5dc589bf0d2240b124ef1cfc29c37be19745502c991045f",
+      "nativeWindow": true,
+      "windowValidated": false,
+      "nativeAddonBytes": 8682336,
+      "embeddedNodeRuntime": true,
+      "externalNodeRequired": false,
+      "externalFrontendRequired": false,
+      "gzip_bytes": 47367525,
+      "gzip_method": "GNU gzip default; stdin stream without filename header"
+    }
+  },
+  "source_commits": {
+    "webviewjs_npm_gitHead": "ff35d93ed1fac7962f4c4f0fa155aff0380fcaa8",
+    "neutralino_tag": "v6.10.0"
+  },
+  "electrobun": {
+    "version": "2.0.2",
+    "hutch": "0.27.1",
+    "cottontail": "0.7.1",
+    "hutch_version_verified": true,
+    "hutch_artifact_index": "https://github.com/blackboardsh/electrobun/releases/download/v2.0.2/hutch-artifacts.json",
+    "hutch_linux_x64_archive_sha256": "ed64b3d3f3d38d3ab04a8d178b9883571a7d62d5100b8143a89da597dc8e8d21",
+    "cottontail_manifest": "https://electrobun-artifacts.blackboard.sh/cottontail/releases/0.7.1/manifest.json",
+    "runtime_acquisition": "ReleaseDownloadFailed; direct manifest proxy tunnel 403"
+  }
+}

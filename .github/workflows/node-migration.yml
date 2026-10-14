@@ -27,8 +27,17 @@ jobs:
       - run: pnpm build
       - run: pnpm package:sea
       - run: pnpm test:sea
+      - run: pnpm stage:tauri-sidecar
+      - run: pnpm build:desktop
+      - run: pnpm package:desktop
+      - run: pnpm test:desktop-package
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: node-backend-prototype-${{ matrix.os }}
           path: bin/pc-workbench-node-*
+          if-no-files-found: error
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: node-desktop-experiment-${{ matrix.os }}
+          path: bin/pc-workbench-desktop-*
           if-no-files-found: error

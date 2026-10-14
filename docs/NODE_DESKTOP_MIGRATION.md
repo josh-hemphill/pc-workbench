@@ -83,7 +83,7 @@ The sidecar is ready for a host lifecycle proof:
 - On accepted close, write `shutdown\n`, wait for the child to release SQLite and the workspace lock, then close the host. Closing the stdin pipe also stops the sidecar if the parent exits. Add a bounded termination fallback.
 - Validate WebView2 cache placement under the user profile, startup/locked-workspace/port-conflict failures, app focus on second launch, and native installers on Windows first. Preserve user-settings paths and portable workspace semantics.
 
-The Tauri CLI would wrap the existing pnpm frontend/backend/SEA commands. A native host has not been implemented or compiled here: this environment has neither a Rust toolchain nor the required Linux WebView development libraries. Adding an untested shell scaffold would not establish parity with the existing desktop experience.
+The Tauri CLI would wrap the existing pnpm frontend/backend/SEA commands. The Tauri Rust host has not been implemented or compiled here: this environment has neither a Rust toolchain nor the required Linux WebView development libraries. A subsequent pass implements WebviewJS and Neutralino experiments, custom addon packaging and verified Tauri sidecar staging; see [desktop prototype findings](DESKTOP_PROTOTYPES.md). Native GUI parity remains unverified.
 
 ## Verification
 

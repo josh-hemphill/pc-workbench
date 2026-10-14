@@ -28,6 +28,8 @@ pnpm test:sea     # Test it with empty PATH/cwd, persistence and shutdown
 
 The executable requires no external Node installation, node_modules, frontend files or extraction directory. **It embeds Node and does not yet create a native window.** It is a server/desktop-sidecar packaging prototype, not a replacement desktop GUI. Read the [migration and desktop-shell assessment](docs/NODE_DESKTOP_MIGRATION.md) for measurements, native-window alternatives and the proposed Tauri integration.
 
+Separate native-window experiments are now available: `pnpm build:desktop`, `pnpm package:desktop`, and `pnpm test:desktop-package`. WebviewJS is the default; a Neutralino host adapter and Tauri sidecar staging are also included. See [desktop prototype commands and validation limits](docs/DESKTOP_PROTOTYPES.md). Native GUI parity is not yet verified.
+
 Deno tasks and [baseline desktop findings](docs/DESKTOP-LIMITATIONS.md) are retained for comparison. The Node CI workflow builds/tests SEA prototypes on Linux, Windows and macOS; platform results must be reviewed before native desktop adoption.
 
 The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port; development reads the same configuration for its Vite proxy. `BENCH_DATA_DIR=/absolute/path` changes the storage directory.

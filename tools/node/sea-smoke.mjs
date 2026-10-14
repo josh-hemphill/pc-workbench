@@ -7,15 +7,16 @@ import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../../',import.meta.url));
-const executable=path.join(root,'bin',`pc-workbench-node-${process.platform}-${process.arch}${process.platform==='win32'?'.exe':''}`);
+const desktop=process.argv.includes('--desktop-shell');
+const executable=path.join(root,'bin',`pc-workbench-${desktop?'desktop':'node'}-${process.platform}-${process.arch}${process.platform==='win32'?'.exe':''}`);
 const temporary=await fs.mkdtemp(path.join(os.tmpdir(),'pc-workbench-node-sea-'));
 let child;
 async function run(portOverride){
  const probe=createServer();probe.listen(0,'127.0.0.1');await once(probe,'listening');const port=portOverride??probe.address().port;await new Promise(resolve=>probe.close(resolve));
  const config=path.join(temporary,'app.json');await fs.writeFile(config,JSON.stringify({version:1,dataDir:path.join(temporary,'data'),port}));
  const childEnv={...process.env,PATH:'',BENCH_CONFIG_FILE:config,BENCH_USER_SETTINGS_FILE:path.join(temporary,'user.json'),BENCH_CACHE_DIR:path.join(temporary,'cache')};delete childEnv.PORT;delete childEnv.BENCH_DATA_DIR;delete childEnv.NODE_OPTIONS;
- child=spawn(executable,['--desktop'],{cwd:temporary,env:childEnv,stdio:['pipe','pipe','pipe']});let output='',errors='';child.stderr.on('data',chunk=>errors+=chunk);
- return await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('SEA readiness timeout: '+errors)),15000);child.once('error',error=>{clearTimeout(timer);reject(error);});child.once('exit',code=>{clearTimeout(timer);reject(Error('SEA startup exited '+code+': '+errors));});child.stdout.on('data',chunk=>{output+=chunk;for(const line of output.split('\n')){try{const message=JSON.parse(line);if(message.type==='ready'){clearTimeout(timer);resolve(message.origin);}}catch{}}});});
+ child=spawn(executable,desktop?['--headless-probe']:['--desktop'],{cwd:temporary,env:childEnv,stdio:['pipe','pipe','pipe']});let output='',errors='';child.stderr.on('data',chunk=>errors+=chunk);
+ return await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('SEA readiness timeout: '+errors)),15000);child.once('error',error=>{clearTimeout(timer);reject(error);});child.once('exit',code=>{clearTimeout(timer);reject(Error('SEA startup exited '+code+': '+errors));});let ready,desktopProbe;child.stdout.on('data',chunk=>{output+=chunk;for(const line of output.split('\n')){try{const message=JSON.parse(line);if(message.type==='ready')ready=message;if(message.type==='desktop-probe')desktopProbe=message;if(ready&&(!desktop||desktopProbe)){if(desktop){assert.equal(desktopProbe.nativeWindow,false);assert.ok(desktopProbe.addon.startsWith(path.join(temporary,'cache')+path.sep));}clearTimeout(timer);resolve(ready.origin);}}catch{}}});});
 }
 async function stop(eof=false){const exited=once(child,'exit');if(eof)child.stdin.end();else child.stdin.write('shutdown\n');const timer=setTimeout(()=>child.kill(),10000);try{const [code]=await exited;assert.equal(code,0);assert.equal(await fs.access(path.join(temporary,'data','.server-lock.json')).then(()=>true,()=>false),false);}finally{clearTimeout(timer);child=undefined;}}
 try{
@@ -26,5 +27,5 @@ try{
  const csv=await (await fetch(origin+'/api/export/components')).text();assert.ok(csv.includes(record.name));const backup=await (await fetch(origin+'/api/backup')).json();assert.ok(backup.components.some(c=>c.name===record.name));await stop();
  origin=await run();const restored=await (await fetch(origin+'/api/state')).json();assert.equal(restored.components.find(c=>c.id==='cpu').name,record.name);await stop(true);
  const occupied=createServer();occupied.listen(0,'127.0.0.1');await once(occupied,'listening');try{await assert.rejects(run(occupied.address().port),/SEA startup exited 1[\s\S]*EADDRINUSE/);assert.equal(child.exitCode,1);child=undefined;assert.equal(await fs.access(path.join(temporary,'data','.server-lock.json')).then(()=>true,()=>false),false);}finally{await new Promise(resolve=>occupied.close(resolve));}
- console.log('SEA passed: empty PATH/cwd, embedded frontend assets, API edits, CSV/backup, SQLite restart, shutdown command, parent EOF, port-conflict failure and released workspace lock.');
+ console.log((desktop?'Desktop SEA headless probe: ':'')+'SEA passed: empty PATH/cwd, embedded frontend assets, API edits, CSV/backup, SQLite restart, shutdown command, parent EOF, port-conflict failure and released workspace lock.');
 }finally{if(child&&child.exitCode===null&&child.signalCode===null){child.kill();await once(child,'exit').catch(()=>{});}await fs.rm(temporary,{recursive:true,force:true});}

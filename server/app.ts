@@ -20,7 +20,7 @@ import type {Collection} from './schema';
 import {checkConfiguration} from '../shared/compatibility';
 import {checkInstalledPC,pcAllocations,planDifferences,stockReadiness} from '../shared/inventory';
 import {saveStockRecord,applyStockOperation,convertBulkToSerialized,adjustStockCount,transferBulkStock} from './inventory';
-export interface AppOptions { assets?:Record<string,{data:Buffer;mime:string}>; sourceRoot?:string; productFetcher?:ProductFetcher; runtimeConfig?:RuntimeConfig }
+export interface AppOptions { desktopOriginOnly?:boolean; assets?:Record<string,{data:Buffer;mime:string}>; sourceRoot?:string; productFetcher?:ProductFetcher; runtimeConfig?:RuntimeConfig }
 export function createApp(dataDir?:string,options:AppOptions={}) {
 const root=options.sourceRoot??(import.meta.url?path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'):process.cwd());
 const runtime=options.runtimeConfig??resolveRuntimeConfig({sourceRoot:root,standalone:false});
@@ -36,6 +36,10 @@ app.locals.store=store;
 const listen=app.listen.bind(app);
 app.listen=((...args:Parameters<typeof app.listen>)=>{const server=listen(...args);server.once('close',closeStore);server.once('error',closeStore);return server;}) as typeof app.listen;
 app.use((req,res,next)=>{
+ if(options.desktopOriginOnly){
+  const authority=`127.0.0.1:${req.socket.localPort}`;
+  if(req.headers.host!==authority||req.headers.origin&&req.headers.origin!==`http://${authority}`)return res.status(403).json({error:'Untrusted desktop origin'});
+ }
  const host=(req.headers.host||'').split(':')[0];
  if(!['localhost','127.0.0.1','['].includes(host))return res.status(403).json({error:'Local connections only'});
  if(req.headers.origin){try{const url=new URL(req.headers.origin);if(!['localhost','127.0.0.1'].includes(url.hostname))return res.status(403).json({error:'Untrusted request origin'});}catch{return res.status(403).json({error:'Invalid origin'});}}

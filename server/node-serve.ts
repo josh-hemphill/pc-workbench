@@ -2,10 +2,10 @@ import {createApp,type AppOptions} from './app';
 import {resolveRuntimeConfig} from './runtime-config';
 import {assertSettingsSeparation} from './settings';
 import type {Server} from 'node:http';
-export function startNodeServer(options:Pick<AppOptions,'assets'|'sourceRoot'>={},desktopOwned=false):Server {
+export function startNodeServer(options:Pick<AppOptions,'assets'|'sourceRoot'|'desktopOriginOnly'>={},desktopOwned=false):Server {
  const config=resolveRuntimeConfig({standalone:!!options.assets,sourceRoot:options.sourceRoot});
  assertSettingsSeparation(config);
- const app=createApp(config.dataDir,{...options,runtimeConfig:config});
+ const app=createApp(config.dataDir,{...options,desktopOriginOnly:desktopOwned||options.desktopOriginOnly,runtimeConfig:config});
  const server=app.listen(config.port,'127.0.0.1',error=>{
   if(error)return;
   const address=server.address();if(!address||typeof address==='string')throw Error('Invalid local server address.');
