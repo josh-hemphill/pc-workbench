@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {sameOrigin,localOrigin,requestClose,closeCoordinator,type CloseView} from '../tools/node/desktop/policy';
-import {extractAddon} from '../tools/node/desktop/addon';
-import {neutralinoConfiguration,approvedNeutralinoClose,neutralinoCloseScript} from '../tools/node/desktop/neutralino';
-import {createApp} from '../server/app';
+import {sameOrigin,localOrigin,requestClose,closeCoordinator,type CloseView} from '../tools/node/desktop/policy.ts';
+import {extractAddon} from '../tools/node/desktop/addon.ts';
+import {neutralinoConfiguration,approvedNeutralinoClose,neutralinoCloseScript} from '../tools/node/desktop/neutralino.ts';
+import {createApp} from '../server/app.ts';
 import {once} from 'node:events';
 import {get} from 'node:http';
 const origin='http://127.0.0.1:1234';
@@ -66,8 +66,8 @@ test('desktop API rejects foreign loopback ports as well as remote origins and h
  }finally{await new Promise<void>(resolve=>server.close(()=>resolve()));fs.rmSync(directory,{recursive:true,force:true});}
 });
 test('Neutralino real child protocol ignores stale approvals and stops backend before native exit',async()=>{
- const {openNeutralino}=await import('../tools/node/desktop/neutralino');
- const {resolveRuntimeConfig}=await import('../server/runtime-config');
+ const {openNeutralino}=await import('../tools/node/desktop/neutralino.ts');
+ const {resolveRuntimeConfig}=await import('../server/runtime-config.ts');
  const {spawn}=await import('node:child_process');
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'workbench neutralino protocol '));
  const previous=process.env.BENCH_NEUTRALINO_BIN;process.env.BENCH_NEUTRALINO_BIN=process.execPath;

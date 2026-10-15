@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { seed } from '../server/seed';
-import { checkConfiguration } from '../shared/compatibility';
-import { schemas } from '../server/schema';
+import { seed } from '../server/seed.ts';
+import { checkConfiguration } from '../shared/compatibility.ts';
+import { schemas } from '../server/schema.ts';
 const setup=()=>{const db=structuredClone(seed);return {db,config:db.configurations[0],board:db.components.find(c=>c.id==='board-atx')!};};
 const errors=(r:ReturnType<typeof checkConfiguration>,title:string)=>r.findings.some(f=>f.severity==='error'&&f.title===title);
 test('named storage arrays calculate independent capacity and reject unassigned drives',()=>{

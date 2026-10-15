@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
-import type { ThemePreference } from '../shared/appearance';
-import { defaultUserSettings, userSettingsSchema, type AppearanceSettings, type SettingsSnapshot, type UserSettings } from '../shared/settings';
+import type { ThemePreference } from '../shared/appearance.ts';
+import { defaultUserSettings, userSettingsSchema, type AppearanceSettings, type SettingsSnapshot, type UserSettings } from '../shared/settings.ts';
 
 export const cloneSettings = <T>(value:T):T => JSON.parse(JSON.stringify(value));
 export const userSettings = ref<SettingsSnapshot<UserSettings>>({ value:cloneSettings(defaultUserSettings), revision:'missing', exists:false });

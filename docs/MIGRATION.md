@@ -318,7 +318,7 @@ Statuses: success normally 200; 400 validation/unknown schema/invalid references
 
 JSON request bodies have a **10 MB** limit, including CSV text serialized inside the request. Each collection is limited to 10,000 records and each serialized CSV record to 64 MiB; these larger storage limits do not override the HTTP limit. Nested array limits in section 6 also apply. Split incremental CSV files below the HTTP limit; a large full restore cannot be split while retaining whole-workspace atomicity. For larger candidates, a purpose-built local offline migration using `Store.validateBackup`/`Store.restore` is needed with the server stopped and exclusive workspace access; this release does not provide an offline import CLI.
 
-Example Node.js 24 restore client (save as `restore.mts`; run `node restore.mts candidate.json` to preview, or append `--commit` after reviewing the replacement):
+Example Node.js 26 restore client (save as `restore.mts`; run `node restore.mts candidate.json` to preview, or append `--commit` after reviewing the replacement):
 
 ```ts
 import {readFile, writeFile} from 'node:fs/promises';

@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { seed } from '../server/seed';
-import { applyStockOperation, saveStockRecord } from '../server/inventory';
-import { commissionPCRecord } from '../server/pc-lifecycle';
-import { schemas } from '../server/schema';
-import { decodeCSV, encodeCSV } from '../server/store';
-import { checkInstalledPC, commissioningDrift, installedConfiguration,planDifferences } from '../shared/inventory';
+import { seed } from '../server/seed.ts';
+import { applyStockOperation, saveStockRecord } from '../server/inventory.ts';
+import { commissionPCRecord } from '../server/pc-lifecycle.ts';
+import { schemas } from '../server/schema.ts';
+import { decodeCSV, encodeCSV } from '../server/store.ts';
+import { checkInstalledPC, commissioningDrift, installedConfiguration,planDifferences } from '../shared/inventory.ts';
 
 function fixture() {
   const db = structuredClone(seed), config = db.configurations[0], pc = db.pcs[0];

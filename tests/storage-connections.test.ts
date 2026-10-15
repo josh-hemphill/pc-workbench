@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import type {Component,Configuration,Database,Placement} from '../shared/types';
-import {checkStorageConnections} from '../shared/storage-connections';
+import type {Component,Configuration,Database,Placement} from '../shared/types.ts';
+import {checkStorageConnections} from '../shared/storage-connections.ts';
 
 const component=(id:string,category:Component['category'],specs:Component['specs']):Component=>({id,name:id,category,specs,manufacturer:'Example',verified:true,source:''});
 const place=(id:string,extra:Partial<Placement>={}):Placement=>({id,componentId:id,quantity:1,slotId:'',role:'data',mount:'auto',group:'',...extra});

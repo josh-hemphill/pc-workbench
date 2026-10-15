@@ -5,8 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import {DatabaseSync} from 'node:sqlite';
 import type {AddressInfo} from 'node:net';
-import {createApp} from '../server/index';
-import {encodeCSV} from '../server/store';
+import {createApp} from '../server/index.ts';
+import {encodeCSV} from '../server/store.ts';
 test('API requires revisions, protects imported stock identity, and previews safe restores',async()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'bench-revision-'));const server=createApp(dir).listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));const base=`http://127.0.0.1:${(server.address() as AddressInfo).port}`;
  const request=(url:string,method='GET',body?:unknown,revision?:string)=>fetch(base+url,{method,headers:{'Content-Type':'application/json',...(revision?{'If-Match':revision}:{})},body:body===undefined?undefined:JSON.stringify(body)});

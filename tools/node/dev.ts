@@ -1,6 +1,6 @@
 import {once} from 'node:events';
-import {frontend,root} from './frontend';
-import {startNodeServer} from '../../server/node-serve';
+import {frontend,root} from './frontend.ts';
+import {startNodeServer} from '../../server/node-serve.ts';
 const backend=startNodeServer({sourceRoot:root});
 try{
  await once(backend,'listening');

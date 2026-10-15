@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { Component, Specs } from '../shared/types';
-import { catalogSuggestions, normalizeCatalogValue, normalizeCatalogValues, catalogNumericValuesRule, catalogComponentArrayRule } from '../shared/catalog-options';
+import type { Component, Specs } from '../shared/types.ts';
+import { catalogSuggestions, normalizeCatalogValue, normalizeCatalogValues, catalogNumericValuesRule, catalogComponentArrayRule } from '../shared/catalog-options.ts';
 const component = (id: string, specs: Component['specs'], manufacturer = ''): Component => ({ id, specs, manufacturer, name: id, category: 'Motherboard', source: '', verified: false });
 
 test('socket and form-factor suggestions share scalar and supported-list vocabulary, preserving catalogue spelling', () => {

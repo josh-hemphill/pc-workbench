@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {seed} from '../server/seed';
-import {schemas} from '../server/schema';
-import {checkConfiguration} from '../shared/compatibility';
-import type {Component, Placement} from '../shared/types';
+import {seed} from '../server/seed.ts';
+import {schemas} from '../server/schema.ts';
+import {checkConfiguration} from '../shared/compatibility.ts';
+import type {Component, Placement} from '../shared/types.ts';
 
 const placement=(id:string,componentId:string,extra:Partial<Placement>={}):Placement=>({id,componentId,quantity:1,slotId:'',role:'general',mount:'auto',group:'',...extra});
 const setup=()=>{

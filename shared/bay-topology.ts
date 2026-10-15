@@ -1,5 +1,5 @@
-import type { BaySize, BayTarget, Component, Configuration, Database, Finding, Resource } from './types';
-import { componentCapabilities } from './component-capabilities';
+import type { BaySize, BayTarget, Component, Configuration, Database, Finding, Resource } from './types.ts';
+import { componentCapabilities } from './component-capabilities.ts';
 
 /** Mounting spaces and logical drive positions are separate. Only physical spaces contribute bay consumption. */
 export function checkBayTopology(config: Configuration, db: Database): { findings: Finding[]; resources: Resource[] } {

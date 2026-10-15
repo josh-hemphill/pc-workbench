@@ -1,9 +1,9 @@
 import {randomUUID} from 'node:crypto';
 import {z} from 'zod';
-import {categories} from '../shared/types';
-import type {Store} from './store';
-import {patchMissing,isMissing,fieldValue,type EnrichmentJob} from '../shared/catalog-quality';
-import {extractProductDetails,pcPartPickerURL} from '../shared/product-enrichment';
+import {categories} from '../shared/types.ts';
+import type {Store} from './store.ts';
+import {patchMissing,isMissing,fieldValue,type EnrichmentJob} from '../shared/catalog-quality.ts';
+import {extractProductDetails,pcPartPickerURL} from '../shared/product-enrichment.ts';
 const jobSchema=z.object({id:z.string(),componentId:z.string(),name:z.string(),category:z.enum(categories),url:z.string(),state:z.enum(['queued','fetching','review','failed','applied','cancelled']),createdAt:z.string(),updatedAt:z.string(),message:z.string(),proposalId:z.string().optional(),proposal:z.object({patch:z.record(z.string(),z.unknown()),evidence:z.record(z.string(),z.string())}).optional()}).strict();
 export type ProductFetcher=(url:string,signal:AbortSignal)=>Promise<string>;
 export async function fetchProductPage(url:string,signal:AbortSignal):Promise<string>{
@@ -21,7 +21,8 @@ export async function fetchProductPage(url:string,signal:AbortSignal):Promise<st
 }
 export class EnrichmentQueue {
  jobs:EnrichmentJob[];running=false;private stopped=false;private closed=false;private controller?:AbortController;
- constructor(private store:Store,private fetchPage:ProductFetcher=fetchProductPage){this.jobs=z.array(jobSchema).max(500).parse(store.getEnrichmentJobs());for(const job of this.jobs)if(job.state==='fetching'){job.state='queued';job.message='Interrupted fetch; ready to retry.';}this.persist();}
+ private store:Store;private fetchPage:ProductFetcher;
+ constructor(store:Store,fetchPage:ProductFetcher=fetchProductPage){this.store=store;this.fetchPage=fetchPage;this.jobs=z.array(jobSchema).max(500).parse(store.getEnrichmentJobs());for(const job of this.jobs)if(job.state==='fetching'){job.state='queued';job.message='Interrupted fetch; ready to retry.';}this.persist();}
  private persist(){this.store.setEnrichmentJobs(this.jobs);}
  enqueue(items:{componentId:string;url:string}[]){if(!items.length||items.length>100)throw Error('Select 1–100 components.');const pending=items.map(item=>{const c=this.store.db.components.find(c=>c.id===item.componentId);if(!c)throw Error('Component not found.');return {c,url:pcPartPickerURL(item.url)};});const added:EnrichmentJob[]=[];
   for(const {c,url} of pending){if([...this.jobs,...added].some(j=>j.componentId===c.id&&['queued','fetching','review'].includes(j.state)))continue;const at=new Date().toISOString();added.push({id:randomUUID(),componentId:c.id,name:c.name,category:c.category,url,state:'queued',createdAt:at,updatedAt:at,message:'Waiting for fetch or saved HTML.'});}

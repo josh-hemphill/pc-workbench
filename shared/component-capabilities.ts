@@ -1,4 +1,4 @@
-import type {Component,Specs} from './types';
+import type {Component,Specs} from './types.ts';
 export type StorageAdapterKind='controller'|'pcie-sled'|'bay-cage'|'mount-adapter'|'m2-converter';
 export const storageAdapterKinds=[{title:'M.2 to SFF adapter',value:'m2-converter'},{title:'SATA / storage controller',value:'controller'},{title:'PCIe NVMe sled',value:'pcie-sled'},{title:'Bay-mounted drive cage / backplane',value:'bay-cage'},{title:'Passive mounting adapter',value:'mount-adapter'}];
 export function storageAdapterKind(component:Component):StorageAdapterKind|undefined {

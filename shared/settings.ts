@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { colorRoles, paletteChoices } from './theme-palettes';
-import { themePreferences } from './appearance';
+import { colorRoles, paletteChoices } from './theme-palettes.ts';
+import { themePreferences } from './appearance.ts';
 
 const paletteNames = paletteChoices.map(choice => choice.value) as ['bench', 'slate', 'graphite'];
 const colors = z.object(Object.fromEntries(colorRoles.map(role => [role, z.string().regex(/^#[0-9a-fA-F]{6}$/).optional()]))).strict();

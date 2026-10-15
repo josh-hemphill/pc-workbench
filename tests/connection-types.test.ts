@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { seed } from '../server/seed';
-import { schemas } from '../server/schema';
-import { checkConfiguration } from '../shared/compatibility';
-import { checkInstalledPC } from '../shared/inventory';
-import { encodeCSV, decodeCSV } from '../server/store';
-import type { Port, PortRequirement, RequirementVersion, StockRecord } from '../shared/types';
+import { seed } from '../server/seed.ts';
+import { schemas } from '../server/schema.ts';
+import { checkConfiguration } from '../shared/compatibility.ts';
+import { checkInstalledPC } from '../shared/inventory.ts';
+import { encodeCSV, decodeCSV } from '../server/store.ts';
+import type { Port, PortRequirement, RequirementVersion, StockRecord } from '../shared/types.ts';
 const setup=()=>{const db=structuredClone(seed),config=db.configurations[0],board=db.components.find(c=>c.id==='board-atx')!,line=config.placements.find(p=>p.componentId===board.id)!,system=db.systems.find(s=>s.id===config.systemId)!;for(const c of db.components.filter(c=>['Motherboard','Scientific card','Network card','Storage adapter','GPU'].includes(c.category)))c.specs.ports=[];system.connections=[{id:'instrument',name:'Scientific instrument',usbA:0,usbC:0,ethernet:0,notes:'',requirements:[]}];return {db,config,board,line,connection:system.connections[0]};};
 const has=(r:ReturnType<typeof checkConfiguration>,title:string,severity='error')=>r.findings.some(f=>f.title===title&&f.severity===severity);
 const port=(id:string,kind:Port['kind'],more:Partial<Port>={}):Port=>({id,kind,...more});

@@ -1,5 +1,5 @@
-import type { Component, Database, PortKind, Specs } from "./types";
-import type { ComponentSection } from "./component-fields";
+import type { Component, Database, PortKind, Specs } from "./types.ts";
+import type { ComponentSection } from "./component-fields.ts";
 export type ComponentCollection =
   | "sffPorts"
   | "sffInputs"

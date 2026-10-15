@@ -3,7 +3,8 @@ import path from 'node:path';
 import {randomUUID} from 'node:crypto';
 
 export class CommittedWriteError extends Error {
- constructor(public filename:string,cause:unknown){super(`File was replaced but directory durability could not be confirmed: ${filename}`,{cause});}
+ public filename:string;
+ constructor(filename:string,cause:unknown){super(`File was replaced but directory durability could not be confirmed: ${filename}`,{cause});this.filename=filename;}
 }
 
 /** Flush contents before replacing a file; readers never see a partial CSV. */

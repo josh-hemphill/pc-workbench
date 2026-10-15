@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {resolveRuntimeConfig} from '../server/runtime-config';
+import {resolveRuntimeConfig} from '../server/runtime-config.ts';
 
 const options=(home:string)=>({home,env:{},platform:process.platform,sourceRoot:path.join(home,'source')});
 const configFiles=new Map<string,string>();

@@ -1,11 +1,11 @@
 /** Offline importer: no undocumented API, anti-bot bypass, or bulk crawl. */
 import fs from 'node:fs';
-import {extractProductDetails} from '../shared/product-enrichment';
-import {patchMissing} from '../shared/catalog-quality';
+import {extractProductDetails} from '../shared/product-enrichment.ts';
+import {patchMissing} from '../shared/catalog-quality.ts';
 import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
-import {categories,type Category,type Component} from '../shared/types';
-import {encodeCSV} from '../server/store';
+import {categories,type Category,type Component} from '../shared/types.ts';
+import {encodeCSV} from '../server/store.ts';
 export function importProductHTML(html:string,category:Category,source=''):Component[] {
  const products:Record<string,unknown>[]=[];
  function walk(value:unknown){if(!value||typeof value!=='object')return;if(Array.isArray(value)){for(const item of value)walk(item);return;}const obj=value as Record<string,unknown>;const type=obj['@type'];if((type==='Product'||(Array.isArray(type)&&type.includes('Product')))&&typeof obj.name==='string')products.push(obj);for(const [key,v] of Object.entries(obj))if(key!=='@type')walk(v);}

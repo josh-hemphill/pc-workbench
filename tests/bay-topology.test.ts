@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {checkBayTopology} from '../shared/bay-topology';
-import type {BayTarget,Component,Configuration,Database,Placement,Specs} from '../shared/types';
+import {checkBayTopology} from '../shared/bay-topology.ts';
+import type {BayTarget,Component,Configuration,Database,Placement,Specs} from '../shared/types.ts';
 const component=(id:string,category:Component['category'],specs:Specs):Component=>({id,name:id,category,manufacturer:'Example',source:'',verified:true,specs});
 const placement=(id:string,extra:Partial<Placement>={}):Placement=>({id,componentId:id,quantity:1,slotId:'',role:'general',mount:'auto',group:'',...extra});
 const bays=(positions=[1,2,3,4]):BayTarget[]=>positions.map(position=>({id:`B${position}`,size:'5.25',group:'Front',position,maxDepthMm:200}));

@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { seed } from '../server/seed';
-import { prepareInstallationRecord, captureRequirementBinding } from '../server/installation-requirements';
-import { savePCRecord } from '../server/pc-lifecycle';
+import { seed } from '../server/seed.ts';
+import { prepareInstallationRecord, captureRequirementBinding } from '../server/installation-requirements.ts';
+import { savePCRecord } from '../server/pc-lifecycle.ts';
 const version={revision:1,at:'2026-10-08T10:00:00Z',name:'Microscope controller',description:'Stable acquisition requirements',connections:[],constraints:{minMemoryGb:64}};
 test('configuration and location capture selected requirement revisions without changing them on later publication',()=>{
  const db=structuredClone(seed);db.requirementsSets.push({id:'microscopy-requirements',name:'Microscopy',description:'',versions:[version]});

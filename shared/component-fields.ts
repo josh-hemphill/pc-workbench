@@ -1,5 +1,5 @@
-import type { Category, Component, Specs } from "./types";
-import { componentCapabilities } from "./component-capabilities";
+import type { Category, Component, Specs } from "./types.ts";
+import { componentCapabilities } from "./component-capabilities.ts";
 export type ComponentSection =
   | "basics"
   | "ports"

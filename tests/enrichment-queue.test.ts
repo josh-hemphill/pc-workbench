@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';import os from 'node:os';import path from 'node:path';
-import {Store} from '../server/store';
-import {EnrichmentQueue} from '../server/enrichment';
-import {createApp} from '../server/app';
+import {Store} from '../server/store.ts';
+import {EnrichmentQueue} from '../server/enrichment.ts';
+import {createApp} from '../server/app.ts';
 const html=(brand:string)=>`<script type="application/ld+json">${JSON.stringify({'@type':'Product',name:'Test CPU',brand})}</script>`;
 function setup(){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'bench-queue-')),store=new Store(dir);store.replace('components',[...store.db.components,{id:'test-cpu',name:'Test CPU',manufacturer:'',source:'',category:'CPU',verified:true,specs:{}}]);return {dir,store,cleanup:()=>{store.close();fs.rmSync(dir,{recursive:true,force:true});}};}
 const waitIdle=async(queue:EnrichmentQueue)=>{for(let i=0;i<100&&queue.running;i++)await new Promise(r=>setTimeout(r,5));assert.equal(queue.running,false);};

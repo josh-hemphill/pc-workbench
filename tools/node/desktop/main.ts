@@ -1,11 +1,11 @@
 import {once} from 'node:events';
-import type {AppOptions} from '../../../server/app';
-import {startNodeServer} from '../../../server/node-serve';
-import {resolveRuntimeConfig} from '../../../server/runtime-config';
-import {assertSettingsSeparation} from '../../../server/settings';
-import {openWebview} from './webviewjs';
-import {prepareAddon} from './addon';
-import {openNeutralino} from './neutralino';
+import type {AppOptions} from '../../../server/app.ts';
+import {startNodeServer} from '../../../server/node-serve.ts';
+import {resolveRuntimeConfig} from '../../../server/runtime-config.ts';
+import {assertSettingsSeparation} from '../../../server/settings.ts';
+import {openWebview} from './webviewjs.ts';
+import {prepareAddon} from './addon.ts';
+import {openNeutralino} from './neutralino.ts';
 
 export async function startDesktop(options:Pick<AppOptions,'assets'|'sourceRoot'>={}){
  const config=resolveRuntimeConfig({standalone:!!options.assets,sourceRoot:options.sourceRoot});

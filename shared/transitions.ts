@@ -1,9 +1,9 @@
 import {z} from 'zod';
-import type {Component,Configuration,Database,InventoryPC,Placement,Raid} from './types';
-import {checkConfiguration,resolveRequirementVersion} from './compatibility';
-import {installedConfiguration,pcAllocations,stockCounts} from './inventory';
-import {componentCapabilities} from './component-capabilities';
-import {installationLocationIds,locationPath} from './installations';
+import type {Component,Configuration,Database,InventoryPC,Placement,Raid} from './types.ts';
+import {checkConfiguration,resolveRequirementVersion} from './compatibility.ts';
+import {installedConfiguration,pcAllocations,stockCounts} from './inventory.ts';
+import {componentCapabilities} from './component-capabilities.ts';
+import {installationLocationIds,locationPath} from './installations.ts';
 const id=z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
 const uniqueIds=z.array(id).max(500).refine(ids=>new Set(ids).size===ids.length,'Select unique IDs.');
 const rolloutSchema=z.object({pilotPCIds:uniqueIds.default([]),waveSize:z.number().int().min(1).max(500).default(10),method:z.enum(['Hardware change only (no data migration)','Backup and restore','Clone with partition review','Reimage and restore data']).default('Backup and restore'),maintenanceWindow:z.string().max(2000).default(''),rollbackNotes:z.string().max(10000).default('')}).strict();

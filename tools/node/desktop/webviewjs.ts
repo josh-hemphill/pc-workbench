@@ -1,7 +1,7 @@
 import fs from 'node:fs';
-import type {RuntimeConfig} from '../../../server/runtime-config';
-import {closeCoordinator,requestClose,sameOrigin} from './policy';
-import {prepareAddon} from './addon';
+import type {RuntimeConfig} from '../../../server/runtime-config.ts';
+import {closeCoordinator,requestClose,sameOrigin} from './policy.ts';
+import {prepareAddon} from './addon.ts';
 export async function openWebview(origin:string,config:RuntimeConfig,stop:()=>Promise<void>){
  prepareAddon(config.cacheDir);
  // Bundled JS wrapper, native addon loaded only after cache setup above.

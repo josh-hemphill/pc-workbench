@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { seed } from '../server/seed';
-import { schemas } from '../server/schema';
-import { checkConfiguration, resolveRequirementVersion } from '../shared/compatibility';
-import { installedConfiguration, checkInstalledPC, planDifferences, commissioningDrift } from '../shared/inventory';
-import { locationPath, installationParts, installationPCs, checkLocationPC, installationSnapshot } from '../shared/installations';
-import type { Database, InstallationLocation, RequirementVersion, StockRecord } from '../shared/types';
+import { seed } from '../server/seed.ts';
+import { schemas } from '../server/schema.ts';
+import { checkConfiguration, resolveRequirementVersion } from '../shared/compatibility.ts';
+import { installedConfiguration, checkInstalledPC, planDifferences, commissioningDrift } from '../shared/inventory.ts';
+import { locationPath, installationParts, installationPCs, checkLocationPC, installationSnapshot } from '../shared/installations.ts';
+import type { Database, InstallationLocation, RequirementVersion, StockRecord } from '../shared/types.ts';
 const version:RequirementVersion={revision:1,at:'2026-10-08T10:00:00Z',name:'Microscopy acquisition',description:'Published engineering requirements',connections:[],constraints:{minMemoryGb:64,minDataGb:8000,minBootGb:1000,minScientificCards:1}};
 const setup=()=>{const db=structuredClone(seed);db.requirementsSets=[{id:'microscopy',name:'Microscopy',description:'Reusable requirements',versions:[structuredClone(version)]}];return {db,configuration:db.configurations[0],pc:db.pcs[0]};};
 function built(db:Database) {

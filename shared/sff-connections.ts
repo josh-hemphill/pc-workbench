@@ -5,8 +5,8 @@ import type {
   Finding,
   Resource,
   StorageProtocol,
-} from "./types";
-import { componentCapabilities } from "./component-capabilities";
+} from "./types.ts";
+import { componentCapabilities } from "./component-capabilities.ts";
 export const sffConnectors = [
   "SFF-8087",
   "SFF-8088",

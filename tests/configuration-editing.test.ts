@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {reactive} from 'vue';
-import {seed} from '../server/seed';
-import {splitConfigurationPlacement} from '../shared/configuration-editing';
+import {seed} from '../server/seed.ts';
+import {splitConfigurationPlacement} from '../shared/configuration-editing.ts';
 
 test('splitting cards preserves port instance identity and the original record without mutating reactive drafts',()=>{
  const cfg=reactive(structuredClone(seed.configurations[0])),card=cfg.placements.find(p=>p.componentId==='nic')!;card.quantity=2;

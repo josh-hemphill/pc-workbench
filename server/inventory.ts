@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import type { Database, StockAllocation, StockEvent, StockRecord } from '../shared/types';
-import { mapStorageBindings } from '../shared/storage-bindings';
-import { stockCounts } from '../shared/inventory';
-import { schemas, stockActionSchema } from './schema';
+import type { Database, StockAllocation, StockEvent, StockRecord } from '../shared/types.ts';
+import { mapStorageBindings } from '../shared/storage-bindings.ts';
+import { stockCounts } from '../shared/inventory.ts';
+import { schemas, stockActionSchema } from './schema.ts';
 
 function clearPhysicalBindings(allocation:StockAllocation){
   if(allocation.bayTargetIds?.includes(allocation.targetId||''))allocation.targetId='';

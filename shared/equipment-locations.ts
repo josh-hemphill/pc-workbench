@@ -1,5 +1,5 @@
-import type { Database, System } from "./types";
-import { installationLocationIds, locationPath } from "./installations";
+import type { Database, System } from "./types.ts";
+import { installationLocationIds, locationPath } from "./installations.ts";
 export function equipmentLocation(system: System, db: Database): string {
   return system.installationLocationId
     ? locationPath(system.installationLocationId, db) || "Missing location"

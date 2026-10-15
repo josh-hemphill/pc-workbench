@@ -4,7 +4,7 @@ Historical investigation started on `exploration/node-pnpm-desktop` from `1c9b75
 
 ## Decision
 
-Move development, testing and backend packaging to Node 24 LTS and pnpm. Keep **Tauri 2 with a Node SEA sidecar** as the strongest distribution candidate. The [deeper desktop comparison](DESKTOP_FRAMEWORK_COMPARISON.md) also recommends a **WebviewJS** feasibility experiment for simpler Node-native development, and a current Neutralino host-project comparison. No native shell is selected for release yet.
+Development, testing and backend packaging now use Node 26 and pnpm. Keep **Tauri 2 with a Node SEA sidecar** as the strongest distribution candidate. The [deeper desktop comparison](DESKTOP_FRAMEWORK_COMPARISON.md) also recommends a **WebviewJS** feasibility experiment for simpler Node-native development, and a current Neutralino host-project comparison. No native shell is selected for release yet.
 
 The application already uses Express, Node filesystem APIs, `node:test`, and built-in `node:sqlite`. Its business logic, SQLite schema, CSV formats, workspace/user separation and Vue UI need no runtime rewrite. The desktop window is the remaining independent decision.
 
@@ -24,7 +24,13 @@ Measured on this Linux x64 workspace with Node 24.19.0:
 
 These are backend/server prototype measurements, not a complete native GUI bundle. They vary by OS, architecture and Node release. A Tauri/Neutralino host would add its own executable and installer overhead. System WebView prerequisites also vary by platform. Neither an unmeasured small download claim nor an Electron-like bundled browser is necessary to this approach.
 
-Node 24 SEA requires a bundled CommonJS entry and `postject` injection. This prototype deliberately disables snapshots and code cache. Package on the **target OS/architecture**; copying the current Node binary does not cross-compile it. macOS builds remove the original signature before injection and apply an ad-hoc signature afterward. Release signing/notarization and Windows installer delivery are separate from this prototype.
+Current packaging uses Node 26's built-in `node --build-sea` with a bundled CommonJS entry; postject is no longer a dependency. Snapshots and code cache remain disabled. Build on the **target OS/architecture**; SEA uses the current Node executable rather than cross-compiling. macOS artifacts receive an ad-hoc signature after generation. Release signing/notarization and Windows installers remain separate work. The Node 24 measurements above are historical and do not describe the current binary size.
+
+## Native TypeScript tooling
+
+Node 26.12.0 is pinned in `.node-version` and used by CI. All development tools, tests and CLI scripts run through Node's built-in type stripping without tsx or a custom loader. Relative TypeScript imports include `.ts`, type-only imports are explicit, and constructor fields use erasable syntax. The shared `tsconfig.json` enables `erasableSyntaxOnly` and `verbatimModuleSyntax` to catch unsupported source changes during `pnpm check`. Type stripping does not type-check; Vue templates and the application still use `vue-tsc`. Vite continues to build the frontend and esbuild still bundles executable inputs.
+
+See [Node 26 TypeScript support](https://nodejs.org/docs/latest-v26.x/api/typescript.html) and [Node 26 SEA packaging](https://nodejs.org/docs/latest-v26.x/api/single-executable-applications.html).
 
 ## Desktop options
 
@@ -40,7 +46,7 @@ Node 24 SEA requires a bundled CommonJS entry and `postject` injection. This pro
 
 Sources accessed for the comparison:
 
-- [Node 24 SEA documentation](https://nodejs.org/docs/latest-v24.x/api/single-executable-applications.html) — the version-specific API, rather than newer Node documentation with different packaging commands.
+- [Node 26 SEA documentation](https://nodejs.org/docs/latest-v26.x/api/single-executable-applications.html) — the current built-in executable builder; older measurements used the Node 24 injection workflow.
 - [Tauri official README](https://github.com/tauri-apps/tauri/blob/dev/README.md) — system WebView architecture, Rust host and bundling.
 - [Neutralino official README](https://github.com/neutralinojs/neutralinojs/blob/main/README.md) — OS browser library, WebSocket native API and extension model.
 - [Electrobun official README](https://github.com/blackboardsh/electrobun/blob/main/README.md) — current Hutch tooling, runtime choices and optional CEF.
@@ -60,7 +66,7 @@ pnpm test:sea            # Isolated actual-executable integration test
 
 The generated `.standalone/server.cjs` includes all runtime JS dependencies and frontend assets. Runtime imports are Node built-ins, including SQLite. `bin/pc-workbench-node-<platform>-<arch>` requires no installed Node, node_modules or extracted JS/assets. It serves the local browser UI; **it currently has no native window**.
 
-The pnpm lockfile pins dependencies. Only esbuild's required build script is approved. Node type definitions target Node 24. The old runtime tasks, lockfile and native host have been removed. Native GUI parity remains a release gate; it does not require retaining the old toolchain.
+The pnpm lockfile pins dependencies. Only esbuild's required build script is approved. Node type definitions target Node 26. The old runtime tasks, lockfile and native host have been removed. Native GUI parity remains a release gate; it does not require retaining the old toolchain.
 
 The Node CI workflow builds/tests the executable on Linux, Windows and macOS and publishes explicitly named **backend prototype** artifacts. Local evidence is Linux x64; other platform results must be obtained from CI and native OS testing.
 

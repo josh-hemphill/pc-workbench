@@ -47,13 +47,13 @@ import {
   VTextField,
 } from "vuetify/components";
 import { Ripple } from "vuetify/directives";
-import { tableScroll } from "./table-scroll";
+import { tableScroll } from "./table-scroll.ts";
 import "vuetify/styles";
 import { aliases, mdi } from "vuetify/iconsets/mdi-svg";
 import App from "./App.vue";
 import "./style.css";
-import { loadAppearance } from "./appearance";
-import {activeThemeName,activeThemeDefinition,applyPaletteCss} from "./theme-preview";
+import { loadAppearance } from "./appearance.ts";
+import {activeThemeName,activeThemeDefinition,applyPaletteCss} from "./theme-preview.ts";
 await loadAppearance();
 applyPaletteCss();
 const vuetify = createVuetify({

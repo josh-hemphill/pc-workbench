@@ -1,13 +1,13 @@
-// Run with Node/tsx as the reference, then Cottontail 0.7.1 directly.
+// Run with Node as the reference, then Cottontail 0.7.1 directly.
 // Uses only temporary data; never points at a user's real workspace.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {createApp} from '../../server/app';
-import {resolveRuntimeConfig} from '../../server/runtime-config';
-import {Store} from '../../server/store';
-import {Backend} from './desktop/backend';
+import {createApp} from '../../server/app.ts';
+import {resolveRuntimeConfig} from '../../server/runtime-config.ts';
+import {Store} from '../../server/store.ts';
+import {Backend} from './desktop/backend.ts';
 const directory=fs.mkdtempSync(path.join(os.tmpdir(),'workbench-runtime-compat-'));
 const runtime=resolveRuntimeConfig({standalone:true,home:directory,env:{BENCH_DATA_DIR:path.join(directory,'workspace')}});
 let backend:Backend|undefined;

@@ -1,4 +1,4 @@
-import type {LocationKind} from './types';
+import type {LocationKind} from './types.ts';
 export interface NotesEdit {mode:'replace'|'append';value:string}
 export interface LocationPatch {kind?:LocationKind;parentId?:string;targetConfigurationId?:string;requirements?:{setId:string;revision:number};notes?:NotesEdit}
 export interface PCPatch {installationLocationId?:string;lifecycle?:'Planning'|'Building'|'Maintenance'|'Parts only'|'Retired';notes?:NotesEdit}

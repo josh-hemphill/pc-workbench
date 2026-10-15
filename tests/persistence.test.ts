@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {Store,encodeCSV,decodeCSV,encodeMovements} from '../server/store';
-import {lockWorkspace} from '../server/persistence';
-import {saveStockRecord,applyStockAction} from '../server/inventory';
+import {Store,encodeCSV,decodeCSV,encodeMovements} from '../server/store.ts';
+import {lockWorkspace} from '../server/persistence.ts';
+import {saveStockRecord,applyStockAction} from '../server/inventory.ts';
 import {DatabaseSync} from 'node:sqlite';
-import {seed} from '../server/seed';
-import {collections} from '../server/store';
+import {seed} from '../server/seed.ts';
+import {collections} from '../server/store.ts';
 import {parse} from 'csv-parse/sync';
 function persistedState(dir:string){const store=new Store(dir);try{return structuredClone(store.db);}finally{store.close();}}
 function workspace(run:(store:Store,dir:string)=>void){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'bench-review-'));const store=new Store(dir);try{run(store,dir);}finally{store.close();fs.rmSync(dir,{recursive:true,force:true});}}

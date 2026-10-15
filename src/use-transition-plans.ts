@@ -3,8 +3,8 @@ import {
   newTransitionScenario,
   type TransitionScenario,
   transitionScenarioSchema,
-} from "../shared/transitions";
-import type { PlanInput, PlanSnapshot } from "../shared/transition-plans";
+} from "../shared/transitions.ts";
+import type { PlanInput, PlanSnapshot } from "../shared/transition-plans.ts";
 
 export function useTransitionPlans(
   scenario: Ref<TransitionScenario>,

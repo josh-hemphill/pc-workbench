@@ -1,5 +1,5 @@
-import type { Database, RequirementVersion } from '../shared/types';
-import { schemas, type Collection } from './schema';
+import type { Database, RequirementVersion } from '../shared/types.ts';
+import { schemas, type Collection } from './schema.ts';
 
 type Binding = {requirementSetId?:string;requirementRevision?:number;requirementSnapshot?:RequirementVersion};
 /** Resolve a published immutable revision. Labels can change without changing the requirements. */

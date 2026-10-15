@@ -1,6 +1,6 @@
 # Desktop validation and remaining limitations
 
-Development, tests, builds and executable packaging use Node.js 24 and pnpm. The retired runtime, native host, lockfile, packagers and CI workflow have been removed. Framework comparison documents retain historical research; current commands are in [README](../README.md) and [desktop prototypes](DESKTOP_PROTOTYPES.md).
+Development, tests, builds and executable packaging use Node.js 26 and pnpm. The retired runtime, native host, lockfile, packagers and CI workflow have been removed. Framework comparison documents retain historical research; current commands are in [README](../README.md) and [desktop prototypes](DESKTOP_PROTOTYPES.md).
 
 ## Validated behavior
 

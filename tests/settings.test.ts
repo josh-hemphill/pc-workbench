@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { resolveRuntimeConfig } from '../server/runtime-config';
-import { SettingsStore, SettingsConflict } from '../server/settings';
-import { defaultUserSettings } from '../shared/settings';
+import { resolveRuntimeConfig } from '../server/runtime-config.ts';
+import { SettingsStore, SettingsConflict } from '../server/settings.ts';
+import { defaultUserSettings } from '../shared/settings.ts';
 
 function fixture(run:(base:string,store:SettingsStore)=>void){
   const base=fs.mkdtempSync(path.join(os.tmpdir(),'bench-settings-'));

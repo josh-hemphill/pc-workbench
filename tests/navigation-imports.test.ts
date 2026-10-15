@@ -3,15 +3,15 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { decodeCSV, encodeCSV, Store } from "../server/store";
-import { previewImport } from "../server/csv-preview";
-import { createApp } from "../server/app";
+import { decodeCSV, encodeCSV, Store } from "../server/store.ts";
+import { previewImport } from "../server/csv-preview.ts";
+import { createApp } from "../server/app.ts";
 import {
   encodeWorkspaceRoute,
   parseWorkspaceRoute,
   routePages,
   workspaceRoute,
-} from "../shared/workspace-route";
+} from "../shared/workspace-route.ts";
 const locations = [{
   id: "loc-root",
   name: "Site",

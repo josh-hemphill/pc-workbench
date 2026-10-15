@@ -1,6 +1,6 @@
-import type {Component,Database} from './types';
-import {catalogSuggestions,normalizeCatalogValue,normalizeCatalogValues} from './catalog-options';
-import {componentCapabilities} from './component-capabilities';
+import type {Component,Database} from './types.ts';
+import {catalogSuggestions,normalizeCatalogValue,normalizeCatalogValues} from './catalog-options.ts';
+import {componentCapabilities} from './component-capabilities.ts';
 export interface CatalogField { key:string;label:string;kind:'text'|'number'|'array'|'boolean'; choices?:string[] }
 const field=(key:string,label:string,kind:CatalogField['kind']='number',choices?:string[]):CatalogField=>({key,label,kind,choices});
 export function catalogFields(c:Component):CatalogField[] {

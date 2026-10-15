@@ -1,4 +1,4 @@
-import type {Configuration,Database} from '../shared/types';
+import type {Configuration,Database} from '../shared/types.ts';
 
 /** Both individual and bulk saves retain the same revision and approval history. */
 export function saveConfigurationRecord(input:Configuration,db:Database):Configuration {

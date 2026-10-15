@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { presetPalettes, paletteTheme } from '../shared/theme-palettes';
+import { presetPalettes, paletteTheme } from '../shared/theme-palettes.ts';
 
 function luminance(hex: string) {
   const rgb = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)

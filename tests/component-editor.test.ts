@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { seed } from "../server/seed";
-import { schemas } from "../server/schema";
-import { componentSchema } from "../shared/component-schema";
+import { seed } from "../server/seed.ts";
+import { schemas } from "../server/schema.ts";
+import { componentSchema } from "../shared/component-schema.ts";
 import {
   componentReferences,
   issueSection,
@@ -10,13 +10,13 @@ import {
   portIdPrefix,
   supportsSlotBifurcation,
   typedIdPrefix,
-} from "../shared/component-editor";
+} from "../shared/component-editor.ts";
 import {
   componentFields,
   componentSections,
   fieldSection,
-} from "../shared/component-fields";
-import { categories, type Component } from "../shared/types";
+} from "../shared/component-fields.ts";
+import { categories, type Component } from "../shared/types.ts";
 const part = (
   category: Component["category"],
   specs: Component["specs"] = {},
@@ -189,7 +189,7 @@ test("reference discovery covers own topology and explicit or automatic current-
 
 test("editor section URLs round trip and normalize unknown section names", async () => {
   const { parseWorkspaceRoute, encodeWorkspaceRoute } = await import(
-    "../shared/workspace-route"
+    "../shared/workspace-route.ts"
   );
   const hash =
     "#/catalog/components?edit=component&record=board-atx&section=ports";

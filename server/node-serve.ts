@@ -1,6 +1,6 @@
-import {createApp,type AppOptions} from './app';
-import {resolveRuntimeConfig} from './runtime-config';
-import {assertSettingsSeparation} from './settings';
+import {createApp,type AppOptions} from './app.ts';
+import {resolveRuntimeConfig} from './runtime-config.ts';
+import {assertSettingsSeparation} from './settings.ts';
 import type {Server} from 'node:http';
 export function startNodeServer(options:Pick<AppOptions,'assets'|'sourceRoot'|'desktopOriginOnly'>={},desktopOwned=false):Server {
  const config=resolveRuntimeConfig({standalone:!!options.assets,sourceRoot:options.sourceRoot});

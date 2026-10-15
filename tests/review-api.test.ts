@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {createApp} from '../server/index';
-import {encodeCSV} from '../server/store';
-import type {Database} from '../shared/types';
+import {createApp} from '../server/index.ts';
+import {encodeCSV} from '../server/store.ts';
+import type {Database} from '../shared/types.ts';
 
 async function workspace(run:(request:(route:string,method?:string,body?:unknown,revision?:string)=>Promise<Response>,state:()=>Promise<Database&{revision:string}>)=>Promise<void>){
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'bench-review-')),server=createApp(dir).listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));

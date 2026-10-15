@@ -1,7 +1,7 @@
-import {isPCInstallationKind} from './types';
-import type { Database, InstallationLocation, InventoryPC, Report, InstallationSnapshot } from './types';
-import { checkConfiguration, resolveRequirementVersion } from './compatibility';
-import { installedConfiguration, planDifferences } from './inventory';
+import {isPCInstallationKind} from './types.ts';
+import type { Database, InstallationLocation, InventoryPC, Report, InstallationSnapshot } from './types.ts';
+import { checkConfiguration, resolveRequirementVersion } from './compatibility.ts';
+import { installedConfiguration, planDifferences } from './inventory.ts';
 
 /** A readable hierarchy with cycle protection even for not-yet-validated drafts. */
 export function locationPath(id: string, db: Database): string {

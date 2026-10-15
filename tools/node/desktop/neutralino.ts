@@ -2,9 +2,9 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {spawn,type ChildProcess,type SpawnOptions} from 'node:child_process';
 type NativeLauncher=(command:string,args:string[],options:SpawnOptions)=>ChildProcess;
-import {neutralinoClient} from './neutralino-client';
+import {neutralinoClient} from './neutralino-client.ts';
 import {randomUUID} from 'node:crypto';
-import type {RuntimeConfig} from '../../../server/runtime-config';
+import type {RuntimeConfig} from '../../../server/runtime-config.ts';
 
 export const extensionId='org.pcworkbench.host';
 export function neutralinoConfiguration(origin:string,cacheDir:string){

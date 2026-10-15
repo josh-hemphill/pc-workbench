@@ -1,5 +1,5 @@
-import type {Component} from './types';
-import {catalogFields,fieldValue,isMissing,type EnrichmentProposal} from './catalog-quality';
+import type {Component} from './types.ts';
+import {catalogFields,fieldValue,isMissing,type EnrichmentProposal} from './catalog-quality.ts';
 function text(html:string){return html.replace(/<[^>]*>/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/\s+/g,' ').trim();}
 /** Extract conservative, category-applicable candidates. Nothing is written or marked verified. */
 export function extractProductDetails(html:string,component:Component):EnrichmentProposal&{productName:string} {

@@ -1,8 +1,8 @@
-import {isPCInstallationKind} from './types';
-import type {Database,InventoryPC} from './types';
-import {locationPath,installationPCs,installationLocationIds} from './installations';
-import {resolveRequirementVersion} from './compatibility';
-import {checkInstalledPC,pcAllocations,planDifferences} from './inventory';
+import {isPCInstallationKind} from './types.ts';
+import type {Database,InventoryPC} from './types.ts';
+import {locationPath,installationPCs,installationLocationIds} from './installations.ts';
+import {resolveRequirementVersion} from './compatibility.ts';
+import {checkInstalledPC,pcAllocations,planDifferences} from './inventory.ts';
 export function pcOperationalContext(pc:InventoryPC,db:Database){
  const location=db.installationLocations.find(l=>l.id===pc.installationLocationId),build=pc.buildSettings?resolveRequirementVersion(pc.buildSettings,db):undefined,requirement=location?resolveRequirementVersion(location,db):undefined;
  const system=db.systems.find(s=>s.id===pc.buildSettings?.systemId);

@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {categories} from '../shared/types';
-import type {Component, Category, Specs} from '../shared/types';
-import {componentCapabilities,storageAdapterKind,retainedAdvancedFields} from '../shared/component-capabilities';
+import {categories} from '../shared/types.ts';
+import type {Component, Category, Specs} from '../shared/types.ts';
+import {componentCapabilities,storageAdapterKind,retainedAdvancedFields} from '../shared/component-capabilities.ts';
 const part=(category:Category,specs:Specs={}):Component=>({id:'test',name:'Test component',category,manufacturer:'',source:'',verified:false,specs});
 test('all fourteen categories expose relevant provider, software and motherboard sections',()=>{
  const expected:Record<Category,{ports:boolean;software:boolean;targets:boolean;slot:boolean}>={

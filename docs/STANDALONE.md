@@ -87,7 +87,7 @@ For a filesystem move, stop the server first and copy the entire data directory,
 
 ## Build standalone executables
 
-Install Node.js 24.19 or a later Node 24 release and pnpm 11.19.0:
+Install Node.js 26.12 or a later Node 26 release and pnpm 11.19.0:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -97,7 +97,7 @@ pnpm package:sea
 pnpm test:sea
 ```
 
-The server output is `bin/pc-workbench-node-<platform>-<arch>` (`.exe` on Windows), with a `.build.json` manifest recording size, SHA-256 and runtime requirements. Launch it and open `http://127.0.0.1:3001`, or the configured port. It embeds the frontend and serves it without external files. Ctrl+C stops the server. `pnpm start` runs the same bundled server through an installed Node runtime.
+The server output is `bin/pc-workbench-node-<platform>-<arch>` (`.exe` on Windows), with a `.json` manifest recording size, SHA-256 and runtime requirements. Launch it and open `http://127.0.0.1:3001`, or the configured port. It embeds the frontend and serves it without external files. Ctrl+C stops the server. `pnpm start` runs the same bundled server through an installed Node runtime.
 
 For the experimental WebviewJS native window:
 
@@ -107,6 +107,6 @@ pnpm package:desktop
 pnpm test:desktop-package
 ```
 
-Output: `bin/pc-workbench-desktop-<platform>-<arch>` (`.exe` on Windows), plus its `.build.json` manifest. The package smoke test is headless; it verifies addon extraction, embedded assets, API writes, restart persistence and shutdown, rather than native rendering. Launch the executable directly to open the window. `pnpm dev:desktop` runs the source host after `pnpm build:web`.
+Output: `bin/pc-workbench-desktop-<platform>-<arch>` (`.exe` on Windows), plus its `.json` manifest. The package smoke test is headless; it verifies addon extraction, embedded assets, API writes, restart persistence and shutdown, rather than native rendering. Launch the executable directly to open the window. `pnpm dev:desktop` runs the source host after `pnpm build:web`.
 
 Build on the target OS and architecture. SEA packages the current Node binary and does not cross-compile. CI produces Linux, Windows and macOS artifacts. Release signing, notarization, installer/bootstrapper and updater integration remain future work; the former ZIP/IExpress distribution is retired. See [desktop prototype commands](DESKTOP_PROTOTYPES.md) and [Linux prerequisites/native checks](WEBVIEWJS_LINUX_SETUP.md).

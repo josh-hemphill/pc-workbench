@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { categories, portKinds } from "./types";
+import { categories, portKinds } from "./types.ts";
 const id = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
   str = z.string().max(10000),
   count = z.number().int().min(0).max(10000);

@@ -1,4 +1,4 @@
-import type { StorageBindings } from './types';
+import type { StorageBindings } from './types.ts';
 
 /** Preserve optional wiring through allocations/snapshots; never infer physical endpoints. */
 export function mapStorageBindings(record: StorageBindings, resolve: (id: string) => string = id => id): StorageBindings {

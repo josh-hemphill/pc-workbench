@@ -4,11 +4,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type { AddressInfo } from 'node:net';
-import { createApp } from '../server/index';
-import { decodeCSV, encodeCSV } from '../server/store';
-import { fleetPicklist, stockCounts } from '../shared/inventory';
-import { installationParts } from '../shared/installations';
-import type { Database, InventoryPC } from '../shared/types';
+import { createApp } from '../server/index.ts';
+import { decodeCSV, encodeCSV } from '../server/store.ts';
+import { fleetPicklist, stockCounts } from '../shared/inventory.ts';
+import { installationParts } from '../shared/installations.ts';
+import type { Database, InventoryPC } from '../shared/types.ts';
 
 async function workspace(run: (request: Request, state: () => Promise<Database>) => Promise<void>) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bench-parts-only-api-'));

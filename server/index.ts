@@ -1,8 +1,8 @@
 import path from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-import {resolveRuntimeConfig} from './runtime-config';
-import {createApp as createRuntimeApp,type AppOptions} from './app';
-export type {AppOptions} from './app';
+import {resolveRuntimeConfig} from './runtime-config.ts';
+import {createApp as createRuntimeApp,type AppOptions} from './app.ts';
+export type {AppOptions} from './app.ts';
 const root=import.meta.url?path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'):path.dirname(process.execPath);
 export function createApp(dataDir?:string,options:AppOptions={}) {
  return createRuntimeApp(dataDir,{...options,sourceRoot:options.sourceRoot??root});

@@ -3,25 +3,25 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { decodeCSV, encodeCSV, Store } from "../server/store";
-import { applyStockOperation, saveStockRecord } from "../server/inventory";
+import { decodeCSV, encodeCSV, Store } from "../server/store.ts";
+import { applyStockOperation, saveStockRecord } from "../server/inventory.ts";
 import {
   equipmentLocation,
   filterEquipmentSystems,
   groupEquipmentSystems,
-} from "../shared/equipment-locations";
+} from "../shared/equipment-locations.ts";
 import {
   installedConfiguration,
   planDifferences,
   reorderSuggestions,
   stockCounts,
-} from "../shared/inventory";
+} from "../shared/inventory.ts";
 import {
   mapStorageBindings,
   storageBindingsMatch,
-} from "../shared/storage-bindings";
-import { schemas } from "../server/schema";
-import type { Component, InstallationLocation } from "../shared/types";
+} from "../shared/storage-bindings.ts";
+import { schemas } from "../server/schema.ts";
+import type { Component, InstallationLocation } from "../shared/types.ts";
 const cable: Component = {
   id: "fanout-cable",
   name: "SFF-8643 to SATA fan-out",
@@ -462,7 +462,7 @@ test("storage binding helpers preserve and compare physical cable channels", () 
 });
 
 test("consumable API writes are revision guarded and failed usage never changes the ledger", async () => {
-  const { createApp } = await import("../server/app");
+  const { createApp } = await import("../server/app.ts");
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "bench-consumable-api-")),
     server = createApp(dir).listen(0, "127.0.0.1");
   await new Promise<void>((resolve) => server.once("listening", resolve));

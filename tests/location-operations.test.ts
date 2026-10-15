@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {seed} from '../server/seed';
-import {distributionVacancies,locationOperationRows,operationSearchText} from '../shared/location-operations';
-import type {InstallationLocation,StockRecord} from '../shared/types';
+import {seed} from '../server/seed.ts';
+import {distributionVacancies,locationOperationRows,operationSearchText} from '../shared/location-operations.ts';
+import type {InstallationLocation,StockRecord} from '../shared/types.ts';
 const location=(id:string,parentId='',kind:InstallationLocation['kind']='Bench'):InstallationLocation=>({id,name:'Same name',parentId,kind,requirementSetId:'',requirementRevision:0,targetConfigurationId:'',notes:''});
 test('distribution hierarchy uses IDs even when site and bench names repeat',()=>{const db=structuredClone(seed);db.pcs=[];db.installationLocations=[location('site-a','','Site'),location('site-b','','Site'),location('bench-a','site-a'),location('bench-b','site-b')];assert.deepEqual(distributionVacancies(db,'site-a').map(l=>l.id),['bench-a']);assert.deepEqual(distributionVacancies(db,'site-a',false),[]);});
 test('retired units do not create repair workload and parts-only units do not count as active occupancy',()=>{const db=structuredClone(seed);db.inventory=[];const pc=db.pcs[0];db.pcs=[pc];pc.lifecycle='Retired';pc.installationLocationId='bench';db.installationLocations=[location('bench')];assert.equal(locationOperationRows(db.pcs,db)[0].attention,false);assert.equal(distributionVacancies(db).length,1);pc.lifecycle='Parts only';assert.equal(locationOperationRows(db.pcs,db)[0].attention,true);assert.equal(distributionVacancies(db).length,1);pc.lifecycle='Maintenance';assert.equal(distributionVacancies(db).length,0);});

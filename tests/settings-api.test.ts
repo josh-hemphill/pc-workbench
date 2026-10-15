@@ -4,8 +4,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type { Server } from 'node:http';
-import { createApp } from '../server/index';
-import { resolveRuntimeConfig } from '../server/runtime-config';
+import { createApp } from '../server/index.ts';
+import { resolveRuntimeConfig } from '../server/runtime-config.ts';
 
 test('settings API validates before save, preserves active workspace, and keeps user preferences across backup restore', async () => {
   const base=fs.mkdtempSync(path.join(os.tmpdir(),'bench-settings-api-'));

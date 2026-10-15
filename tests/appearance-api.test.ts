@@ -5,9 +5,9 @@ import os from 'node:os';
 import path from 'node:path';
 import type { Server } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
-import { createApp } from '../server/index';
-import { resolveRuntimeConfig } from '../server/runtime-config';
-import { defaultUserSettings } from '../shared/settings';
+import { createApp } from '../server/index.ts';
+import { resolveRuntimeConfig } from '../server/runtime-config.ts';
+import { defaultUserSettings } from '../shared/settings.ts';
 
 test('appearance is per-user across origins and workspaces, with revision conflicts and isolated workspace backups', async () => {
   const base=fs.mkdtempSync(path.join(os.tmpdir(),'bench-appearance-'));

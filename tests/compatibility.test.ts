@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {seed} from '../server/seed';
-import {checkConfiguration} from '../shared/compatibility';
-import type {Placement} from '../shared/types';
+import {seed} from '../server/seed.ts';
+import {checkConfiguration} from '../shared/compatibility.ts';
+import type {Placement} from '../shared/types.ts';
 const setup=()=>{const db=structuredClone(seed);return {db,config:db.configurations[0]};};
 const has=(result:ReturnType<typeof checkConfiguration>,title:string)=>result.findings.some(f=>f.title===title&&f.severity==='error');
 test('illustrative imaging build fits declared resources and calculates two mirrors',()=>{const {db,config}=setup();const r=checkConfiguration(config,db);assert.equal(r.findings.filter(f=>f.severity==='error').length,0);assert.equal(r.usableDataGb,8000);assert.equal(r.bootGb,1000);assert.equal(Object.keys(r.slotAssignments).length,3);assert.equal(r.status,'Needs review');});

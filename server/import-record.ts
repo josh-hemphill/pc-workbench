@@ -1,9 +1,9 @@
-import type {Database} from '../shared/types';
-import type {Collection} from './schema';
-import {prepareInstallationRecord} from './installation-requirements';
-import {saveStockRecord} from './inventory';
-import {savePCRecord} from './pc-lifecycle';
-import {saveConfigurationRecord} from './configuration-record';
+import type {Database} from '../shared/types.ts';
+import type {Collection} from './schema.ts';
+import {prepareInstallationRecord} from './installation-requirements.ts';
+import {saveStockRecord} from './inventory.ts';
+import {savePCRecord} from './pc-lifecycle.ts';
+import {saveConfigurationRecord} from './configuration-record.ts';
 
 /** CSV transfers may introduce history, but merges must not replace an existing audit trail. */
 export function prepareImportedRecord(collection:Collection,input:{id:string},db:Database):unknown {

@@ -1,4 +1,4 @@
-import type { Component, Configuration, Database } from '../shared/types';
+import type { Component, Configuration, Database } from '../shared/types.ts';
 const part=(id:string,name:string,category:Component['category'],specs:Component['specs'],manufacturer='Example specification'):Component=>({id,name,category,manufacturer,specs,source:'Illustrative planning data — replace with verified manufacturer specifications',verified:false});
 export const seed:Database={
  requirementsSets:[],installationLocations:[],

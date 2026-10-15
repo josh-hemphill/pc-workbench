@@ -1,5 +1,5 @@
-import type {Component,Configuration,Database,Finding,Placement,Resource} from './types';
-import {componentCapabilities,storageAdapterKind} from './component-capabilities';
+import type {Component,Configuration,Database,Finding,Placement,Resource} from './types.ts';
+import {componentCapabilities,storageAdapterKind} from './component-capabilities.ts';
 
 /** SATA channels and PSU end plugs are physical resources, independent of drive bays. */
 export function checkStorageConnections(config:Configuration,db:Database,slotAssignments:Record<string,string>) {

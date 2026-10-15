@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import {componentSchema} from '../shared/component-schema';
-import { portKinds, locationKinds } from '../shared/types';
+import {componentSchema} from '../shared/component-schema.ts';
+import { portKinds, locationKinds } from '../shared/types.ts';
 const id=z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/), str=z.string().max(10000), count=z.number().int().min(0).max(10000), quantity=z.number().int().min(1).max(32);
 const optionalDate=z.union([z.iso.datetime(),z.literal('')]);
 const condition=z.enum(['Serviceable','Quarantined','Repair','Retired']);

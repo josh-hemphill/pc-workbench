@@ -30,14 +30,14 @@ pnpm build:web
 pnpm dev:desktop
 ```
 
-Node 24 and the pinned WebviewJS prebuilt addon are used. A Rust toolchain is not needed to build this application's JS bundle and SEA from the published native addon. Rebuilding the addon itself from Rust source is a separate toolchain setup.
+Node 26 and the pinned WebviewJS prebuilt addon are used. A Rust toolchain is not needed to build this application's JS bundle and SEA from the published native addon. Rebuilding the addon itself from Rust source is a separate toolchain setup.
 
 ## Repeat the real native check
 
 In the managed workspace:
 
 ```sh
-/workspace/.tools/webviewjs-native/run node --import tsx tools/node/native-webview-smoke.ts
+/workspace/.tools/webviewjs-native/run node tools/node/native-webview-smoke.ts
 ```
 
 With system-installed prerequisites:

@@ -5,7 +5,7 @@
   "type": "module",
   "description": "PC configuration, inventory and installation management with Node.js, pnpm, Vue and Vuetify.",
   "engines": {
-    "node": ">=24.19.0 <25"
+    "node": ">=26.12.0 <27"
   },
   "packageManager": "pnpm@11.19.0",
   "dependencies": {
@@ -20,35 +20,33 @@
   "devDependencies": {
     "@neutralinojs/lib": "6.10.0",
     "@types/express": "5.0.6",
-    "@types/node": "24.19.2",
+    "@types/node": "26.6.5",
     "@vitejs/plugin-vue": "6.0.10",
     "@webviewjs/webview": "0.4.7",
     "esbuild": "0.28.2",
-    "postject": "1.0.0-alpha.6",
-    "tsx": "4.22.4",
     "typescript": "6.0.3",
     "vite": "8.3.4",
     "vue-tsc": "3.3.13"
   },
   "scripts": {
-    "dev": "node --watch --import tsx tools/node/dev.ts",
+    "dev": "node --watch tools/node/dev.ts",
     "check": "vue-tsc --noEmit",
-    "build:web": "node --import tsx tools/node/frontend.ts build",
-    "build:backend": "node --import tsx tools/node/build-backend.ts",
+    "build:web": "node tools/node/frontend.ts build",
+    "build:backend": "node tools/node/build-backend.ts",
     "build": "pnpm check && pnpm build:web && pnpm build:backend",
     "start": "node .standalone/server.cjs",
     "test": "node tools/node/test.mjs",
-    "test:backend": "node --import tsx --test tests/node-desktop.test.ts",
+    "test:backend": "node --test tests/node-desktop.test.ts",
     "package:sea": "node tools/node/package-sea.mjs",
     "test:sea": "node tools/node/sea-smoke.mjs",
-    "import:pcpartpicker": "node --import tsx tools/pcpartpicker.ts",
-    "dev:desktop": "node --import tsx tools/node/desktop/main.ts",
-    "dev:neutralino": "node --import tsx tools/node/desktop/main.ts --neutralino",
-    "build:desktop": "pnpm check && pnpm build:web && node --import tsx tools/node/build-backend.ts --desktop-shell",
+    "import:pcpartpicker": "node tools/pcpartpicker.ts",
+    "dev:desktop": "node tools/node/desktop/main.ts",
+    "dev:neutralino": "node tools/node/desktop/main.ts --neutralino",
+    "build:desktop": "pnpm check && pnpm build:web && node tools/node/build-backend.ts --desktop-shell",
     "package:desktop": "node tools/node/package-sea.mjs --desktop-shell",
     "test:desktop-package": "node tools/node/sea-smoke.mjs --desktop-shell",
     "stage:tauri-sidecar": "node tools/node/stage-tauri-sidecar.mjs",
-    "probe:runtime": "node --import tsx tools/node/runtime-compatibility-probe.ts",
-    "test:desktop-native": "node --import tsx tools/node/native-webview-smoke.ts"
+    "probe:runtime": "node tools/node/runtime-compatibility-probe.ts",
+    "test:desktop-native": "node tools/node/native-webview-smoke.ts"
   }
 }

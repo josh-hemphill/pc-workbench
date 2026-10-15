@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {Backend} from '../tools/node/desktop/backend';
-import {createApp} from '../server/app';
+import {Backend} from '../tools/node/desktop/backend.ts';
+import {createApp} from '../server/app.ts';
 test('Node desktop backend preserves SQLite, API edits and cleanup without a renderer bridge',async()=>{
  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'node-desktop-'));
  const factory=()=>{const app=createApp(directory);return {listen:(port:number,host:string,callback:(error?:Error)=>void)=>app.listen(port,host,callback),locals:{closeStore:()=>app.locals.closeStore()}};};

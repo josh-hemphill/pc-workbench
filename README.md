@@ -1,10 +1,10 @@
 # Bench — PC configuration workbench
 
-Bench uses **Node.js 24 + pnpm**, preserving the Vue/Vuetify application, Express API, built-in SQLite, existing workspaces, and user settings. Native desktop hosts remain experimental. Development, tests and packaging use Node.js and pnpm.
+Bench uses **Node.js 26 + pnpm**, preserving the Vue/Vuetify application, Express API, built-in SQLite, existing workspaces, and user settings. Native desktop hosts remain experimental. Development, tests and packaging use Node.js and pnpm.
 
 ## Run with Node.js
 
-Install Node.js **24.19 or a later Node 24 release** and pnpm **11.19.0**, then run:
+Install Node.js **26.12 or a later Node 26 release** and pnpm **11.19.0**, then run:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -18,6 +18,8 @@ pnpm test
 pnpm build
 pnpm start
 ```
+
+Node runs the TypeScript tools and tests directly using built-in type stripping; tsx is not required. Relative imports use explicit `.ts` extensions, and `pnpm check` enforces erasable syntax and explicit type-only imports. The exact development/CI runtime is pinned in `.node-version`.
 
 The production server embeds the frontend and opens its API on the configured port (default **http://127.0.0.1:3001**). `pnpm check` checks Vue templates, shared/backend code and tests. No SQLite native npm addon is required.
 

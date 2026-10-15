@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { createApp } from "../server/app";
-import { encodeCSV, PlanConflict, Store } from "../server/store";
-import { newTransitionScenario } from "../shared/transitions";
-import { previewImport } from "../server/csv-preview";
+import { createApp } from "../server/app.ts";
+import { encodeCSV, PlanConflict, Store } from "../server/store.ts";
+import { newTransitionScenario } from "../shared/transitions.ts";
+import { previewImport } from "../server/csv-preview.ts";
 const draft = (id = "plan-1") => ({
   id,
   scenario: null,

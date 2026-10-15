@@ -1,18 +1,18 @@
-import {planInputSchema,parsePlans,type PlanSnapshot,type StoredPlan} from '../shared/transition-plans';
-import {isPCInstallationKind} from '../shared/types';
+import {planInputSchema,parsePlans,type PlanSnapshot,type StoredPlan} from '../shared/transition-plans.ts';
+import {isPCInstallationKind} from '../shared/types.ts';
 import fs from 'node:fs';
-import type {EnrichmentJob} from '../shared/catalog-quality';
-import { isThemePreference, type ThemePreference } from '../shared/appearance';
+import type {EnrichmentJob} from '../shared/catalog-quality.ts';
+import { isThemePreference, type ThemePreference } from '../shared/appearance.ts';
 import {createHash,randomUUID} from 'node:crypto';
 import {DatabaseSync} from 'node:sqlite';
-import {durableWrite} from './persistence';
+import {durableWrite} from './persistence.ts';
 import path from 'node:path';
 import {parse} from 'csv-parse/sync';
 import {stringify} from 'csv-stringify/sync';
-import {schemas, type Collection} from './schema';
-import {seed} from './seed';
-import type {Database} from '../shared/types';
-import {checkConfiguration} from '../shared/compatibility';
+import {schemas, type Collection} from './schema.ts';
+import {seed} from './seed.ts';
+import type {Database} from '../shared/types.ts';
+import {checkConfiguration} from '../shared/compatibility.ts';
 export const collections:Collection[]=['components','systems','configurations','pcs','inventory','requirementsSets','installationLocations'];
 const fields:Record<Collection,string[]>={requirementsSets:['id','name','description','versions'],installationLocations:['id','name','kind','parentId','requirementSetId','requirementRevision','targetConfigurationId','notes','requirementSnapshot'],components:['id','name','category','manufacturer','specs','source','verified'],systems:['id','name','location','description','connections','installationLocationId'],configurations:['id','name','description','systemId','status','updatedAt','placements','storage','notes','software','portMappings','revision','approvalSnapshot','approvalHistory','requirementSetId','requirementRevision','requirementSnapshot'],pcs:['id','name','serial','location','configurationId','notes','buildSettings','lifecycle','software','commissioning','timeline','snapshot','snapshots','installationLocationId'],inventory:['id','componentId','tracking','serial','assetTag','quantity','location','condition','notes','allocations','history','supplier','purchaseOrder','reorderLevel','repairReference','supplierReturnReference']};
 const nested=new Set(['specs','connections','placements','storage','buildSettings','allocations','history','software','portMappings','approvalSnapshot','approvalHistory','commissioning','timeline','snapshot','snapshots','versions','requirementSnapshot']);
@@ -56,8 +56,10 @@ export class Store {
  private sqlite:DatabaseSync;
  private storedRevision='';
  private closed=false;
- constructor(public dir:string){
-  if(typeof DatabaseSync!=='function'||typeof DatabaseSync.prototype.prepare!=='function')throw Error('Native SQLite is unavailable. Use Node.js 24.19 or a later Node 24 release.');
+ public dir:string;
+ constructor(dir:string){
+  this.dir=dir;
+  if(typeof DatabaseSync!=='function'||typeof DatabaseSync.prototype.prepare!=='function')throw Error('Native SQLite is unavailable. Use Node.js 26.12 or a later Node 26 release.');
   fs.mkdirSync(dir,{recursive:true});this.db=structuredClone(seed);
   this.sqlite=new DatabaseSync(path.join(dir,'workbench.sqlite'));
   try {

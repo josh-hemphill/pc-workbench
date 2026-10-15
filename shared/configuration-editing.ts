@@ -1,4 +1,4 @@
-import type {Configuration} from './types';
+import type {Configuration} from './types.ts';
 
 /** Split a multi-unit BOM line without dangling references or duplicating physical wiring. */
 export function splitConfigurationPlacement(configuration:Configuration,placementId:string,newId:()=>string):Configuration {

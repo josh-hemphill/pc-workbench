@@ -1,4 +1,4 @@
-import type { Database, Specs } from './types';
+import type { Database, Specs } from './types.ts';
 
 export type CatalogOption = string | number;
 const defaults: Record<string, CatalogOption[]> = {

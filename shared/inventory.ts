@@ -1,7 +1,7 @@
-import type { Configuration, Database, InventoryPC, StockAllocation, StockRecord } from './types';
-import { checkConfiguration } from './compatibility';
-import { mapStorageBindings, storageBindingsMatch } from './storage-bindings';
-import { checkLocationPC, installationSnapshot } from './installations';
+import type { Configuration, Database, InventoryPC, StockAllocation, StockRecord } from './types.ts';
+import { checkConfiguration } from './compatibility.ts';
+import { mapStorageBindings, storageBindingsMatch } from './storage-bindings.ts';
+import { checkLocationPC, installationSnapshot } from './installations.ts';
 
 export function stockCounts(stock: StockRecord) {
   const reserved = stock.allocations.filter(a => a.state === 'reserved').reduce((n, a) => n + a.quantity, 0);

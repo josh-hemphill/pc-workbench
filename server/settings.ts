@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { durableWrite } from './persistence';
-import type { RuntimeConfig } from './runtime-config';
-import { defaultUserSettings, userSettingsSchema, type UserSettings, type SettingsSnapshot, type AppSettings, type AppSettingsSnapshot } from '../shared/settings';
+import { durableWrite } from './persistence.ts';
+import type { RuntimeConfig } from './runtime-config.ts';
+import { defaultUserSettings, userSettingsSchema, type UserSettings, type SettingsSnapshot, type AppSettings, type AppSettingsSnapshot } from '../shared/settings.ts';
 
 export class SettingsConflict extends Error {}
 const appSchema = z.object({ version: z.literal(1).optional(), dataDir: z.string().trim().min(1).refine(value => !value.includes('\0')), port: z.number().int().min(1).max(65535).optional() }).strict();
@@ -87,7 +87,9 @@ function replaceFile(filename: string, expected: string, value: unknown) {
 }
 
 export class SettingsStore {
-  constructor(readonly runtime: RuntimeConfig) {
+  readonly runtime: RuntimeConfig;
+  constructor(runtime: RuntimeConfig) {
+    this.runtime = runtime;
     assertSettingsSeparation(runtime);
     this.user(); this.app(); // Invalid files stop startup instead of silently using defaults.
   }

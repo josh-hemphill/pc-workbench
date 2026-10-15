@@ -1,12 +1,12 @@
-import { mapStorageBindings } from '../shared/storage-bindings';
+import { mapStorageBindings } from '../shared/storage-bindings.ts';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import type { Database, InventoryPC } from '../shared/types';
-import { checkInstalledPC, installedConfiguration, pcAllocations } from '../shared/inventory';
-import { schemas } from './schema';
-import {locationPath,installationSnapshot} from '../shared/installations';
-import {captureRequirementBinding} from './installation-requirements';
-import { applyStockOperation } from './inventory';
+import type { Database, InventoryPC } from '../shared/types.ts';
+import { checkInstalledPC, installedConfiguration, pcAllocations } from '../shared/inventory.ts';
+import { schemas } from './schema.ts';
+import {locationPath,installationSnapshot} from '../shared/installations.ts';
+import {captureRequirementBinding} from './installation-requirements.ts';
+import { applyStockOperation } from './inventory.ts';
 
 function timeline(pc: InventoryPC, kind: string, summary: string, actor = '') {
   (pc.timeline ||= []).push({ id: randomUUID(), at: new Date().toISOString(), kind, summary:summary.slice(0,10000), actor });

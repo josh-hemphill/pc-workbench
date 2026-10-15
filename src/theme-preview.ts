@@ -1,6 +1,6 @@
 import { computed } from 'vue';
-import { activeAppearance, beginAppearancePreview, themePreference, systemDark } from './appearance';
-import { paletteCssVariables, paletteTheme, presetPalettes, type PaletteName, type PaletteMode, type ColorRole } from '../shared/theme-palettes';
+import { activeAppearance, beginAppearancePreview, themePreference, systemDark } from './appearance.ts';
+import { paletteCssVariables, paletteTheme, presetPalettes, type PaletteName, type PaletteMode, type ColorRole } from '../shared/theme-palettes.ts';
 
 export const previewPalette = computed({
   get:()=>activeAppearance.value.palette,

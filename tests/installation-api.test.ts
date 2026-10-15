@@ -4,8 +4,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type {AddressInfo} from 'node:net';
-import {createApp} from '../server/index';
-import {encodeCSV,decodeCSV} from '../server/store';
+import {createApp} from '../server/index.ts';
+import {encodeCSV,decodeCSV} from '../server/store.ts';
 
 test('installation API captures canonical requirement revisions, protects publication and persists assignments',async()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'bench-installation-api-'));

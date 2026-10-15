@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {Store} from '../server/store';
-import {applyStockOperation,saveStockRecord,convertBulkToSerialized} from '../server/inventory';
-import {commissionPCRecord,decommissionPC,savePCRecord} from '../server/pc-lifecycle';
-import {stockCounts,fleetPicklist,overdueReservations,installedConfiguration,commissioningDrift,planDifferences} from '../shared/inventory';
+import {Store} from '../server/store.ts';
+import {applyStockOperation,saveStockRecord,convertBulkToSerialized} from '../server/inventory.ts';
+import {commissionPCRecord,decommissionPC,savePCRecord} from '../server/pc-lifecycle.ts';
+import {stockCounts,fleetPicklist,overdueReservations,installedConfiguration,commissioningDrift,planDifferences} from '../shared/inventory.ts';
 
 function withRestarted<T>(dir:string,read:(store:Store)=>T):T{const store=new Store(dir);try{return read(store);}finally{store.close();}}
 

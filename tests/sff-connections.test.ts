@@ -6,27 +6,27 @@ import type {
   Database,
   Placement,
   StockRecord,
-} from "../shared/types";
-import { checkSffConnections, onboardM2Count } from "../shared/sff-connections";
+} from "../shared/types.ts";
+import { checkSffConnections, onboardM2Count } from "../shared/sff-connections.ts";
 import {
   newTransitionScenario,
   transitionCohorts,
-} from "../shared/transitions";
-import { checkConfiguration } from "../shared/compatibility";
-import { checkStorageConnections } from "../shared/storage-connections";
-import { componentSchema } from "../shared/component-schema";
-import { componentFields, componentSections } from "../shared/component-fields";
-import { componentCapabilities } from "../shared/component-capabilities";
-import { componentReferences, issueSection } from "../shared/component-editor";
+} from "../shared/transitions.ts";
+import { checkConfiguration } from "../shared/compatibility.ts";
+import { checkStorageConnections } from "../shared/storage-connections.ts";
+import { componentSchema } from "../shared/component-schema.ts";
+import { componentFields, componentSections } from "../shared/component-fields.ts";
+import { componentCapabilities } from "../shared/component-capabilities.ts";
+import { componentReferences, issueSection } from "../shared/component-editor.ts";
 import {
   mapStorageBindings,
   storageBindingsMatch,
-} from "../shared/storage-bindings";
-import { checkInstalledPC, installedConfiguration } from "../shared/inventory";
-import { schemas } from "../server/schema";
-import { applyStockAction } from "../server/inventory";
-import { decodeCSV, encodeCSV } from "../server/store";
-import { splitConfigurationPlacement } from "../shared/configuration-editing";
+} from "../shared/storage-bindings.ts";
+import { checkInstalledPC, installedConfiguration } from "../shared/inventory.ts";
+import { schemas } from "../server/schema.ts";
+import { applyStockAction } from "../server/inventory.ts";
+import { decodeCSV, encodeCSV } from "../server/store.ts";
+import { splitConfigurationPlacement } from "../shared/configuration-editing.ts";
 const component = (
   id: string,
   category: Component["category"],

@@ -2,7 +2,7 @@ import {
   encodeWorkspaceRoute,
   parseWorkspaceRoute,
   type WorkspaceRoute,
-} from "../shared/workspace-route";
+} from "../shared/workspace-route.ts";
 
 interface HistoryEntry {
   benchIndex: number;

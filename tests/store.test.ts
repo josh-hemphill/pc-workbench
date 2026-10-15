@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {Store,encodeCSV,decodeCSV,collections} from '../server/store';
-import {seed} from '../server/seed';
-import {importProductHTML} from '../tools/pcpartpicker';
+import {Store,encodeCSV,decodeCSV,collections} from '../server/store.ts';
+import {seed} from '../server/seed.ts';
+import {importProductHTML} from '../tools/pcpartpicker.ts';
 function persistedState(dir:string){const store=new Store(dir);try{return structuredClone(store.db);}finally{store.close();}}
 test('every collection round-trips CSV including quoted JSON and multiline names',()=>{const db=structuredClone(seed);db.components[0].name='Chassis, "custom"\nSecond line';for(const c of collections)assert.deepEqual(decodeCSV(c,encodeCSV(c,db[c])),db[c]);});
 test('disk persistence survives restart; invalid changes preserve SQLite records',()=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'bench-store-'));const store=new Store(dir);try{const rows=structuredClone(store.db.components);rows[0].name='Updated chassis';store.replace('components',rows);const resumed=new Store(dir);assert.equal(resumed.db.components[0].name,'Updated chassis');resumed.close();const before=structuredClone(store.db);assert.throws(()=>store.replace('components',rows.filter(c=>c.id!=='cpu')),/not found/);assert.deepEqual(store.db,before);assert.deepEqual(persistedState(dir),before);assert.throws(()=>store.replace('components',[...rows,rows[0]]),/Duplicate/);assert.throws(()=>store.replace('components',[{...rows[0],specs:{rearSlots:-1}}]));}finally{store.close();fs.rmSync(dir,{recursive:true,force:true});}});

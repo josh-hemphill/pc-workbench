@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {connectionPortTotals,connectionSummary} from '../shared/ports';
-import type {Connection} from '../shared/types';
+import {connectionPortTotals,connectionSummary} from '../shared/ports.ts';
+import type {Connection} from '../shared/types.ts';
 
 test('equipment summaries preserve legacy demand without double counting and show distinct custom interfaces',()=>{
   const connections:Connection[]=[

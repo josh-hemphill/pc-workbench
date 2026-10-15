@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { transitionScenarioSchema } from "./transitions";
+import { transitionScenarioSchema } from "./transitions.ts";
 
 // Plans reference IDs deliberately: deleted hardware must become a planning
 // finding rather than prevent the user from reopening an older plan.

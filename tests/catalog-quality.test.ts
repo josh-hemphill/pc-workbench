@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {missingFields,patchMissing,catalogFields} from '../shared/catalog-quality';
-import {extractProductDetails,pcPartPickerURL} from '../shared/product-enrichment';
-import type {Component} from '../shared/types';
+import {missingFields,patchMissing,catalogFields} from '../shared/catalog-quality.ts';
+import {extractProductDetails,pcPartPickerURL} from '../shared/product-enrichment.ts';
+import type {Component} from '../shared/types.ts';
 const part=(category:Component['category']='Motherboard'):Component=>({id:'test-part',name:'Test part',category,manufacturer:'',source:'',verified:true,specs:{}});
 test('missing data is category-specific and does not treat known zero or false as missing',()=>{const c=part('PSU');c.specs={sataPower:0,capacityW:500};assert.deepEqual(missingFields(c).map(f=>f.key),['manufacturer','source']);assert(!catalogFields(c).some(f=>f.key==='socket'));const sled=part('Storage adapter');sled.specs={storageAdapterKind:'pcie-sled',requiresBifurcation:false};assert(!missingFields(sled).some(f=>f.key==='requiresBifurcation'));});
 test('explicit connection inventories satisfy aggregate missing-data checks',()=>{const c=part();c.specs.sataDataPorts=[{id:'sata-a'}];assert(!missingFields(c).some(f=>f.key==='sataPorts'));const p=part('PSU');p.specs.sataPowerConnectors=[];assert(!missingFields(p).some(f=>f.key==='sataPower'));});

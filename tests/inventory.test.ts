@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import type { StockRecord } from '../shared/types';
-import { checkInstalledPC, installedConfiguration, pcAllocations, planDifferences, stockCounts, stockReadiness } from '../shared/inventory';
-import { Store, decodeCSV, encodeCSV, encodeMovements } from '../server/store';
-import { applyStockAction, adjustStockCount, saveStockRecord, transferBulkStock } from '../server/inventory';
+import type { StockRecord } from '../shared/types.ts';
+import { checkInstalledPC, installedConfiguration, pcAllocations, planDifferences, stockCounts, stockReadiness } from '../shared/inventory.ts';
+import { Store, decodeCSV, encodeCSV, encodeMovements } from '../server/store.ts';
+import { applyStockAction, adjustStockCount, saveStockRecord, transferBulkStock } from '../server/inventory.ts';
 
 function withRestarted<T>(dir:string,read:(store:Store)=>T):T{const store=new Store(dir);try{return read(store);}finally{store.close();}}
 

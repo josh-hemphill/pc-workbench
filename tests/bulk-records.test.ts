@@ -2,14 +2,14 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';import os from 'node:os';import path from 'node:path';
 import type {AddressInfo} from 'node:net';
-import type {InstallationLocation,Database,StockRecord} from '../shared/types';
-import {locationKinds} from '../shared/types';
-import {createApp} from '../server/app';
-import {Store,encodeCSV,decodeCSV} from '../server/store';
-import {seed} from '../server/seed';
-import {schemas} from '../server/schema';
-import {checkInstalledPC} from '../shared/inventory';
-import {distributionVacancies} from '../shared/location-operations';
+import type {InstallationLocation,Database,StockRecord} from '../shared/types.ts';
+import {locationKinds} from '../shared/types.ts';
+import {createApp} from '../server/app.ts';
+import {Store,encodeCSV,decodeCSV} from '../server/store.ts';
+import {seed} from '../server/seed.ts';
+import {schemas} from '../server/schema.ts';
+import {checkInstalledPC} from '../shared/inventory.ts';
+import {distributionVacancies} from '../shared/location-operations.ts';
 const location=(id:string,kind:InstallationLocation['kind'],parentId=''):InstallationLocation=>({id,name:id,kind,parentId,requirementSetId:'',requirementRevision:0,targetConfigurationId:'',notes:'Original notes'});
 function fixture(){const db=structuredClone(seed);db.inventory=[];db.installationLocations=[location('site','Site'),location('area-a','Room','site'),location('area-b','Room','site'),location('line-a','Line','area-a'),location('station-a','Station','line-a'),location('station-b','Station','line-a')];db.pcs[0].installationLocationId='station-a';db.pcs[0].lifecycle='Planning';return db;}
 async function workspace(run:(context:{db:Database;store:Store;call:(route:string,body:unknown,method?:string,revision?:string)=>Promise<Response>})=>Promise<void>){const dir=fs.mkdtempSync(path.join(os.tmpdir(),'bench-bulk-'));const app=createApp(dir),store=app.locals.store as Store,db=fixture();store.restore(db);const server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));const origin=`http://127.0.0.1:${(server.address() as AddressInfo).port}`;try{await run({db,store,call:(route,body,method='POST',revision=store.revision)=>fetch(origin+route,{method,headers:{'Content-Type':'application/json','If-Match':revision},body:JSON.stringify(body)})});}finally{server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));fs.rmSync(dir,{recursive:true,force:true});}}
@@ -60,7 +60,7 @@ test('configuration bulk notes increment revisions preserve plans and block refe
 }));
 
 test('shared configuration save retains earlier approvals when bulk metadata creates a new approved revision',async()=>{
- const {saveConfigurationRecord}=await import('../server/configuration-record');
+ const {saveConfigurationRecord}=await import('../server/configuration-record.ts');
  const db=fixture(),input={...structuredClone(db.configurations[0]),status:'Approved' as const};
  const approved=saveConfigurationRecord(input,db);db.configurations[0]=approved;
  const prior=structuredClone(approved.approvalHistory),edited=saveConfigurationRecord({...approved,description:'Updated label'},db);

@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import type { AddressInfo } from 'node:net';
 import { request as httpRequest } from 'node:http';
-import { createApp, type AppOptions } from '../server/index';
+import { createApp, type AppOptions } from '../server/index.ts';
 
 async function embeddedWorkspace(run: (base: string, dir: string) => Promise<void>) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bench-embedded-assets-'));

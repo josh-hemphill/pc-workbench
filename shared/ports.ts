@@ -1,4 +1,4 @@
-import type { Connection, Port } from './types';
+import type { Connection, Port } from './types.ts';
 
 export function portLabel(port:Pick<Port,'kind'|'customType'>):string {
   return port.kind==='Custom' ? port.customType?.trim() || 'Custom (name required)' : port.kind;

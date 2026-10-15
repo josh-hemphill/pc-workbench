@@ -1,9 +1,9 @@
-import {checkSffConnections,onboardM2Count} from './sff-connections';
-import type { Configuration, Database, Finding, Report, Resource, Component, Placement, StorageGroup, RequirementVersion, PCBuildSettings, Port, PortRequirement, Connection } from './types';
+import {checkSffConnections,onboardM2Count} from './sff-connections.ts';
+import type { Configuration, Database, Finding, Report, Resource, Component, Placement, StorageGroup, RequirementVersion, PCBuildSettings, Port, PortRequirement, Connection } from './types.ts';
 
-import { componentCapabilities } from './component-capabilities';
-import { checkStorageConnections } from './storage-connections';
-import { checkBayTopology } from './bay-topology';
+import { componentCapabilities } from './component-capabilities.ts';
+import { checkStorageConnections } from './storage-connections.ts';
+import { checkBayTopology } from './bay-topology.ts';
 
 const normalized=(value:string|undefined)=>value?.trim().toLowerCase()||'';
 const additionalKinds=new Set(['Serial','Parallel','Custom']);

@@ -1,11 +1,11 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {seed} from '../server/seed';
-import {checkConfiguration} from '../shared/compatibility';
-import {schemas} from '../server/schema';
-import {encodeCSV,decodeCSV} from '../server/store';
-import type {Database,StockRecord} from '../shared/types';
-import {newTransitionScenario,transitionCapacity,transitionCohorts,transitionBaseline,transitionMatches,requiredSegmentGb,transitionOptions,planTransition,transitionScenarioSchema} from '../shared/transitions';
+import {seed} from '../server/seed.ts';
+import {checkConfiguration} from '../shared/compatibility.ts';
+import {schemas} from '../server/schema.ts';
+import {encodeCSV,decodeCSV} from '../server/store.ts';
+import type {Database,StockRecord} from '../shared/types.ts';
+import {newTransitionScenario,transitionCapacity,transitionCohorts,transitionBaseline,transitionMatches,requiredSegmentGb,transitionOptions,planTransition,transitionScenarioSchema} from '../shared/transitions.ts';
 function fixture():Database {
  const db=structuredClone(seed);db.components.forEach(c=>c.verified=true);
  db.pcs=[0,1].map(i=>({...structuredClone(db.pcs[0]),id:`pc-${i}`,name:`Migration PC ${i}`,configurationId:i?'older-second':'imaging'}));

@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import {seed} from '../server/seed';
-import {Store,encodeCSV,decodeCSV} from '../server/store';
-import {schemas} from '../server/schema';
-import {saveStockRecord,applyStockOperation} from '../server/inventory';
-import {savePCRecord,commissionPCRecord} from '../server/pc-lifecycle';
-import {stockCounts,fleetPicklist,pcAllocations} from '../shared/inventory';
-import type {Database, InventoryPC} from '../shared/types';
+import {seed} from '../server/seed.ts';
+import {Store,encodeCSV,decodeCSV} from '../server/store.ts';
+import {schemas} from '../server/schema.ts';
+import {saveStockRecord,applyStockOperation} from '../server/inventory.ts';
+import {savePCRecord,commissionPCRecord} from '../server/pc-lifecycle.ts';
+import {stockCounts,fleetPicklist,pcAllocations} from '../shared/inventory.ts';
+import type {Database, InventoryPC} from '../shared/types.ts';
 
 function setup(){
  const db=structuredClone(seed);

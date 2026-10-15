@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
-import type { Collection } from "./schema";
-import { decodeCSV, type Store } from "./store";
-import { prepareImportedRecord } from "./import-record";
+import type { Collection } from "./schema.ts";
+import { decodeCSV, type Store } from "./store.ts";
+import { prepareImportedRecord } from "./import-record.ts";
 
 export const importToken = (
   collection: Collection,
