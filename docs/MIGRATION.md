@@ -318,11 +318,12 @@ Statuses: success normally 200; 400 validation/unknown schema/invalid references
 
 JSON request bodies have a **10 MB** limit, including CSV text serialized inside the request. Each collection is limited to 10,000 records and each serialized CSV record to 64 MiB; these larger storage limits do not override the HTTP limit. Nested array limits in section 6 also apply. Split incremental CSV files below the HTTP limit; a large full restore cannot be split while retaining whole-workspace atomicity. For larger candidates, a purpose-built local offline migration using `Store.validateBackup`/`Store.restore` is needed with the server stopped and exclusive workspace access; this release does not provide an offline import CLI.
 
-Example executable Deno restore client (save as an external `.ts` file; run with read/write and localhost network permissions):
+Example Node.js 24 restore client (save as `restore.mts`; run `node restore.mts candidate.json` to preview, or append `--commit` after reviewing the replacement):
 
 ```ts
+import {readFile, writeFile} from 'node:fs/promises';
 const base = 'http://127.0.0.1:3001';
-const candidate = JSON.parse(await Deno.readTextFile(Deno.args[0]));
+const candidate = JSON.parse(await readFile(process.argv[2], 'utf8'));
 async function jsonRequest(route: string, options: RequestInit = {}) {
   const response = await fetch(base + route, options);
   const body = await response.json();
@@ -332,12 +333,7 @@ async function jsonRequest(route: string, options: RequestInit = {}) {
 // Give each preview/commit run its own backup; never overwrite an older one.
 const before = await jsonRequest('/api/backup');
 const backupPath = `before-migration-${Date.now()}-${crypto.randomUUID()}.json`;
-const backupOutput = await Deno.open(backupPath, {write:true, createNew:true});
-try {
-  const output = new TextEncoder().encode(JSON.stringify(before, null, 2));
-  let written = 0;
-  while (written < output.length) written += await backupOutput.write(output.subarray(written));
-} finally { backupOutput.close(); }
+await writeFile(backupPath, JSON.stringify(before, null, 2), {flag:'wx', mode:0o600});
 console.log('Pre-migration backup:', backupPath);
 const body = JSON.stringify({backup:candidate});
 const preview = await jsonRequest('/api/restore/preview', {
@@ -345,7 +341,7 @@ const preview = await jsonRequest('/api/restore/preview', {
 });
 console.log('Validated replacement counts:', preview.counts);
 // Run only once the replacement scope and reconciliation have been accepted.
-if (Deno.args[1] === '--commit') {
+if (process.argv[3] === '--commit') {
   console.log(await jsonRequest('/api/restore', {
     method:'POST', headers:{'Content-Type':'application/json','If-Match':preview.revision}, body
   }));

@@ -68,7 +68,7 @@ Neutralino's native APIs use a token-protected WebSocket. Loading our Express UR
 
 [`@webviewjs/webview`](https://github.com/webviewjs/webview) publishes N-API binaries for macOS, Windows and glibc Linux architectures and requires Node >=24. Its main-thread event pump can coexist with asynchronous Node work, making an Express backend plus window in one Node process plausible. Avoid `runSync` with an in-process API server. Synchronous SQLite work can also delay window event pumping during large imports; measure responsiveness before choosing one process.
 
-The published JS wrapper includes cancelable window close and synchronous navigation/popup guards. For asynchronous unsaved-change confirmation, cancel immediately, request the decision from Vue, then dispose only after approval and database shutdown. This is a much closer API shape to the existing Deno host than a new Rust application layer. [Lifecycle guide](https://webview.js.org/guides/application-lifecycle/), [navigation guide](https://webview.js.org/guides/navigation-and-popups/).
+The published JS wrapper includes cancelable window close and synchronous navigation/popup guards. For asynchronous unsaved-change confirmation, cancel immediately, request the decision from Vue, then dispose only after approval and database shutdown. This is a much closer API shape to the former Deno host than a new Rust application layer. [Lifecycle guide](https://webview.js.org/guides/application-lifecycle/), [navigation guide](https://webview.js.org/guides/navigation-and-popups/).
 
 **Do not use the online SEA example as though it ships in npm 0.4.7.** I downloaded the npm tarball without running installation scripts and inspected `cli/index.mjs`, `cli/build.mjs` and the JS wrapper:
 

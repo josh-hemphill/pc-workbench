@@ -1,6 +1,6 @@
 # Bench — PC configuration workbench
 
-Bench uses **Node.js 24 + pnpm**, preserving the Vue/Vuetify application, Express API, built-in SQLite, existing workspaces, and user settings. Native desktop hosts remain experimental; the Deno desktop implementation is retained as a comparison baseline.
+Bench uses **Node.js 24 + pnpm**, preserving the Vue/Vuetify application, Express API, built-in SQLite, existing workspaces, and user settings. Native desktop hosts remain experimental. Development, tests and packaging use Node.js and pnpm.
 
 ## Run with Node.js
 
@@ -30,7 +30,7 @@ The executable requires no external Node installation, node_modules, frontend fi
 
 Separate native-window experiments are now available: `pnpm build:desktop`, `pnpm package:desktop`, and `pnpm test:desktop-package`. WebviewJS is the default; a Neutralino host adapter and Tauri sidecar staging are also included. See [desktop prototype commands and validation limits](docs/DESKTOP_PROTOTYPES.md). Linux native rendering, navigation and close checks now pass under Xvfb; Windows/macOS parity remains unverified. See [Linux prerequisites and native checks](docs/WEBVIEWJS_LINUX_SETUP.md).
 
-Deno tasks and [baseline desktop findings](docs/DESKTOP-LIMITATIONS.md) are retained for comparison. The Node CI workflow builds/tests SEA prototypes on Linux, Windows and macOS; platform results must be reviewed before native desktop adoption.
+The Node CI workflow tests and packages SEA prototypes on Linux, Windows and macOS and checks Linux native-window behavior. See [desktop validation and remaining limitations](docs/DESKTOP-LIMITATIONS.md) before native desktop adoption.
 
 The API binds to loopback and rejects nonlocal Host/Origin requests. This is a single-user local tool. It has no authentication. A data-directory lock prevents two running servers from sharing the same workspace, and revision checks reject stale browser edits. Keep it bound to loopback. `PORT` changes the API port; development reads the same configuration for its Vite proxy. `BENCH_DATA_DIR=/absolute/path` changes the storage directory.
 

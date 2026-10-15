@@ -74,7 +74,7 @@ and https://vuetifyjs.com/en/features/global-configuration/
 
 ### 6. Stop registering the entire component library
 
-`src/main.ts` imports and registers all Vuetify components and directives. Use `vite-plugin-vuetify` automatic imports or an explicit component/directive allowlist to enable effective tree shaking. Verify the Deno/Vite integration and compare production bundle sizes rather than assuming a specific reduction. Whole-library registration is an avoidable contributor to the existing large-chunk warning.
+`src/main.ts` imports and registers all Vuetify components and directives. Use `vite-plugin-vuetify` automatic imports or an explicit component/directive allowlist to enable effective tree shaking. Verify the Node/Vite integration and compare production bundle sizes rather than assuming a specific reduction. Whole-library registration is an avoidable contributor to the existing large-chunk warning.
 
 Docs: https://vuetifyjs.com/en/features/treeshaking/
 
@@ -127,4 +127,4 @@ The initial findings were checked against release-pinned official documentation 
 
 The settings, bulk-table, transition-planning and draft-recovery work is integrated with the native Vuetify drawer, app bar, forms and dialogs. User appearance preferences live outside portable workspace data; saved transition plans and valid autosaved drafts live in workspace SQLite storage and JSON backups. The shared record tables and transition scope table forward native Shift range selection while retaining record-specific accessible names. Plain action buttons inside forms explicitly use `type="button"`.
 
-The Deno check entry point now constructs a Vue-aware TypeScript program directly through Volar rather than relying on CommonJS file-read interception. It reports the source count and fails if no sources are found; an intentional invalid assignment in a temporary Vue file was verified to fail the check. Integration checks cover desktop and 390/320-pixel navigation, complete form saves, range selection, context-preserving record links, stale inventory edits, appearance persistence, CSV previews and draft recovery.
+The Node workflow uses `pnpm check` to run the standard Vue-aware `vue-tsc --noEmit` checker across templates, shared code, backend and tests. Integration checks cover desktop and 390/320-pixel navigation, complete form saves, range selection, context-preserving record links, stale inventory edits, appearance persistence, CSV previews and draft recovery.

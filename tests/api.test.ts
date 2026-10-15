@@ -16,6 +16,6 @@ test('local API supports save/export/import/reload and rejects broken references
  assert.equal((await req('/api/report/imaging')).status,200);assert.equal((await req('/api/report/unknown')).status,404);
  assert.equal((await req('/api/components/import','POST',{csv:'bad,headers\nx,y\n'})).status,400);
  assert.equal((await req('/api/state')).status,200);
- }finally{// All request assertions are complete; Deno may keep discarded fetch bodies connected.
+ }finally{// All request assertions are complete; Discarded fetch bodies may leave keepalive connections open.
  server.closeAllConnections();
  await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));fs.rmSync(dir,{recursive:true,force:true});}});

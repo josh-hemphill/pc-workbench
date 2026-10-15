@@ -22,7 +22,7 @@ async function embeddedWorkspace(run: (base: string, dir: string) => Promise<voi
     await new Promise<void>((resolve, reject) => { server.once('listening', resolve); server.once('error', reject); });
     await run(`http://127.0.0.1:${(server.address() as AddressInfo).port}`, dir);
   } finally {
-    // All request assertions are complete; Deno may keep discarded fetch bodies connected.
+    // All request assertions are complete; Discarded fetch bodies may leave keepalive connections open.
     server.closeAllConnections();
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
     fs.rmSync(dir, { recursive: true, force: true });

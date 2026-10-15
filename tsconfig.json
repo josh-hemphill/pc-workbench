@@ -24,10 +24,5 @@
     "server/**/*.ts",
     "tools/**/*.ts",
     "tests/**/*.ts"
-  ],
-  "exclude": [
-    "tools/deno/**",
-    "server/serve.ts",
-    "desktop/**"
   ]
 }

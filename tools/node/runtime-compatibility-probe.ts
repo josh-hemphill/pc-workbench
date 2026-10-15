@@ -7,7 +7,7 @@ import path from 'node:path';
 import {createApp} from '../../server/app';
 import {resolveRuntimeConfig} from '../../server/runtime-config';
 import {Store} from '../../server/store';
-import {Backend} from '../../desktop/backend.ts';
+import {Backend} from './desktop/backend';
 const directory=fs.mkdtempSync(path.join(os.tmpdir(),'workbench-runtime-compat-'));
 const runtime=resolveRuntimeConfig({standalone:true,home:directory,env:{BENCH_DATA_DIR:path.join(directory,'workspace')}});
 let backend:Backend|undefined;

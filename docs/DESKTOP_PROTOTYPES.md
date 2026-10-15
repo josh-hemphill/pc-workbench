@@ -8,7 +8,7 @@ The Linux prerequisites are now installed workspace-locally. Actual WebKitGTK/X1
 
 ## Current result
 
-**WebviewJS is now a runnable Node desktop experiment with our own SEA packaging. Neutralino has a runnable Node-owned host adapter. Tauri has a verified, target-named backend sidecar input, but no Rust window host yet.** Main still uses the Deno implementation.
+**WebviewJS is now a runnable Node desktop experiment with our own SEA packaging. Neutralino has a runnable Node-owned host adapter. Tauri has a verified, target-named backend sidecar input, but no Rust window host yet.** Main now uses Node.js/pnpm exclusively; the old runtime and native host have been removed.
 
 | Candidate | Concrete work | Verification here | Still needed |
 | --- | --- | --- | --- |

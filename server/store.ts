@@ -57,7 +57,7 @@ export class Store {
  private storedRevision='';
  private closed=false;
  constructor(public dir:string){
-  if(typeof DatabaseSync!=='function'||typeof DatabaseSync.prototype.prepare!=='function')throw Error('Native SQLite is unavailable. Use Node.js 24.19 or the supported Deno 2.9.7 runtime.');
+  if(typeof DatabaseSync!=='function'||typeof DatabaseSync.prototype.prepare!=='function')throw Error('Native SQLite is unavailable. Use Node.js 24.19 or a later Node 24 release.');
   fs.mkdirSync(dir,{recursive:true});this.db=structuredClone(seed);
   this.sqlite=new DatabaseSync(path.join(dir,'workbench.sqlite'));
   try {

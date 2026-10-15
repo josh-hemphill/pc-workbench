@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {createApp} from '../../server/app';
 import {resolveRuntimeConfig} from '../../server/runtime-config';
-import {Backend} from '../../desktop/backend.ts';
+import {Backend} from './desktop/backend';
 import {openWebview} from './desktop/webviewjs';
 import {requestClose} from './desktop/policy';
 if(process.platform!=='linux'||!process.env.DISPLAY)throw Error('This check requires Linux, WebKitGTK, X11 tools and DISPLAY.');

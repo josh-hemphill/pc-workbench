@@ -1,7 +1,7 @@
-name: Node migration prototype
+name: Node.js and pnpm
 on:
   push:
-    branches: [main, exploration/node-pnpm-desktop]
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:

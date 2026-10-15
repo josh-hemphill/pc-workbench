@@ -30,11 +30,11 @@ Equivalent JSON (backslashes must be escaped):
 
 `dataDir` is required; `version: 1` is optional for existing files and written by the Settings UI; `port` is optional and defaults to 3001. A relative data directory resolves against the settings file's directory. `~/` refers to the current user's home. Environment variable names inside JSON are not interpolated; use a literal path or generate the file with PowerShell.
 
-Run `deno task package:windows`, extract the entire `pc-workbench-win-x64.zip`, and launch `pc-workbench-win-x64.exe`. Keep its Deno runtime DLL beside the launcher. The Vue interface, Express backend and native SQLite execute inside one Deno application process. No Node sidecar, Node installation, pnpm or Electron is needed. WebView2 Runtime and Microsoft Visual C++ 2015–2022 Redistributable (x64) must already be installed on Windows.
+Build the server executable with `pnpm build && pnpm package:sea`, or the experimental native-window executable with `pnpm build:desktop && pnpm package:desktop`. On Windows x64 these produce `bin/pc-workbench-node-win32-x64.exe` and `bin/pc-workbench-desktop-win32-x64.exe`. Each embeds Node, the frontend and JavaScript dependencies; an installed Node runtime is not needed to run it. The desktop variant additionally extracts its verified native addon into the private cache. WebView2 Runtime and the Visual C++ x64 runtime are prerequisites for the Windows native window.
 
-The desktop application uses the existing workspace lock and revision checks and binds only to loopback. Closing its window stops the in-process server and closes SQLite with a bounded connection-drain period. **Save drafts before closing:** Deno 2.9.7's Windows native backend cannot guarantee an unsaved-draft prompt or native navigation/popup protections. See [desktop limitations](DESKTOP-LIMITATIONS.md).
+The API binds only to loopback and retains workspace locking and revision checks. The WebviewJS host asks the Vue application before closing, blocks foreign navigation/popups, then shuts down the backend and releases SQLite. Linux native checks pass; Windows/macOS native GUI behavior still needs validation. See [desktop limitations](DESKTOP-LIMITATIONS.md).
 
-Windows desktop sets `WEBVIEW2_USER_DATA_FOLDER` before creating its window, so its browser cache stays in the user profile instead of beside the launcher. An existing `WEBVIEW2_USER_DATA_FOLDER` override is honored (and takes precedence over `BENCH_CACHE_DIR`). The cache must remain outside the workspace and must not contain settings files. Replacing the whole application directory updates code; settings and database stay in their configured locations. The desktop package is unsigned and does not install WebView2.
+The WebviewJS host creates its browser context using the resolved private cache directory. Settings, cache and workspace data stay outside the executable. Replacing the application executable updates code without moving the database or settings. Packages are unsigned and do not install system WebView prerequisites.
 
 ## Other runtime locations
 
@@ -77,7 +77,7 @@ Open **Settings → User settings · Appearance** to preview/edit colors and app
 
 **App settings · Storage & runtime** displays the active workspace, user/app settings paths, cache directory and API port, with override indicators. Its input fields show saved values. **Validate & preview** checks the destination without opening or creating a workspace. **Save for next launch** writes only app configuration. A pending-restart message shows the next effective values; current records stay in the current directory. Environment overrides remain authoritative, so remove them to use saved values. Validation cannot guarantee a destination will stay accessible or unlocked until restart; ordinary startup validation still applies.
 
-Settings files must be outside the workspace, distinct from one another, and outside disposable cache storage. Symlink aliases are checked when validating locations; saves through a settings-file symlink are rejected rather than replacing the link. Windows WebView uses the reported cache location; other desktop platforms and ordinary browsers retain browser/OS-managed caches. No user preferences, absolute local paths, ports or caches are included in workspace JSON/CSV exports or restored from workspace backups. Future settings that affect operational workspace behavior should be stored and backed up with the workspace.
+Settings files must be outside the workspace, distinct from one another, and outside disposable cache storage. Symlink aliases are checked when validating locations; saves through a settings-file symlink are rejected rather than replacing the link. The WebviewJS host uses the reported cache location; ordinary browsers retain browser/OS-managed caches. No user preferences, absolute local paths, ports or caches are included in workspace JSON/CSV exports or restored from workspace backups. Future settings that affect operational workspace behavior should be stored and backed up with the workspace.
 
 ## Existing data and backups
 
@@ -85,19 +85,28 @@ Changing `dataDir` selects a different workspace; it does not move or merge exis
 
 For a filesystem move, stop the server first and copy the entire data directory, including recovery backups. Never copy a live SQLite database without its associated WAL state. Keep an independent backup before changing storage locations. This workflow is designed for local storage and one running instance per workspace.
 
-## Build a Windows desktop package
+## Build standalone executables
 
-Install Deno 2.9.7; no Node toolchain is required:
+Install Node.js 24.19 or a later Node 24 release and pnpm 11.19.0:
 
 ```sh
-deno install --frozen
-deno task package:windows
+pnpm install --frozen-lockfile
+pnpm test
+pnpm build
+pnpm package:sea
+pnpm test:sea
 ```
 
-Output: `bin/pc-workbench-win-x64.zip` plus `.sha256` and `.build.json`. The manifest records runtime files and `nodeSidecar:false`. Packaging cross-builds the native WebView launcher/runtime DLL and embeds the used backend dependencies and Vue assets. Generated bundles, executables and build intermediates are ignored by Git. Unix build hosts need `zip`; Windows hosts use PowerShell's native ZIP command.
+The server output is `bin/pc-workbench-node-<platform>-<arch>` (`.exe` on Windows), with a `.build.json` manifest recording size, SHA-256 and runtime requirements. Launch it and open `http://127.0.0.1:3001`, or the configured port. It embeds the frontend and serves it without external files. Ctrl+C stops the server. `pnpm start` runs the same bundled server through an installed Node runtime.
 
-To distribute one executable, run `deno task package:windows:single` on Windows x64. It uses built-in IExpress and outputs `bin/pc-workbench-win-x64-single.exe` with checksum/manifest files. Only the EXE is required to launch: it extracts the original launcher and DLL into a temporary folder for the application's lifetime. Settings and database stay in the configured user directories; no installer or shortcuts are created. WebView2 and the Visual C++ x64 runtime remain prerequisites. This mode cannot be built on Linux. Windows CI verifies IExpress creation; native GUI launch and cleanup still require a manual Windows trial. See [single-executable packaging](../docs/DENO.md#package-and-windows-trial).
+For the experimental WebviewJS native window:
 
-`deno task package linux-x64` builds a Linux comparison package requiring GTK/WebKitGTK. `deno task build` followed by `deno task start` runs the API/UI server from the checkout. `deno task desktop` builds the assets and uses `deno desktop --hmr` to compile and launch the native window. Ordinary `deno run` does not expose `Deno.BrowserWindow`. No public HTTP shutdown route or subprocess sidecar is added.
+```sh
+pnpm build:desktop
+pnpm package:desktop
+pnpm test:desktop-package
+```
 
-Linux tests verify the native Deno backend, SQLite changes/restarts, CSV import/export, backups, Host/Origin and revision protections, startup failures and bounded shutdown. A Windows cross-build does not establish Windows GUI behavior; a Windows launch trial remains necessary. The native close/navigation/popup limits remain production adoption blockers.
+Output: `bin/pc-workbench-desktop-<platform>-<arch>` (`.exe` on Windows), plus its `.build.json` manifest. The package smoke test is headless; it verifies addon extraction, embedded assets, API writes, restart persistence and shutdown, rather than native rendering. Launch the executable directly to open the window. `pnpm dev:desktop` runs the source host after `pnpm build:web`.
+
+Build on the target OS and architecture. SEA packages the current Node binary and does not cross-compile. CI produces Linux, Windows and macOS artifacts. Release signing, notarization, installer/bootstrapper and updater integration remain future work; the former ZIP/IExpress distribution is retired. See [desktop prototype commands](DESKTOP_PROTOTYPES.md) and [Linux prerequisites/native checks](WEBVIEWJS_LINUX_SETUP.md).
