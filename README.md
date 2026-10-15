@@ -1,8 +1,8 @@
 # Bench — PC configuration workbench
 
-This branch explores **Node.js 24 + pnpm** while preserving the Vue/Vuetify application, Express API, built-in SQLite, existing workspaces, and user settings. The Deno desktop implementation remains available as a comparison baseline. Main is unchanged.
+Bench uses **Node.js 24 + pnpm**, preserving the Vue/Vuetify application, Express API, built-in SQLite, existing workspaces, and user settings. Native desktop hosts remain experimental; the Deno desktop implementation is retained as a comparison baseline.
 
-## Run the Node prototype
+## Run with Node.js
 
 Install Node.js **24.19 or a later Node 24 release** and pnpm **11.19.0**, then run:
 
@@ -153,7 +153,7 @@ Installation locations, Location operations, PC inventory and catalog missing-da
 ## PCPartPicker import
 
 ```sh
-deno task import:pcpartpicker ./product.html --category CPU --output ./parts.csv --source https://pcpartpicker.com/product/example
+pnpm import:pcpartpicker ./product.html --category CPU --output ./parts.csv --source https://pcpartpicker.com/product/example
 ```
 
 The offline importer reads standard Product JSON-LD (including arrays and `@graph`) for stable product identities. For single-product pages it also extracts supported engineering candidates from structured properties, specification tables and PCPartPicker groups. All results remain unverified. Output files are created exclusively; import the resulting CSV through **Data & imports**.

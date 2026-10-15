@@ -6,7 +6,8 @@ import type * as TypeScript from "typescript";
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const require = createRequire(import.meta.url);
 const ts = require("typescript") as typeof TypeScript;
-const vueRequire = createRequire(require.resolve("vue-tsc"));
+// Resolve through Deno's import map rather than transient npm root links.
+const vueRequire = createRequire(import.meta.resolve("vue-tsc"));
 const core = vueRequire("@vue/language-core");
 const { proxyCreateProgram } = vueRequire(
   "@volar/typescript/lib/node/proxyCreateProgram",

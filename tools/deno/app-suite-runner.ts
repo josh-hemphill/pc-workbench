@@ -6,8 +6,11 @@ const reportDir = await Deno.makeTempDir({
 });
 const reportPath = `${reportDir}/suite.xml`;
 const expectedFiles: string[] = [];
+// The Node SEA extraction suite imports node:sea, which Deno does not implement.
+// Keep it in the Node matrix; all shared application suites still run here.
+const nodeOnlyFiles = new Set(["native-desktop.test.ts"]);
 for await (const entry of Deno.readDir(new URL("tests/", root))) {
-  if (entry.isFile && entry.name.endsWith(".test.ts")) {
+  if (entry.isFile && entry.name.endsWith(".test.ts") && !nodeOnlyFiles.has(entry.name)) {
     expectedFiles.push(entry.name);
   }
 }
@@ -27,7 +30,7 @@ const process = new Deno.Command(Deno.execPath(), {
     "--no-check",
     "--allow-all",
     `--junit-path=${reportPath}`,
-    "tests/",
+    ...expectedFiles.map((file) => `tests/${file}`),
   ],
   stdin: "null",
   stdout: "inherit",
