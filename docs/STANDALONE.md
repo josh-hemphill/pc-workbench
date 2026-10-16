@@ -87,7 +87,7 @@ For a filesystem move, stop the server first and copy the entire data directory,
 
 ## Build standalone executables
 
-Install Node.js 26.12 or a later Node 26 release and pnpm 11.19.0:
+Install Node.js 26.12 or a later Node 26 release and pnpm 12.14.0:
 
 ```sh
 pnpm install --frozen-lockfile

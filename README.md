@@ -4,7 +4,7 @@ Bench uses **Node.js 26 + pnpm**, preserving the Vue/Vuetify application, Expres
 
 ## Run with Node.js
 
-Install Node.js **26.12 or a later Node 26 release** and pnpm **11.19.0**, then run:
+Install Node.js **26.12 or a later Node 26 release** and pnpm **12.14.0**, then run:
 
 ```sh
 pnpm install --frozen-lockfile
