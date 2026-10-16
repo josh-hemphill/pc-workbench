@@ -10,7 +10,7 @@ export function extractProductDetails(html:string,component:Component):Enrichmen
  for(const m of html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr\s*>/gi)){const cells=[...m[1].matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]\s*>/gi)];if(cells.length===2)put(text(cells[0][1]),text(cells[1][1]));}
  for(const m of html.matchAll(/<h[234]\b[^>]*class=["'][^"']*group__title[^"']*["'][^>]*>([\s\S]*?)<\/h[234]>\s*<div\b[^>]*class=["'][^"']*group__content[^"']*["'][^>]*>([\s\S]*?)<\/div>/gi))put(text(m[1]),text(m[2]));
  if(identities.size>1)throw Error('Multiple product identities found. Supply a saved page containing only the selected product.');
- const labels:Record<string,string[]>={manufacturer:['manufacturer'],socket:['socket / cpu','socket'],formFactor:['form factor'],memoryType:['memory type','type'],dimmSlots:['memory slots'],maxMemoryGb:['memory max'],capacityGb:['capacity'],powerW:['tdp','power consumption'],capacityW:['wattage'],sataPorts:['sata 6.0 gb/s','sata ports'],m2Slots:['m.2 slots'],sataPower:['sata connectors'],driveSize:['form factor'],driveInterface:['interface'],lengthMm:['length'],heightMm:['height'],maxCardLengthMm:['maximum video card length'],maxCoolerHeightMm:['maximum cpu cooler height'],supportedForms:['motherboard form factor'],supportsSockets:['cpu socket'],rearSlots:['expansion slots'],bays25:['internal 2.5" bays','2.5" bays'],bays35:['internal 3.5" bays','3.5" bays'],bays525:['external 5.25" bays','5.25" bays']};
+ const labels:Record<string,string[]>={manufacturer:['manufacturer'],socket:['socket / cpu','socket'],coreCount:['core count','number of cores','total cores'],threadCount:['thread count','number of threads','total threads','threads'],formFactor:['form factor'],memoryType:['memory type','type'],dimmSlots:['memory slots'],maxMemoryGb:['memory max'],capacityGb:['capacity'],powerW:['tdp','power consumption'],capacityW:['wattage'],sataPorts:['sata 6.0 gb/s','sata ports'],m2Slots:['m.2 slots'],sataPower:['sata connectors'],driveSize:['form factor'],driveInterface:['interface'],lengthMm:['length'],heightMm:['height'],maxCardLengthMm:['maximum video card length'],maxCoolerHeightMm:['maximum cpu cooler height'],supportedForms:['motherboard form factor'],supportsSockets:['cpu socket'],rearSlots:['expansion slots'],bays25:['internal 2.5" bays','2.5" bays'],bays35:['internal 3.5" bays','3.5" bays'],bays525:['external 5.25" bays','5.25" bays']};
  const patch:Record<string,unknown>={},evidence:Record<string,string>={};
  for(const f of catalogFields(component)){
   if(!isMissing(fieldValue(component,f.key)))continue;
@@ -24,6 +24,7 @@ export function extractProductDetails(html:string,component:Component):Enrichmen
   } else if(f.kind==='array'){const tokens=raw.split(/\s*(?:,|;|\n)\s*/).filter(Boolean);if(tokens.length&&tokens.every(t=>/^[\w .+/-]{1,60}$/.test(t)))value=tokens;}
   else if(f.kind==='text'&&raw.length<=200)value=raw;
   if(typeof value==='number'&&(f.key==='capacityGb'?value>10000000:!Number.isInteger(value)||value>10000))value=undefined;
+  if((f.key==='coreCount'||f.key==='threadCount')&&typeof value==='number'&&value<1)value=undefined;
   if(Array.isArray(value)&&value.length>20)value=undefined;
   if(value!==undefined){patch[f.key]=value;evidence[f.key]=`${label}: ${raw}`;}
  }

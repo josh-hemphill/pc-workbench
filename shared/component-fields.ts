@@ -56,7 +56,9 @@ const specFields: Record<
     { key: "bifurcation", label: "PCIe bifurcation supported", kind: "bool" },
     { key: "powerW", label: "Estimated power (W)" },
   ],
-  "CPU": [{ key: "socket", label: "CPU socket", kind: "text" }, {
+  "CPU": [{ key: "socket", label: "CPU socket", kind: "text" },
+    { key: "coreCount", label: "Physical CPU cores" },
+    { key: "threadCount", label: "Logical CPU threads" }, {
     key: "powerW",
     label: "Maximum power estimate (W)",
   }],

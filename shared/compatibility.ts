@@ -327,6 +327,8 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
       resources.push({name:`Required ${label}`,used:required,available:actual});
       if(actual<required)add(unknown?'warning':'error',unknown?'Required capacity unconfirmed':'Requirements capacity insufficient',`${requirementVersion.name}: ${required} ${label} required; ${actual} recorded${unknown?'; complete missing component specifications':''}.`);
     };
+    minimum('physical CPU cores',constraints?.minCpuCores,cpu?.specs.coreCount??0,!!cpu&&cpu.specs.coreCount===undefined);
+    minimum('logical CPU threads',constraints?.minCpuThreads,cpu?.specs.threadCount??0,!!cpu&&cpu.specs.threadCount===undefined);
     minimum('memory (GB)',constraints?.minMemoryGb,of('Memory').reduce((n,r)=>n+(r.c.specs.capacityGb||0)*r.p.quantity,0),of('Memory').some(r=>r.c.specs.capacityGb===undefined));
     minimum('usable data (GB)',constraints?.minDataGb,usableDataGb,data.some(r=>r.c.specs.capacityGb===undefined));
     minimum('boot capacity (GB)',constraints?.minBootGb,bootGb,boot.some(r=>r.c.specs.capacityGb===undefined));

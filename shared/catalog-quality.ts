@@ -7,7 +7,7 @@ export function catalogFields(c:Component):CatalogField[] {
  const cap=componentCapabilities(c),fields=[field('manufacturer','Manufacturer','text'),field('source','Source URL','text')];
  const add=(...items:CatalogField[])=>fields.push(...items);
  switch(c.category){
- case 'CPU':add(field('socket','Socket','text'),field('powerW','Power (W)'));break;
+ case 'CPU':add(field('socket','Socket','text'),field('coreCount','Physical CPU cores'),field('threadCount','Logical CPU threads'),field('powerW','Power (W)'));break;
  case 'Motherboard':add(field('socket','Socket','text'),field('formFactor','Form factor','text'),field('memoryType','Memory type','text'),field('dimmSlots','DIMM slots'),field('maxMemoryGb','Maximum RAM (GB)'),field('sataPorts','SATA data ports'),field('m2Slots','M.2 slots'),field('usbA','USB-A ports'),field('usbC','USB-C ports'),field('ethernet','Ethernet ports'));break;
  case 'Memory':add(field('memoryType','Memory type','text'),field('capacityGb','Capacity (GB)'),field('powerW','Power (W)'));break;
  case 'Chassis':add(field('supportedForms','Supported motherboard forms','array'),field('rearSlots','Rear expansion positions'),field('maxCardLengthMm','Maximum card length (mm)'),field('maxCoolerHeightMm','Maximum cooler height (mm)'),field('bays25','2.5-inch bays'),field('bays35','3.5-inch bays'),field('bays525','5.25-inch bays'));break;

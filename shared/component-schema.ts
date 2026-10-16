@@ -157,6 +157,8 @@ const specs = z.object({
   bootable: z.boolean().optional(),
   hotPlug: z.boolean().optional(),
   socket: str.optional(),
+  coreCount: count.min(1).optional(),
+  threadCount: count.min(1).optional(),
   formFactor: str.optional(),
   supportedForms: z.array(str).max(20).optional(),
   memoryType: str.optional(),

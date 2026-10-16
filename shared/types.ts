@@ -34,7 +34,7 @@ export interface Specs {
   storageMedium?: 'HDD'|'SSD'; storageAdapterKind?: 'controller'|'pcie-sled'|'bay-cage'|'mount-adapter'|'m2-converter'; driveKind?: 'disk'|'optical';
   sffPorts?:SffEndpoint[]; sffInputs?:SffEndpoint[]; sataDataPorts?: SataDataPort[]; sataPowerConnectors?: SataPowerConnector[]; sataDataInputs?: SataInput[]; sataPowerInputs?: SataInput[];
   bayTargets?: BayTarget[]; baySize?: BaySize; bayUnits?: number; sataPowerPlugs?: number; ports?: Port[]; driveTargets?: DriveTarget[]; laneRules?: LaneRule[]; pciVoltage?: PciVoltage; pciBits?: 32|64; bifurcationMode?: string; supportedOS?: string[]; requiredDriver?: string; requiredFirmware?: string; bootable?: boolean; hotPlug?: boolean;
-  socket?: string; formFactor?: string; supportedForms?: string[]; memoryType?: string; dimmSlots?: number; maxMemoryGb?: number; capacityGb?: number;
+  socket?: string; coreCount?: number; threadCount?: number; formFactor?: string; supportedForms?: string[]; memoryType?: string; dimmSlots?: number; maxMemoryGb?: number; capacityGb?: number;
   slots?: Slot[]; slotBus?: Bus; slotWidth?: number; requiredLanes?: number; minGeneration?: number; bracketWidth?: number;
   lengthMm?: number; heightMm?: number; widthMm?: number; maxCardLengthMm?: number; maxCardHeightMm?: number; maxCoolerHeightMm?: number; rearSlots?: number;
   bays25?: number; bays35?: number; bays525?: number; hotSwapBays?: number; sataPorts?: number; m2Slots?: number; m2Lengths?: number[]; sataPower?: number;
@@ -48,7 +48,7 @@ export interface Placement extends StorageBindings { id: string; componentId: st
 export type Raid = 'none'|'mirror'|'raid5'|'raid6'|'raid10';
 export interface StorageGroup { id: string; name: string; raid: Raid; controllerPlacementId?: string; notes?: string }
 export interface StoragePlan { raid: Raid; bootMirror: boolean; groups?: StorageGroup[] }
-export interface EngineeringConstraints { minMemoryGb?:number; minDataGb?:number; minBootGb?:number; minScientificCards?:number; requiredComponents?:{componentId:string;quantity:number}[] }
+export interface EngineeringConstraints { minCpuCores?:number; minCpuThreads?:number; minMemoryGb?:number; minDataGb?:number; minBootGb?:number; minScientificCards?:number; requiredComponents?:{componentId:string;quantity:number}[] }
 /** Published revisions are append-only; physical installations pin one revision. */
 export interface RequirementVersion { revision:number;at:string;name:string;description:string;connections:Connection[];constraints?:EngineeringConstraints;software?:SoftwareSettings;storage?:StoragePlan }
 export interface RequirementsSet { id:string;name:string;description:string;versions:RequirementVersion[] }
