@@ -70,6 +70,8 @@ export function checkStorageConnections(config:Configuration,db:Database,slotAss
   if(list&&list.length>1)add('error',`SATA cage ${kind} route ambiguous`,`${cage.c.name} / ${drive.p.targetId}: choose the specific ${kind} input in the target catalog.`);
   return;
  }
+ // Accessory data inputs consume host channels independently of drive trays.
+ for(const row of rows)if(row.c.category==='Bay accessory')for(const input of row.c.specs.sataDataInputs||[])dataSinks.set(key(row,input.id),{row,id:input.id,quantity:row.p.quantity,legacySource:row.p.controllerPlacementId});
  // Power inputs belong to the cage/accessory itself, including empty cages.
  for(const row of rows)if(row.c.category!=='Drive'||row.c.specs.driveInterface!=='SATA') {
   const named=row.c.specs.sataPowerInputs;
@@ -119,7 +121,7 @@ export function checkStorageConnections(config:Configuration,db:Database,slotAss
    if(!mappings?.length)continue;
    const implicit=row.c.category==='Drive'&&row.c.specs.driveInterface==='SATA'&&(kind==='data'||row.c.specs.driveSize!=='M.2');
    const list=kind==='data'?row.c.specs.sataDataInputs:row.c.specs.sataPowerInputs;
-   if(!implicit&&kind==='data'&&!cageIds.has(row.p.id)){add('error','SATA data consumer invalid',`${row.c.name}: only SATA drives and documented cage inputs accept these data routes.`);continue;}
+   if(!implicit&&kind==='data'&&!cageIds.has(row.p.id)&&!(row.c.category==='Bay accessory'&&list!==undefined)){add('error','SATA data consumer invalid',`${row.c.name}: only SATA drives and documented cage or bay-accessory inputs accept these data routes.`);continue;}
    if(!implicit&&kind==='power'&&list===undefined&&row.c.specs.sataPowerPlugs===undefined){add('error','SATA power consumer invalid',`${row.c.name}: document SATA power inputs before binding PSU end plugs.`);continue;}
    if(row.p.quantity!==1)add('error',`Ambiguous SATA ${kind} consumer instance`,`${row.c.name}: split the placement before mapping physical connectors.`);
    for(const mapping of mappings) {

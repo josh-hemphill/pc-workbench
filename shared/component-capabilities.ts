@@ -19,6 +19,7 @@ export function componentCapabilities(component:Component) {
  driveTargets:category==='Chassis'||category==='Motherboard'||category==='Storage adapter'&&adapter!=='m2-converter',laneRules:category==='Motherboard',
  bayConsumer:category==='Bay accessory'||category==='Storage adapter'&&(adapter==='bay-cage'||adapter==='mount-adapter')||optical,
  bayProvider:category==='Chassis'||category==='Storage adapter'&&adapter==='mount-adapter',
+ sataDataConsumer:adapter==='bay-cage'||category==='Bay accessory',
  sataController:category==='Motherboard'||category==='Storage adapter'&&adapter==='controller',
  m2:category==='Drive'&&specs.driveSize==='M.2'&&!optical||adapter==='m2-converter',nvmeSled:adapter==='pcie-sled',controller:category==='Motherboard'||adapter==='controller',
  };

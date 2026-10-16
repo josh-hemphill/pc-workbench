@@ -26,3 +26,10 @@ test('category and role changes retain incompatible historical metadata for deli
  const component=part('Memory',{slotBus:'PCI',laneRules:[],driveTargets:[],pciVoltage:'5V',baySize:'5.25',supportedOS:['Windows'],capacityGb:16});const before=structuredClone(component);const retained=retainedAdvancedFields(component);assert.ok(retained.includes('slotBus'));assert.ok(retained.includes('laneRules'));assert.ok(retained.includes('driveTargets'));assert.ok(retained.includes('supportedOS'));assert.ok(!retained.includes('capacityGb'));assert.deepEqual(component,before);
  const cage=part('Storage adapter',{storageAdapterKind:'bay-cage',sledDrives:2,slotBus:'PCIe'});assert.ok(retainedAdvancedFields(cage).includes('slotBus'));assert.ok(retainedAdvancedFields(cage).includes('sledDrives'));
 });
+
+test('bay accessories and backplanes expose SATA data input editing without turning passive mounts into controllers',()=>{
+ assert.equal(componentCapabilities(part('Bay accessory')).sataDataConsumer,true);
+ assert.equal(componentCapabilities(part('Storage adapter',{storageAdapterKind:'bay-cage'})).sataDataConsumer,true);
+ const mount=componentCapabilities(part('Storage adapter',{storageAdapterKind:'mount-adapter'}));
+ assert.equal(mount.sataDataConsumer,false);assert.equal(mount.sataController,false);
+});

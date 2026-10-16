@@ -152,3 +152,14 @@ test('connection summary distinguishes motherboard channels from active controll
  f.p.sataDataConnections=[{controllerPlacementId:'controller',portId:'C1'}];
  const report=checkStorageConnections(f.config,f.db,{});assert.deepEqual(errors(report),[]);assert.equal(report.summary.dataChannels,1);assert.equal(report.summary.motherboardChannels,0);assert.equal(report.summary.controllerChannels,1);assert.equal(report.links[0].source,'controller');
 });
+
+test('bay accessory data inputs consume host channels separately from SATA power and reject duplicate routes',()=>{
+ const {db,config}=setup();config.placements=config.placements.filter(p=>p.componentId!=='drive');
+ const accessory=component('accessory','Bay accessory',{baySize:'5.25',sataDataInputs:[{id:'SATA_DATA_IN_1'},{id:'SATA_DATA_IN_2'}],sataPowerInputs:[{id:'POWER'}]});
+ db.components.push(accessory);const placement=place(accessory.id,{sataDataConnections:[{inputId:'SATA_DATA_IN_1',controllerPlacementId:'board',portId:'S1'},{inputId:'SATA_DATA_IN_2',controllerPlacementId:'board',portId:'S2'}],sataPowerConnections:[{inputId:'POWER',powerProviderPlacementId:'psu',connectorId:'P1'}]});config.placements.push(placement);
+ let report=checkStorageConnections(config,db,{});assert.deepEqual(errors(report),[]);assert.equal(value(report,'SATA ports').used,2);assert.equal(value(report,'SATA power plugs').used,1);
+ placement.sataDataConnections![1].portId='S1';assert.ok(has(checkStorageConnections(config,db,{}),'SATA data endpoint double booked'));
+ placement.sataDataConnections![1].portId='S2';placement.sataDataConnections![1].inputId='SATA_DATA_IN_1';assert.ok(has(checkStorageConnections(config,db,{}),'SATA data input double mapped'));
+ placement.sataDataConnections=[];report=checkStorageConnections(config,db,{});assert.equal(value(report,'SATA ports').used,2);
+ accessory.specs.sataDataInputs=[];assert.equal(value(checkStorageConnections(config,db,{}),'SATA ports').used,0);
+});
