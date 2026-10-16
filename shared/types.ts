@@ -1,5 +1,5 @@
-export type Category = 'Chassis'|'Motherboard'|'CPU'|'Memory'|'GPU'|'Scientific card'|'Network card'|'Storage adapter'|'Bay accessory'|'Drive'|'PSU'|'Cooler'|'Cable'|'Consumable';
-export const categories: Category[] = ['Chassis','Motherboard','CPU','Memory','GPU','Scientific card','Network card','Storage adapter','Bay accessory','Drive','PSU','Cooler','Cable','Consumable'];
+export type Category = 'Chassis'|'Motherboard'|'CPU'|'Memory'|'GPU'|'Scientific card'|'Network card'|'Storage adapter'|'Bay accessory'|'Drive'|'PSU'|'Cooler'|'Fan'|'Cable'|'Consumable';
+export const categories: Category[] = ['Chassis','Motherboard','CPU','Memory','GPU','Scientific card','Network card','Storage adapter','Bay accessory','Drive','PSU','Cooler','Fan','Cable','Consumable'];
 export type Bus = 'PCI'|'PCIe';
 export type PciVoltage = '3.3V'|'5V'|'universal';
 export const portKinds = ['USB-A','USB-C','Ethernet','Serial','Parallel','Custom'] as const;
@@ -19,10 +19,17 @@ export interface SataPowerConnector { id: string; harness?: string }
 export interface SataInput { id: string }
 export interface SataDataConnection { inputId?: string; controllerPlacementId: string; portId?: string; cablePlacementId?: string; cableChannel?: number }
 export interface SataPowerConnection { inputId?: string; powerProviderPlacementId: string; connectorId?: string }
-export interface StorageBindings { sffConnections?:SffConnection[]; bayTargetIds?: string[]; sataDataConnections?: SataDataConnection[]; sataPowerConnections?: SataPowerConnection[] }
+export interface StorageBindings { coolingConnections?:CoolingConnection[]; sffConnections?:SffConnection[]; bayTargetIds?: string[]; sataDataConnections?: SataDataConnection[]; sataPowerConnections?: SataPowerConnection[] }
 export interface DriveTarget { pcieLanes?:number; disabled?:boolean; sffInputId?:string; id: string; mount: Placement['mount']; driveSizes?: string[]; interfaces?: string[]; m2Lengths?: number[]; hotSwap?: boolean; bootable?: boolean; bayId?: string; sataDataInputId?: string; sataPowerInputId?: string }
 export interface LaneRule { id: string; slots: string[]; maxLanes?: number; exclusive?: boolean; disableM2Slots?: number; disableSataPorts?: number; disableSataPortIds?: string[] }
+export const coolingPowerConnectors=['Fan 3-pin','Fan 4-pin','SATA power','Peripheral 4-pin','Proprietary'] as const;
+export const coolingControls=['Fixed speed','DC voltage','PWM'] as const;
+export interface CoolingDevice {id:string;name?:string;kind:'fan'|'pump';count?:number;powerConnector?:typeof coolingPowerConnectors[number];voltageV?:number;currentA?:number;control?:typeof coolingControls[number];controlConnector?:'Fan 3-pin'|'Fan 4-pin'|'Proprietary';tachometer?:boolean}
+export interface CoolingHeader {id:string;name?:string;connector?:'Fan 3-pin'|'Fan 4-pin'|'Proprietary';voltageV?:number;maxCurrentA?:number;controlModes?:typeof coolingControls[number][];maxDevices?:number;tachometer?:boolean;limitGroup?:string}
+export interface CoolingHeaderGroup {id:string;maxCurrentA?:number}
+export interface CoolingConnection {deviceId:string;deviceIndex:number;headerPlacementId:string;headerId:string}
 export interface Specs {
+  coolingDevices?:CoolingDevice[];coolingHeaders?:CoolingHeader[];coolingHeaderGroups?:CoolingHeaderGroup[];
   consumableKind?: string; stockUnit?: string; thicknessMm?: number; cableProtocol?: 'SATA'|'SAS'|'SATA/SAS'|'NVMe'|'Power'|'Other'; connectorA?: string; connectorB?: string; cableChannels?: number; cableDirection?: 'bidirectional'|'forward-breakout'|'reverse-breakout';
   storageMedium?: 'HDD'|'SSD'; storageAdapterKind?: 'controller'|'pcie-sled'|'bay-cage'|'mount-adapter'|'m2-converter'; driveKind?: 'disk'|'optical';
   sffPorts?:SffEndpoint[]; sffInputs?:SffEndpoint[]; sataDataPorts?: SataDataPort[]; sataPowerConnectors?: SataPowerConnector[]; sataDataInputs?: SataInput[]; sataPowerInputs?: SataInput[];

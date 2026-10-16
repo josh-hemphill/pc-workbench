@@ -15,6 +15,7 @@ export function catalogFields(c:Component):CatalogField[] {
  case 'PSU':add(field('capacityW','Supply capacity (W)'),field('sataPower','SATA power connectors'));break;
  case 'Cable':add(field('cableProtocol','Cable protocol','text',['SATA','SAS','SATA/SAS','Power','Other']),field('connectorA','End A connector','text'),field('connectorB','End B connector','text'),field('cableChannels','Data channels'),field('lengthMm','Cable length (mm)'),field('cableDirection','Breakout direction','text',['bidirectional','forward-breakout','reverse-breakout']));break;
  case 'Consumable':add(field('consumableKind','Consumable type','text'),field('stockUnit','Stock unit','text'));break;
+ case 'Fan':add(field('lengthMm','Frame size (mm)'),field('powerW','Power per fan assembly (W)'));break;
  case 'Cooler':add(field('supportsSockets','Supported sockets','array'),field('heightMm','Height (mm)'));break;
  }
  if(cap.slotCard)add(field('slotBus','Slot bus','text',['PCI','PCIe']),field('slotWidth','Physical slot width'),field('requiredLanes','Required lanes'),field('bracketWidth','Rear bracket positions'),field('lengthMm','Length (mm)'),field('heightMm','Height (mm)'),field('powerW','Power (W)'));

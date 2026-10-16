@@ -1,3 +1,4 @@
+import {checkCooling,coolingPowerW} from './cooling.ts';
 import {checkSffConnections,onboardM2Count} from './sff-connections.ts';
 import type { Configuration, Database, Finding, Report, Resource, Component, Placement, StorageGroup, RequirementVersion, PCBuildSettings, Port, PortRequirement, Connection } from './types.ts';
 
@@ -277,14 +278,14 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
   const adapterDrives=new Map<string,number>();
   for(const {p} of drives)if(p.adapterPlacementId)adapterDrives.set(p.adapterPlacementId,(adapterDrives.get(p.adapterPlacementId)||0)+p.quantity);
   for(const [adapterId,used] of adapterDrives) {const adapter=rows.find(r=>r.p.id===adapterId);if(adapter?.c.category==='Storage adapter')resource(`Adapter ${adapter.c.name} drive positions`,used,adapter.c.specs.sledDrives??adapter.c.specs.driveTargets?.length);}
-  for(const report of [checkBayTopology(config,db),checkStorageConnections(config,db,slotAssignments),checkSffConnections(config,db,slotAssignments)]) {findings.push(...report.findings);resources.push(...report.resources);}
+  for(const report of [checkCooling(config,db),checkBayTopology(config,db),checkStorageConnections(config,db,slotAssignments),checkSffConnections(config,db,slotAssignments)]) {findings.push(...report.findings);resources.push(...report.resources);}
   resource('Onboard M.2 slots',m2+rows.filter(r=>componentCapabilities(r.c).m2Converter).reduce((n,r)=>n+r.p.quantity,0),onboardM2Count(board)===undefined?undefined:Math.max(0,onboardM2Count(board)!-disabledM2));
   resource('Rear sled positions',rear,sleds.reduce((n,r)=>n+(r.c.specs.sledDrives??r.c.specs.driveTargets?.filter(t=>t.mount==='rear-sled').length??0)*r.p.quantity,0));
   for(const {p,c} of sleds) { const assigned=slots.find(s=>s.id===slotAssignments[`${p.id}:0`]); if(c.specs.requiresBifurcation&&board?.specs.bifurcation!==false&&!assigned?.bifurcationModes&&!board?.specs.bifurcation) add('warning','PCIe bifurcation required',`${c.name} requires motherboard firmware support for lane splitting.`); if(rear>0&&!c.specs.sledHotSwap) add('warning','Rear sled is not declared hot-swappable',`${c.name}: shut down before servicing unless the vendor explicitly supports live removal.`); }
   if(front>0)add('warning','Hot-swap backplane review','Verify backplane drive size, controller hot-plug support and power connections. Front bays are counted separately from internal bays.');
-  const unknownPower=rows.filter(r=>!['Chassis','PSU','Cable','Consumable'].includes(r.c.category)&&r.c.specs.powerW===undefined);
+  const unknownPower=rows.filter(r=>!['Chassis','PSU','Cable','Consumable'].includes(r.c.category)&&coolingPowerW(r.c)===undefined);
   if(unknownPower.length)add('warning','Power estimate incomplete',`Missing draw for ${unknownPower.map(r=>r.c.name).join(', ')}.`);
-  const draw=rows.reduce((n,r)=>n+(r.c.specs.powerW||0)*r.p.quantity,0); resource('Power with 25% headroom',Math.ceil(draw*1.25),psu?.specs.capacityW,' W');
+  const draw=rows.reduce((n,r)=>n+(coolingPowerW(r.c)||0)*r.p.quantity,0); resource('Power with 25% headroom',Math.ceil(draw*1.25),psu?.specs.capacityW,' W');
   add('warning','Power connectors and cooling review','Confirm GPU/CPU power plugs, PSU form factor, cooler thermal rating and chassis airflow. Wattage alone does not establish compatibility.');
   for(const {p,c} of drives)if(componentCapabilities(c).optical&&(p.role!=='general'||p.group))add('error','Optical drive storage role invalid',`${c.name}: use the general role; optical drives cannot be array or boot/data capacity members.`);
   const boot=drives.filter(r=>r.p.role==='boot'&&!componentCapabilities(r.c).optical), data=drives.filter(r=>r.p.role==='data'&&!componentCapabilities(r.c).optical);

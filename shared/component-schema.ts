@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { coolingSpecsSchema } from "./cooling-schema.ts";
 import { categories, portKinds } from "./types.ts";
 const id = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
   str = z.string().max(10000),
@@ -38,6 +39,7 @@ const sffEndpoints = z.array(
   "SFF connector IDs must be unique",
 );
 const specs = z.object({
+  ...coolingSpecsSchema,
   sffPorts: sffEndpoints.optional(),
   sffInputs: sffEndpoints.optional(),
   consumableKind: str.optional(),

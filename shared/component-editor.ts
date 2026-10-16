@@ -1,6 +1,9 @@
 import type { Component, Database, PortKind, Specs } from "./types.ts";
 import type { ComponentSection } from "./component-fields.ts";
 export type ComponentCollection =
+  | "coolingDevices"
+  | "coolingHeaders"
+  | "coolingHeaderGroups"
   | "sffPorts"
   | "sffInputs"
   | "ports"
@@ -38,6 +41,7 @@ export function issueSection(
 ): ComponentSection {
   const key = String(path[1] || "");
   if (path[0] !== "specs") return "basics";
+  if(key.startsWith("cooling"))return "cooling";
   if (key === "ports" || ["usbA", "usbC", "ethernet"].includes(key)) {
     return "ports";
   }
@@ -111,6 +115,7 @@ export function componentReferences(
       collection === "sataDataPorts" && rule.disableSataPortIds?.includes(id)
     ) refs.add(`Lane rule ${rule.id}`);
   }
+  if(collection==='coolingHeaderGroups'&&spec.coolingHeaders?.some(h=>h.limitGroup===id))refs.add('Cooling header group');
   const inspect = (
     name: string,
     placements: {
@@ -121,6 +126,7 @@ export function componentReferences(
       targetId?: string;
       adapterPlacementId?: string;
       bayTargetIds?: string[];
+      coolingConnections?: {deviceId:string;headerPlacementId:string;headerId:string}[];
       sffConnections?: {
         providerPlacementId: string;
         portId: string;
@@ -172,6 +178,9 @@ export function componentReferences(
         (row.bayTargetIds?.includes(id) || row.targetId === id) &&
         owns(row.adapterPlacementId || "", "Chassis")
       ) refs.add(name);
+      for(const connection of row.coolingConnections||[]){
+        if(collection==='coolingDevices'&&row.componentId===component.id&&connection.deviceId===id||collection==='coolingHeaders'&&connection.headerId===id&&owns(connection.headerPlacementId,'Motherboard'))refs.add(name);
+      }
       for (const connection of row.sffConnections || []) {
         if (
           collection === "sffPorts" && connection.portId === id &&

@@ -3,6 +3,7 @@ import type { StorageBindings } from './types.ts';
 /** Preserve optional wiring through allocations/snapshots; never infer physical endpoints. */
 export function mapStorageBindings(record: StorageBindings, resolve: (id: string) => string = id => id): StorageBindings {
   return {
+    ...(record.coolingConnections!==undefined?{coolingConnections:record.coolingConnections.map(connection=>({...connection,headerPlacementId:resolve(connection.headerPlacementId)}))}:{}),
     ...(record.sffConnections !== undefined ? {sffConnections:record.sffConnections.map(connection=>({...connection,providerPlacementId:resolve(connection.providerPlacementId),...(connection.cablePlacementId?{cablePlacementId:resolve(connection.cablePlacementId)}:{})}))}:{}),
     ...(record.bayTargetIds !== undefined ? { bayTargetIds: [...record.bayTargetIds] } : {}),
     ...(record.sataDataConnections !== undefined ? { sataDataConnections: record.sataDataConnections.map(connection => ({ ...connection, controllerPlacementId: resolve(connection.controllerPlacementId), ...(connection.cablePlacementId ? {cablePlacementId:resolve(connection.cablePlacementId)} : {}) })) } : {}),
@@ -11,6 +12,7 @@ export function mapStorageBindings(record: StorageBindings, resolve: (id: string
 }
 
 export function storageBindingsMatch(planned: StorageBindings, actual: StorageBindings, resolve: (id: string) => string): boolean {
+  for(const c of planned.coolingConnections||[])if(!actual.coolingConnections?.some(a=>a.deviceId===c.deviceId&&a.deviceIndex===c.deviceIndex&&resolve(a.headerPlacementId)===resolve(c.headerPlacementId)&&a.headerId===c.headerId))return false;
   if (planned.bayTargetIds?.length && JSON.stringify([...planned.bayTargetIds].sort()) !== JSON.stringify([...(actual.bayTargetIds || [])].sort())) return false;
   for(const connection of planned.sffConnections||[])if(!actual.sffConnections?.some(value=>(value.inputId||'')===(connection.inputId||'')&&resolve(value.providerPlacementId)===resolve(connection.providerPlacementId)&&value.portId===connection.portId&&(value.sourceChannel||1)===(connection.sourceChannel||1)&&(value.channels||1)===(connection.channels||1)&&(!connection.pcieLanes||value.pcieLanes===connection.pcieLanes)&&(!connection.cablePlacementId||resolve(value.cablePlacementId||'')===resolve(connection.cablePlacementId))&&(!connection.cableChannel||value.cableChannel===connection.cableChannel)))return false;
   for (const connection of planned.sataDataConnections || []) {

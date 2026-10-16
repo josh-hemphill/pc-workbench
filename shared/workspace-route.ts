@@ -90,7 +90,7 @@ export function parseWorkspaceRoute(hash: string): WorkspaceRoute {
     route.editorId = params.get("record") || "new";
     if (editor === "component") {
       route.editorView =
-        ["basics", "ports", "expansion", "storage", "physical", "review"]
+        ["basics", "ports", "cooling", "expansion", "storage", "physical", "review"]
             .includes(params.get("section") || "")
           ? params.get("section")!
           : "basics";

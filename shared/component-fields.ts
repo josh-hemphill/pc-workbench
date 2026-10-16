@@ -2,6 +2,7 @@ import type { Category, Component, Specs } from "./types.ts";
 import { componentCapabilities } from "./component-capabilities.ts";
 export type ComponentSection =
   | "basics"
+  | "cooling"
   | "ports"
   | "expansion"
   | "storage"
@@ -152,11 +153,12 @@ const specFields: Record<
     { key: "lengthMm", label: "Length (mm)" },
     { key: "widthMm", label: "Width (mm)" },
   ],
+  "Fan": [{key:"stockUnit",label:"Stock unit (e.g. fan)",kind:"text"},{key:"lengthMm",label:"Frame size (mm)"},{key:"widthMm",label:"Frame width (mm)"},{key:"heightMm",label:"Thickness (mm)"},{key:"powerW",label:"Total power per fan assembly (W)"}],
   "Cooler": [{ key: "heightMm", label: "Height (mm)" }, {
     key: "supportsSockets",
     label: "Supported sockets",
     kind: "list",
-  }, { key: "powerW", label: "Power (W)" }],
+  }, { key: "powerW", label: "Fan/pump electrical power (W)" }],
 };
 const cardFields: typeof specFields["GPU"] = [
   { key: "slotBus", label: "Slot bus", kind: "select", items: ["PCI", "PCIe"] },
@@ -268,11 +270,13 @@ export function componentSections(component: Component) {
   return ([
     "basics",
     "ports",
+    "cooling",
     "expansion",
     "storage",
     "physical",
     "review",
   ] as ComponentSection[]).filter((section) =>
+    section === "cooling" && (["Fan","Cooler","Motherboard","Bay accessory"].includes(component.category)||component.specs.coolingDevices!==undefined||component.specs.coolingHeaders!==undefined) ||
     section === "basics" || section === "review" || has(section) ||
     section === "ports" && cap.ports ||
     section === "expansion" &&
