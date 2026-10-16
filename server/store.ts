@@ -1,3 +1,6 @@
+import {buildComponentMerge,componentMergeSchema} from './component-merge.ts';
+import {parseInventoryArchive} from './inventory-archive.ts';
+import {inventoryDeletionReason,type ArchivedInventory} from '../shared/inventory-archive.ts';
 import {componentUsage} from '../shared/component-usage.ts';
 import {planInputSchema,parsePlans,type PlanSnapshot,type StoredPlan} from '../shared/transition-plans.ts';
 import {isPCInstallationKind} from '../shared/types.ts';
@@ -65,6 +68,7 @@ export class Store {
   this.sqlite=new DatabaseSync(path.join(dir,'workbench.sqlite'));
   try {
    this.sqlite.exec(`PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
+    CREATE TABLE IF NOT EXISTS inventory_archive(id TEXT PRIMARY KEY,payload TEXT NOT NULL CHECK(json_valid(payload)));
     CREATE TABLE IF NOT EXISTS transition_plans(id TEXT PRIMARY KEY,payload TEXT NOT NULL CHECK(json_valid(payload)));
     CREATE TABLE IF NOT EXISTS workspace_meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS records(collection TEXT NOT NULL,id TEXT NOT NULL,ordinal INTEGER NOT NULL,payload TEXT NOT NULL CHECK(json_valid(payload)),PRIMARY KEY(collection,id));
@@ -76,7 +80,7 @@ export class Store {
     let initial:unknown=structuredClone(seed);const journal=path.join(dir,'.restore-journal.json');
     if(fs.existsSync(journal))initial=JSON.parse(fs.readFileSync(journal,'utf8'));
     else for(const collection of collections){const filename=path.join(dir,`${collection}.csv`);if(fs.existsSync(filename))(initial as Record<string,unknown>)[collection]=decodeCSV(collection,fs.readFileSync(filename,'utf8'));}
-    const validated=this.validateBackup(initial);this.commit(validated,true,parsePlans((initial as {transitionPlans?:unknown}).transitionPlans??[]));this.db=validated;
+    const validated=this.validateBackup(initial);this.commit(validated,true,parsePlans((initial as {transitionPlans?:unknown}).transitionPlans??[]),parseInventoryArchive((initial as {archivedInventory?:unknown}).archivedInventory??[]));this.db=validated;
    }else{
     const loaded={} as Database;for(const collection of collections)(loaded[collection] as unknown[])=this.sqlite.prepare('SELECT payload FROM records WHERE collection=? ORDER BY ordinal').all(collection).map(row=>schemas[collection].parse(JSON.parse(row.payload as string)));
     this.validateReferences(loaded);this.db=loaded;this.storedRevision=(this.sqlite.prepare("SELECT value FROM workspace_meta WHERE key='revision'").get()?.value as string)||this.revision;
@@ -98,16 +102,18 @@ export class Store {
   const insert=this.sqlite.prepare('INSERT INTO records(collection,id,ordinal,payload) VALUES(?,?,?,?)');
   rows.forEach((row,index)=>insert.run(collection,(row as {id:string}).id,index,JSON.stringify(row)));
  }
- private commit(next:Database,initial=false,plans?:StoredPlan[]){
+ private commit(next:Database,initial=false,plans?:StoredPlan[],archives?:ArchivedInventory[],expectedBackupRevision?:string){
   this.assertWritable();
   this.sqlite.exec('BEGIN IMMEDIATE');
   try{
    const revision=this.sqlite.prepare("SELECT value FROM workspace_meta WHERE key='revision'").get()?.value;
    if(!initial&&revision!==this.storedRevision)throw Error('Workspace changed in another connection. Reload before saving.');
+   if(expectedBackupRevision!==undefined&&this.backupRevision!==expectedBackupRevision)throw new PlanConflict('Saved plans or archived inventory changed. Preview the merge again.');
    this.sqlite.exec('DELETE FROM record_references');
    for(const collection of collections)this.persist(collection,next[collection]);
    this.writeReferences(next);
    if(plans!==undefined){this.sqlite.exec('DELETE FROM transition_plans');for(const plan of plans)this.sqlite.prepare('INSERT INTO transition_plans(id,payload) VALUES(?,?)').run(plan.id,JSON.stringify(plan));}
+   if(archives!==undefined){this.sqlite.exec('DELETE FROM inventory_archive');for(const archive of archives)this.sqlite.prepare('INSERT INTO inventory_archive(id,payload) VALUES(?,?)').run(archive.id,JSON.stringify(archive));}
    const nextRevision=createHash('sha256').update(JSON.stringify(next)).digest('hex');
    this.sqlite.prepare('INSERT OR REPLACE INTO workspace_meta(key,value) VALUES(?,?)').run('revision',nextRevision);
    this.sqlite.prepare('INSERT OR REPLACE INTO workspace_meta(key,value) VALUES(?,?)').run('initialized','1');
@@ -136,10 +142,20 @@ export class Store {
   const serials=new Set<string>(),tags=new Set<string>(),allocations=new Set<string>(),movements=new Set<string>();
   for(const stock of db.inventory){if(!db.components.some(c=>c.id===stock.componentId))throw Error(`Stock ${stock.id}: component not found`);if(stock.tracking==='serialized'){const key=`${stock.componentId}:${stock.serial.trim().toLowerCase()}`;if(serials.has(key))throw Error('Duplicate serial number for this component type');serials.add(key);}if(stock.assetTag.trim()){const key=stock.assetTag.trim().toLowerCase();if(tags.has(key))throw Error('Duplicate inventory asset / lot tag');tags.add(key);}for(const a of stock.allocations){const pc=db.pcs.find(p=>p.id===a.pcId);if(!pc)throw Error(`Stock ${stock.id}: allocated PC not found; remove or release its components first`);if(pc.lifecycle==='Retired')throw Error(`Stock ${stock.id}: retired PC ${pc.name} cannot have current reservations or installations`);if(allocations.has(a.id))throw Error('Duplicate allocation ID across inventory records');allocations.add(a.id);}for(const e of stock.history){if(movements.has(e.id))throw Error('Duplicate movement ID across inventory records');movements.add(e.id);}}
  }
- validateReplacement(collection:Collection,rows:unknown[]){if(rows.length>10000)throw Error('CSV limit is 10,000 records.');const parsed=rows.map(row=>schemas[collection].parse(row));if(new Set(parsed.map(r=>r.id)).size!==parsed.length)throw Error('Duplicate record IDs');if(collection==='inventory')for(const stock of this.db.inventory){const replacement=parsed.find(r=>r.id===stock.id) as Database['inventory'][number]|undefined;if(!replacement&&(stock.history.length||stock.allocations.length))throw Error('Inventory with history cannot be deleted; retire the stock record instead');if(replacement&&(replacement.componentId!==stock.componentId||replacement.tracking!==stock.tracking))throw Error('Existing stock component identity and tracking mode cannot change; use whole-workspace restore for recovery.');}const next={...this.db,[collection]:parsed};if(collection==='components')for(const component of this.db.components)if(!next.components.some(c=>c.id===component.id)){const uses=componentUsage(component.id,next);if(uses.length)throw Error(`Cannot delete component “${component.name}” (${component.id}): still referenced by ${uses.map(use=>`${use.kind} “${use.name}” (${use.id}): ${use.detail}`).join('; ')}`);}this.validateReferences(next);if(collection==='configurations')for(const config of next.configurations)if(config.status==='Approved'&&checkConfiguration(config,next).status==='Conflicts')throw Error(`${config.name}: resolve compatibility conflicts before approval`);if(collection==='requirementsSets')for(const existing of this.db.requirementsSets){const updated=next.requirementsSets.find(set=>set.id===existing.id);if(!updated&&existing.versions.length)throw Error('Published requirement revisions cannot be deleted.');if(updated&&JSON.stringify(updated.versions.slice(0,existing.versions.length))!==JSON.stringify(existing.versions))throw Error('Published requirement revisions are immutable; append a new revision.');}return next;}
+ validateReplacement(collection:Collection,rows:unknown[]){if(rows.length>10000)throw Error('CSV limit is 10,000 records.');const parsed=rows.map(row=>schemas[collection].parse(row));if(new Set(parsed.map(r=>r.id)).size!==parsed.length)throw Error('Duplicate record IDs');if(collection==='inventory')for(const stock of this.db.inventory){const replacement=parsed.find(r=>r.id===stock.id) as Database['inventory'][number]|undefined;if(!replacement&&(stock.history.length||stock.allocations.length))throw Error('Inventory with history cannot be deleted by replacement; use Delete inventory record to retain its history in the archive');if(replacement&&(replacement.componentId!==stock.componentId||replacement.tracking!==stock.tracking))throw Error('Existing stock component identity and tracking mode cannot change; use whole-workspace restore for recovery.');}const next={...this.db,[collection]:parsed};if(collection==='components')for(const component of this.db.components)if(!next.components.some(c=>c.id===component.id)){const uses=componentUsage(component.id,next);if(uses.length)throw Error(`Cannot delete component “${component.name}” (${component.id}): still referenced by ${uses.map(use=>`${use.kind} “${use.name}” (${use.id}): ${use.detail}`).join('; ')}`);}this.validateReferences(next);if(collection==='configurations')for(const config of next.configurations)if(config.status==='Approved'&&checkConfiguration(config,next).status==='Conflicts')throw Error(`${config.name}: resolve compatibility conflicts before approval`);if(collection==='requirementsSets')for(const existing of this.db.requirementsSets){const updated=next.requirementsSets.find(set=>set.id===existing.id);if(!updated&&existing.versions.length)throw Error('Published requirement revisions cannot be deleted.');if(updated&&JSON.stringify(updated.versions.slice(0,existing.versions.length))!==JSON.stringify(existing.versions))throw Error('Published requirement revisions are immutable; append a new revision.');}return next;}
  replace(collection:Collection,rows:unknown[]){this.assertWritable();const next=this.validateReplacement(collection,rows);this.snapshot();this.commit(next);this.db=next;}
  snapshot(){this.snapshotTime=Math.max(Date.now(),this.snapshotTime+1);const dir=path.join(this.dir,'backups');fs.mkdirSync(dir,{recursive:true});durableWrite(path.join(dir,`rolling-${this.snapshotTime}-${randomUUID()}.json`),JSON.stringify(this.backup()));const files=fs.readdirSync(dir).filter(name=>name.startsWith('rolling-')).sort();for(const name of files.slice(0,Math.max(0,files.length-10)))fs.unlinkSync(path.join(dir,name));}
- backup(){const plans=this.plans().map(({revision:_,...plan})=>plan);return {...this.db,...(plans.length?{transitionPlans:plans}:{})};}
+ previewComponentMerge(input:unknown){const parsed=componentMergeSchema.parse(input);const active=this.getEnrichmentJobs().filter(j=>parsed.sourceIds.includes(j.componentId)&&['queued','fetching','review'].includes(j.state));if(active.length)throw Error('Cancel active enrichment jobs for the duplicate types before merging.');const baseline=this.backupRevision;const result=buildComponentMerge(this.db,parsed,this.plans().map(({revision:_,...plan})=>plan));const next=this.validateBackup(result.next);return {...result,next,baseline,token:createHash('sha256').update(JSON.stringify({input:parsed,revision:baseline})).digest('hex')};}
+ mergeComponents(input:unknown,token:string){this.assertWritable();const result=this.previewComponentMerge(input);if(result.token!==token)throw new PlanConflict('The workspace or merge selection changed. Preview the merge again.');this.snapshot();this.commit(result.next,false,result.plans,undefined,result.baseline);this.db=result.next;return result.preview;}
+ archivedInventory():ArchivedInventory[]{return parseInventoryArchive(this.sqlite.prepare('SELECT payload FROM inventory_archive ORDER BY id').all().map(row=>JSON.parse(String(row.payload))));}
+ archiveInventory(id:string){
+  this.assertWritable();const stock=this.db.inventory.find(s=>s.id===id);if(!stock)throw Error('Inventory record not found.');const reason=inventoryDeletionReason(stock);if(reason)throw Error(reason);
+  const component=this.db.components.find(c=>c.id===stock.componentId)!;
+  const entry:ArchivedInventory={id:randomUUID(),at:new Date().toISOString(),stock:structuredClone(stock),component:structuredClone(component)};
+  const archives=parseInventoryArchive([...this.archivedInventory(),entry]),next={...this.db,inventory:this.db.inventory.filter(s=>s.id!==id)};
+  this.validateReferences(next);this.snapshot();this.commit(next,false,undefined,archives);this.db=next;return entry;
+ }
+ backup(){const plans=this.plans().map(({revision:_,...plan})=>plan),archives=this.archivedInventory();return {...this.db,...(plans.length?{transitionPlans:plans}:{}),...(archives.length?{archivedInventory:archives}:{})};}
  plans():PlanSnapshot[]{return this.sqlite.prepare('SELECT payload FROM transition_plans ORDER BY id').all().map(row=>{const payload=String(row.payload);const plan=parsePlans([JSON.parse(payload)])[0];return {...plan,revision:createHash('sha256').update(payload).digest('hex')};});}
  savePlan(input:unknown,expected:string):PlanSnapshot {
   this.assertWritable();const parsed=planInputSchema.parse(input);
@@ -163,6 +179,8 @@ export class Store {
   const object={...(input as Record<string,unknown>)};
   if(object.transitionPlans!==undefined)parsePlans(object.transitionPlans);
   delete object.transitionPlans;
+  if(object.archivedInventory!==undefined)parseInventoryArchive(object.archivedInventory);
+  delete object.archivedInventory;
   if(Object.keys(object).some(k=>!collections.includes(k as Collection)))throw Error('Backup contains unexpected collections.');
   const parsed={} as Database;
   for(const collection of collections){if(['requirementsSets','installationLocations'].includes(collection)&&object[collection]===undefined)object[collection]=[];if(!Array.isArray(object[collection]))throw Error(`Backup is missing ${collection}.`);const rows=object[collection] as unknown[];if(rows.length>10000)throw Error('CSV limit is 10,000 records.');(parsed[collection] as unknown[])=rows.map(row=>schemas[collection].parse(row));if(new Set(parsed[collection].map(row=>row.id)).size!==rows.length)throw Error(`Duplicate record IDs in ${collection}`);for(const row of parsed[collection])if(Buffer.byteLength(encodeCSV(collection,[row]))>maxCSVRecordSize)throw Error('Backup CSV record exceeds 64 MiB.');}
@@ -176,9 +194,9 @@ export class Store {
   const backupDir=path.join(this.dir,'backups');fs.mkdirSync(backupDir,{recursive:true});
   const backupFile=path.join(backupDir,`before-restore-${Date.now()}-${randomUUID()}.json`);
   durableWrite(backupFile,JSON.stringify(this.backup(),null,2));
-  this.commit(next,false,plans);this.db=next;
+  this.commit(next,false,plans,preservePlans?undefined:parseInventoryArchive((input as {archivedInventory?:unknown}).archivedInventory??[]));this.db=next;
   return backupFile;
  }
 
 }
-export function encodeMovements(db:Database,spreadsheet=false){return stringify(db.inventory.flatMap(stock=>stock.history.map(event=>({stockId:stock.id,componentId:stock.componentId,componentName:db.components.find(c=>c.id===stock.componentId)?.name||'',serial:stock.serial,assetTag:stock.assetTag,...event}))).map(row=>spreadsheet?Object.fromEntries(Object.entries(row).map(([k,v])=>[k,spreadsheetCell(v)])):row),{header:true,columns:['id','at','action','stockId','componentId','componentName','serial','assetTag','quantity','pcId','pcName','allocationId','sourceAllocationId','targetStockId','sourceStockId','actor','notes']});}
+export function encodeMovements(db:Database,spreadsheet=false,archives:ArchivedInventory[]=[]){return stringify([...db.inventory.map(stock=>({stock,componentName:db.components.find(c=>c.id===stock.componentId)?.name||''})),...archives.map(entry=>({stock:entry.stock,componentName:entry.component.name}))].flatMap(({stock,componentName})=>stock.history.map(event=>({stockId:stock.id,componentId:stock.componentId,componentName,serial:stock.serial,assetTag:stock.assetTag,...event}))).map(row=>spreadsheet?Object.fromEntries(Object.entries(row).map(([k,v])=>[k,spreadsheetCell(v)])):row),{header:true,columns:['id','at','action','stockId','componentId','componentName','serial','assetTag','quantity','pcId','pcName','allocationId','sourceAllocationId','targetStockId','sourceStockId','actor','notes']});}
