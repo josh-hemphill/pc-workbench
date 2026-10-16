@@ -8,7 +8,8 @@ export function windowsProcessIsRunning(pid:number):boolean {
  validatePID(pid);
  const executable=path.win32.join(process.env.SystemRoot||'C:\\Windows','System32','WindowsPowerShell','v1.0','powershell.exe');
  const script=`$ErrorActionPreference='Stop';try{if([System.Diagnostics.Process]::GetProcesses().Id -contains ${pid}){exit 0}else{exit 3}}catch{[Console]::Error.WriteLine($_.Exception.Message);exit 4}`;
- const result=childProcess.spawnSync(executable,['-NoProfile','-NonInteractive','-Command',script],{encoding:'utf8',windowsHide:true,timeout:5000,maxBuffer:65536});
+ // A cold system PowerShell can take several seconds under startup/CI load.
+ const result=childProcess.spawnSync(executable,['-NoLogo','-NoProfile','-NonInteractive','-Command',script],{encoding:'utf8',windowsHide:true,timeout:15000,maxBuffer:65536});
  if(result.error)throw result.error;
  if(result.status===0)return true;
  if(result.status===3)return false;
