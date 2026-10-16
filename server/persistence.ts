@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
+import {lockOwnerIsRunning,processIsRunning} from './process-owner.ts';
 
 export class CommittedWriteError extends Error {
  public filename:string;
@@ -24,7 +25,7 @@ export function durableWrite(filename: string, contents: string, mode?:number) {
 }
 
 /** A live server owns a workspace. Stale crash locks are recovered on startup. */
-export function lockWorkspace(dir: string) {
+export function lockWorkspace(dir: string,probe:typeof processIsRunning=processIsRunning) {
  fs.mkdirSync(dir, {recursive:true});
  const filename = path.join(dir, '.server-lock.json');
  const token = randomUUID();
@@ -43,12 +44,12 @@ export function lockWorkspace(dir: string) {
    return release;
   } catch (error) {
    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
-   let owner: {pid?:number};
-   try { owner = JSON.parse(fs.readFileSync(filename,'utf8')); } catch { throw Error('Workspace lock is unreadable. Check that no server is running before removing .server-lock.json.'); }
+   let owner: {pid?:number},header:string;
+   try { header=fs.readFileSync(filename,'utf8');owner = JSON.parse(header); } catch { throw Error('Workspace lock is unreadable. Check that no server is running before removing .server-lock.json.'); }
    if (!Number.isInteger(owner.pid) || !owner.pid || owner.pid < 1) throw Error('Invalid workspace lock; check that no server is running before removing it.');
-   try { process.kill(owner.pid, 0); } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === 'ESRCH') { fs.unlinkSync(filename); continue; }
-    throw Error('Cannot verify workspace lock owner.');
+   if(!lockOwnerIsRunning(owner.pid,filename,probe)){
+    if(fs.readFileSync(filename,'utf8')!==header)throw Error('Workspace lock changed while checking its owner. Retry opening the workspace.');
+    fs.unlinkSync(filename);continue;
    }
    throw Error(`Workspace is already open by server process ${owner.pid}. Stop that server before opening this data directory.`);
   }

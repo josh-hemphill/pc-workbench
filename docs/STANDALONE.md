@@ -85,6 +85,12 @@ Changing `dataDir` selects a different workspace; it does not move or merge exis
 
 For a filesystem move, stop the server first and copy the entire data directory, including recovery backups. Never copy a live SQLite database without its associated WAL state. Keep an independent backup before changing storage locations. This workflow is designed for local storage and one running instance per workspace.
 
+## Startup lock errors
+
+An active `.server-lock.json` prevents opening the same workspace twice. A lock left after a crash is recovered when its PID no longer exists. On Windows, access-related failures from the initial process check fall back to a read-only PID enumeration through the system PowerShell; this does not require permission to terminate the recorded process. Settings-file locks use the same check.
+
+If ownership still cannot be verified, startup reports the PID, underlying error and full lock path. Stop other workbench instances and retry. For a lock left by a stopped server or copied workspace, verify the recorded process has exited before removing only that lock file. Use the reported path: user configuration can select a workspace outside the checkout. Uncertain or running owners remain blocked, and a lock replaced during the lookup is retained for a retry.
+
 ## Build standalone executables
 
 Install Node.js 26.12 or a later Node 26 release and pnpm 12.14.0:

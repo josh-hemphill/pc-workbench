@@ -3,6 +3,7 @@ import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { durableWrite } from './persistence.ts';
+import {lockOwnerIsRunning} from './process-owner.ts';
 import type { RuntimeConfig } from './runtime-config.ts';
 import { defaultUserSettings, userSettingsSchema, type UserSettings, type SettingsSnapshot, type AppSettings, type AppSettingsSnapshot } from '../shared/settings.ts';
 
@@ -58,12 +59,11 @@ function replaceFile(filename: string, expected: string, value: unknown) {
     try { fd = fs.openSync(lock, 'wx', 0o600); break; }
     catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
-      const owner = JSON.parse(fs.readFileSync(lock, 'utf8'));
+      const header=fs.readFileSync(lock,'utf8'),owner=JSON.parse(header);
       if (!Number.isInteger(owner.pid) || owner.pid < 1) throw Error(`Unreadable settings lock: ${lock}`);
-      try { process.kill(owner.pid, 0); }
-      catch (probe) {
-        if ((probe as NodeJS.ErrnoException).code === 'ESRCH') { fs.unlinkSync(lock); continue; }
-        throw probe;
+      if(!lockOwnerIsRunning(owner.pid,lock)){
+        if(fs.readFileSync(lock,'utf8')!==header)throw new SettingsConflict('Settings lock changed while checking its owner. Retry saving settings.');
+        fs.unlinkSync(lock);continue;
       }
       throw new SettingsConflict('Settings are being saved by another window. Reload and try again.');
     }
