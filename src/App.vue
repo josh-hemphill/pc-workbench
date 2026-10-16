@@ -180,7 +180,7 @@ const report=computed(()=>working.value?checkConfiguration(working.value,db.valu
 const stockAvailability=computed(()=>working.value?stockReadiness(working.value,db.value):[]);
 const reports=computed(()=>Object.fromEntries(db.value.configurations.map(c=>[c.id,checkConfiguration(c,db.value)])));
 const configs=computed(()=>db.value.configurations.filter(c=>(c.name+' '+c.description+' '+systemName(c.systemId)).toLowerCase().includes(search.value.toLowerCase())&&(filter.value==='All configurations'||(filter.value==='Conflicts'?reports.value[c.id]?.status==='Conflicts':c.status===filter.value))));
-const components=computed(()=>db.value.components.filter(c=>categoryFilter.value==='All components'||c.category===categoryFilter.value));
+const components=computed(()=>{const query=search.value.trim().toLowerCase();return db.value.components.filter(c=>(categoryFilter.value==='All components'||c.category===categoryFilter.value)&&[c.name,c.manufacturer,c.category,c.id,summary(c)].join(' ').toLowerCase().includes(query));});
 const componentPage=ref(1);
 watch(categoryFilter,()=>componentPage.value=1);
 const componentHeaders=[{title:'Component',key:'name',value:(component:Component)=>`${component.name} ${component.manufacturer}`},{title:'Category',key:'category'},{title:'Specification snapshot',key:'specification',sortable:false},{title:'Verification',key:'verified'},{title:'Actions',key:'actions',sortable:false}];
