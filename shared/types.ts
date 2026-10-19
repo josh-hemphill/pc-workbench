@@ -8,7 +8,7 @@ export interface Port { id: string; kind: PortKind; connector?: string; pinout?:
 export interface PortRequirement { id: string; kind: PortKind; quantity: number; connector?: string; pinout?: string; customType?: string; protocol?: string; minSpeedMbps?: number; minPowerW?: number; isolated?: boolean }
 export interface PortMapping { connectionId: string; requirementId: string; placementId: string; instance: number; portId: string }
 export interface SoftwareSettings { os?: string; image?: string; equipmentSoftware?: string; equipmentConfiguration?: string; bios?: string; drivers?: Record<string,string>; firmware?: Record<string,string> }
-export interface Slot { id: string; bus: Bus; physical: number; lanes: number; generation: number; position: number; bifurcationModes?: string[]; pciVoltage?: PciVoltage; pciBits?: 32|64 }
+export interface Slot { laneSource?: 'CPU'|'Chipset'; id: string; bus: Bus; physical: number; lanes: number; generation: number; position: number; bifurcationModes?: string[]; pciVoltage?: PciVoltage; pciBits?: 32|64 }
 export type BaySize = '2.5'|'3.5'|'5.25';
 export interface BayTarget { id: string; size: BaySize; group?: string; position?: number; maxDepthMm?: number }
 export type StorageProtocol = 'SATA'|'SAS'|'NVMe';

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {slotSummary} from '../shared/hardware-shortcuts';
 import type {RelatedRecord} from '../shared/record-navigation';
 import InventoryCleanup from './InventoryCleanup.vue';
 import RecordTable from './RecordTable.vue';
@@ -108,7 +109,7 @@ const providers=computed(()=>{
   const plans=(operationTemplate.value?.placements||[]).filter(p=>(['Chassis','Motherboard','Storage adapter'].includes(part(p.componentId)?.category||'')||!!part(p.componentId)?.specs.bayTargets)&&!actual.some(r=>r.allocation.plannedPlacementId===p.id));
   return [{title:'Automatic / not bound',value:'',category:''},...actual.map(r=>({title:`${part(r.stock.componentId)?.name} · ${r.stock.serial||r.stock.assetTag||'installed unit'}`,value:r.allocation.id,category:part(r.stock.componentId)?.category||''})),...plans.map(p=>({title:`${part(p.componentId)?.name} · planned`,value:p.id,category:part(p.componentId)?.category||''}))];
 });
-const slots=computed(()=>{const board=operationHardware.value.find(r=>part(r.stock.componentId)?.category==='Motherboard');const component=board?part(board.stock.componentId):part(operationTemplate.value?.placements.find(p=>part(p.componentId)?.category==='Motherboard')?.componentId||'');return [{title:'Automatic slot',value:''},...(component?.specs.slots||[]).map(s=>({title:`${s.id} · ${s.bus} x${s.physical} / ${s.lanes} lanes`,value:s.id}))];});
+const slots=computed(()=>{const board=operationHardware.value.find(r=>part(r.stock.componentId)?.category==='Motherboard');const component=board?part(board.stock.componentId):part(operationTemplate.value?.placements.find(p=>part(p.componentId)?.category==='Motherboard')?.componentId||'');return [{title:'Automatic slot',value:''},...(component?.specs.slots||[]).map(s=>({title:`${s.id} · ${slotSummary(s)}`,value:s.id}))];});
 const driveTargets=computed(()=>{
   const provider=operation.value?.adapterPlacementId||operation.value?.controllerPlacementId;
   const providerRow=operationHardware.value.find(r=>r.allocation.id===provider);

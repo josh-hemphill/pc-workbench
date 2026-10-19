@@ -16,3 +16,7 @@ watch(pages,count=>page.value=Math.min(page.value,count));
   <div class="component-record-detail control-stack"><slot v-if="modelValue>=0&&modelValue<items.length" /><p v-else class="form-hint">Add a record or select one from the list to edit its details.</p></div>
  </div>
 </template>
+
+<style scoped>
+.component-record-list :deep(.v-list-item-subtitle){white-space:normal;overflow-wrap:anywhere;-webkit-line-clamp:unset;line-clamp:unset}
+</style>

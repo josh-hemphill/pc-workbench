@@ -25,3 +25,7 @@ Changing motor counts may leave saved routes that no longer match. The wiring ed
 Total component power uses an explicit `powerW` when provided. Otherwise Fan/Cooler power can be estimated from all recorded motor voltage × current × count values. These estimates use the entered ratings and do not replace thermal, airflow or electrical engineering verification.
 
 Fan frame dimensions can be recorded under Physical. Chassis fan mount positions, airflow, radiator fit and cooling performance require manual verification; the header checks do not allocate fan mounts.
+
+## Quick header entry
+
+In Motherboard → Cooling, **Quick fan layout** adds a CPU fan header (only if CPU_FAN is absent) and the chosen number of system fan headers. Select 4-pin or 3-pin once for the batch. Existing records and wiring IDs are preserved; repeat use appends system headers. Board labels can be adjusted afterward. **Add pump header** and **Add other header** handle exceptions. The shortcut records connector type only: control modes, voltage and current limits remain unknown until documented. Less common header settings are under **Control modes and electrical limits**. These controls are also available in the shared bulk editor.

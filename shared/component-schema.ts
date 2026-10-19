@@ -7,6 +7,7 @@ const id = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
 const mount = z.enum(["auto", "internal", "front-hot-swap", "rear-sled"]),
   pciVoltage = z.enum(["3.3V", "5V", "universal"]);
 const slot = z.object({
+  laneSource: z.enum(["CPU", "Chipset"]).optional(),
   id,
   bus: z.enum(["PCI", "PCIe"]),
   physical: z.number().int().min(1).max(16),
