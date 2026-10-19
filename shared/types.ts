@@ -41,7 +41,7 @@ export interface Specs {
   usbA?: number; usbC?: number; ethernet?: number; powerW?: number; capacityW?: number; driveInterface?: 'SATA'|'SAS'|'NVMe'; driveSize?: '2.5'|'3.5'|'5.25'|'M.2'; m2Length?: number;
   sledDrives?: number; requiresBifurcation?: boolean; bifurcation?: boolean; sledHotSwap?: boolean; supportsSockets?: string[]; notes?: string;
 }
-export interface Component { id: string; name: string; category: Category; manufacturer: string; specs: Specs; source: string; verified: boolean }
+export interface Component { model?:string;family?:string; id: string; name: string; category: Category; manufacturer: string; specs: Specs; source: string; verified: boolean }
 export interface Connection { id: string; name: string; usbA: number; usbC: number; ethernet: number; notes: string; requirements?: PortRequirement[] }
 export interface System { installationLocationId?: string; id: string; name: string; location: string; description: string; connections: Connection[] }
 export interface Placement extends StorageBindings { id: string; componentId: string; quantity: number; slotId: string; role: 'boot'|'data'|'general'; mount: 'auto'|'internal'|'front-hot-swap'|'rear-sled'; group: string; targetId?: string; adapterPlacementId?: string; controllerPlacementId?: string }

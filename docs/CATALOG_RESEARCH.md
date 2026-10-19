@@ -39,7 +39,7 @@ The agent can return the full updated pack or a compact file:
 }
 ```
 
-`manufacturer` and `source` are top-level paths. Engineering values use `specs.<field>`. Use the paths and value schemas exported for each model rather than adding arbitrary fields.
+`manufacturer`, `model`, `family` and `source` are top-level paths. Missing model/family metadata is offered as optional research and does not count as a mandatory core gap. Keep the exported top-level `model` identity unchanged when present; a proposed missing model belongs in `proposals`. Known model changes cause an identity conflict. Engineering values use `specs.<field>`. Use the paths and value schemas exported for each model rather than adding arbitrary fields.
 
 ## Review and import
 

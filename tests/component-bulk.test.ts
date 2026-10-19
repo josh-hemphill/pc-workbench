@@ -6,9 +6,9 @@ import {componentSpecsSchema} from '../shared/component-schema.ts';
 import {componentFieldPaths,componentFieldValue,commonComponentDraft,sharedComponentPaths,changedComponentPaths,applyComponentFieldEdits,sameValue} from '../shared/component-bulk.ts';
 const part=(id:string,category:Component['category']='Motherboard',specs:Component['specs']={}):Component=>({id,name:id,category,specs,manufacturer:'',source:'',verified:true});
 const database=(components:Component[]):Database=>({...structuredClone(seed),components,configurations:[],inventory:[],pcs:[],requirementsSets:[],installationLocations:[],systems:[]});
-test('bulk field coverage follows the complete component schema and excludes per-record identity',()=>{
+test('bulk field coverage follows the complete component schema and excludes record IDs names and categories',()=>{
  const keys=Object.keys(componentSpecsSchema.shape).map(key=>`specs.${key}`);
- assert.deepEqual(componentFieldPaths,['manufacturer','source','verified',...keys]);assert.deepEqual(sharedComponentPaths([part('one'),part('two')]),componentFieldPaths);
+ assert.deepEqual(componentFieldPaths,['manufacturer','model','family','source','verified',...keys]);assert.deepEqual(sharedComponentPaths([part('one'),part('two')]),componentFieldPaths);
  for(const path of ['id','name','category','specs.__proto__'])assert(!componentFieldPaths.includes(path));
 });
 test('the common draft never copies mixed values or lists from the first component',()=>{

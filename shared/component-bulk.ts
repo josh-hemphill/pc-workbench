@@ -7,7 +7,7 @@ export type ComponentFieldMode='set'|'fill'|'merge'|'clear';
 export interface ComponentFieldEdit {path:string;mode:ComponentFieldMode;value?:unknown}
 export const componentSpecKeys=Object.keys(componentSpecsSchema.shape) as (keyof Specs)[];
 export const componentCollections:ComponentCollection[]=['ports','slots','laneRules','bayTargets','driveTargets','sataDataPorts','sataPowerConnectors','sataDataInputs','sataPowerInputs','sffPorts','sffInputs','coolingDevices','coolingHeaders','coolingHeaderGroups'];
-export const componentFieldPaths=['manufacturer','source','verified',...componentSpecKeys.map(key=>`specs.${key}`)];
+export const componentFieldPaths=['manufacturer','model','family','source','verified',...componentSpecKeys.map(key=>`specs.${key}`)];
 export const sameValue=(a:unknown,b:unknown):boolean=>{
  if(a===b)return true;if(!a||!b||typeof a!=='object'||typeof b!=='object')return false;
  if(Array.isArray(a)||Array.isArray(b))return Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((v,i)=>sameValue(v,b[i]));
@@ -51,7 +51,7 @@ export function commonComponentDraft(components:Component[]):Component{
  }
  return draft;
 }
-const labels:Record<string,string>={source:'Source / documentation URL',verified:'Verified',manufacturer:'Manufacturer',ports:'Physical ports',slots:'Expansion slots',laneRules:'Lane sharing rules',bayTargets:'Mounting bays',driveTargets:'Drive / M.2 positions',sataDataPorts:'SATA data ports provided',sataPowerConnectors:'SATA power plugs provided',sataDataInputs:'SATA data inputs consumed',sataPowerInputs:'SATA power inputs consumed',sffPorts:'SFF output ports',sffInputs:'SFF input connectors',coolingDevices:'Fans and pumps',coolingHeaders:'Cooling headers',coolingHeaderGroups:'Shared cooling budgets',notes:'Specification notes'};
+const labels:Record<string,string>={model:'Model / part number',family:'Family / series',source:'Source / documentation URL',verified:'Verified',manufacturer:'Manufacturer',ports:'Physical ports',slots:'Expansion slots',laneRules:'Lane sharing rules',bayTargets:'Mounting bays',driveTargets:'Drive / M.2 positions',sataDataPorts:'SATA data ports provided',sataPowerConnectors:'SATA power plugs provided',sataDataInputs:'SATA data inputs consumed',sataPowerInputs:'SATA power inputs consumed',sffPorts:'SFF output ports',sffInputs:'SFF input connectors',coolingDevices:'Fans and pumps',coolingHeaders:'Cooling headers',coolingHeaderGroups:'Shared cooling budgets',notes:'Specification notes'};
 export function componentFieldLabel(path:string,c?:Component){const key=path.replace(/^specs\./,'');return labels[key]||c&&componentFields(c).find(field=>field.key===key)?.label||key.replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/^./,v=>v.toUpperCase());}
 export const collectionPath=(path:string)=>path.startsWith('specs.')&&componentCollections.includes(path.slice(6) as ComponentCollection);
 const countSources:Partial<Record<keyof Specs,keyof Specs>>={sataPorts:'sataDataPorts',sataPower:'sataPowerConnectors',sataPowerPlugs:'sataPowerInputs',m2Slots:'driveTargets',m2Lengths:'driveTargets',usbA:'ports',usbC:'ports',ethernet:'ports'};
@@ -72,7 +72,7 @@ export function applyComponentFieldEdits(component:Component,edits:ComponentFiel
   const target=(isSpec?next.specs:next) as unknown as Record<string,unknown>,before=target[key];
   if(edit.mode==='fill'&&!missing(effectiveValue(next,edit.path)))continue;
   if(edit.mode==='clear'){
-   if(!isSpec)target[key]=key==='verified'?false:'';else delete target[key];
+   if(!isSpec&&!['model','family'].includes(key))target[key]=key==='verified'?false:'';else delete target[key];
   }else if(edit.mode==='merge'){
    if(!collectionPath(edit.path)||!Array.isArray(edit.value))throw Error('Merge requires a named record list.');
    const entries=edit.value as {id:string}[];if(entries.some(row=>!row||typeof row.id!=='string')||new Set(entries.map(row=>row.id)).size!==entries.length)throw Error('Use unique IDs in each list.');
@@ -99,6 +99,6 @@ export function applyComponentFieldEdits(component:Component,edits:ComponentFiel
  for(const key of componentCollections)for(const row of (component.specs[key]||[]) as {id:string}[])if(!((next.specs[key]||[]) as {id:string}[]).some(item=>item.id===row.id)){
   const refs=componentReferences(next,key,row.id,referenceDB);if(refs.length)throw Error(`${component.name}: keep ${row.id}; used by ${refs.join(', ')}.`);
  }
- if(!verificationChosen&&!sameValue(component.specs,next.specs))next.verified=false;
+ if(!verificationChosen&&(!sameValue(component.specs,next.specs)||!sameValue(component.model,next.model)))next.verified=false;
  return next;
 }

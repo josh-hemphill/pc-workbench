@@ -14,7 +14,7 @@ const evidence={sourceUrl:'https://vendor.example/cpu.pdf',evidence:'Specificati
 function proposed(db:Database,fields:ResearchProposal[]):ResearchFile{const pack=exportResearchPack(db,[cpu.id],'export-revision');pack.components[0].proposals=fields;return pack;}
 test('research pack exports exact IDs, current context, typed missing fields and blank proposal slots',()=>{
  const db=fixture(),pack=exportResearchPack(db,[cpu.id],'rev');assert.equal(pack.workspaceRevision,'rev');assert.equal(pack.components[0].id,cpu.id);assert.deepEqual(pack.components[0].existing,cpu);
- assert.deepEqual(pack.components[0].proposals.map(p=>p.path),['manufacturer','source','specs.threadCount']);assert(pack.components[0].proposals.every(p=>p.value===null));assert(pack.instructions);assert(researchFileSchema.safeParse(JSON.parse(JSON.stringify(pack))).success);
+ assert.deepEqual(pack.components[0].proposals.map(p=>p.path),['manufacturer','source','specs.threadCount','model','family']);assert(pack.components[0].proposals.every(p=>p.value===null));assert(pack.instructions);assert(researchFileSchema.safeParse(JSON.parse(JSON.stringify(pack))).success);
  (pack.components[0].existing as Component).specs.coreCount=99;assert.equal(db.components.at(-1)!.specs.coreCount,4);
  assert.throws(()=>exportResearchPack(db,[cpu.id,cpu.id],'rev'));assert.throws(()=>exportResearchPack(db,['deleted'],'rev'),/no longer exists/);
 });

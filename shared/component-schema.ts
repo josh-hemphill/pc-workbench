@@ -282,6 +282,8 @@ const specs = z.object({
 });
 export const componentSpecsSchema = specs;
 export const componentSchema = z.object({
+  model: z.string().trim().max(200).optional(),
+  family: z.string().trim().max(200).optional(),
   id,
   name: z.string().min(1).max(200).refine(
     (value) => !!value.trim(),

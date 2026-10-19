@@ -1,10 +1,10 @@
 import type {Component,Database} from './types.ts';
 import {catalogSuggestions,normalizeCatalogValue,normalizeCatalogValues} from './catalog-options.ts';
 import {componentCapabilities} from './component-capabilities.ts';
-export interface CatalogField { key:string;label:string;kind:'text'|'number'|'array'|'boolean'; choices?:string[] }
+export interface CatalogField { key:string;label:string;kind:'text'|'number'|'array'|'boolean'; choices?:string[];optional?:boolean }
 const field=(key:string,label:string,kind:CatalogField['kind']='number',choices?:string[]):CatalogField=>({key,label,kind,choices});
 export function catalogFields(c:Component):CatalogField[] {
- const cap=componentCapabilities(c),fields=[field('manufacturer','Manufacturer','text'),field('source','Source URL','text')];
+ const cap=componentCapabilities(c),fields=[field('manufacturer','Manufacturer','text'),{...field('model','Model / part number','text'),optional:true},{...field('family','Family / series','text'),optional:true},field('source','Source URL','text')];
  const add=(...items:CatalogField[])=>fields.push(...items);
  switch(c.category){
  case 'CPU':add(field('socket','Socket','text'),field('coreCount','Physical CPU cores'),field('threadCount','Logical CPU threads'),field('powerW','Power (W)'));break;
@@ -26,9 +26,9 @@ export function catalogFields(c:Component):CatalogField[] {
  if(c.category==='Storage adapter'&&cap.sataController)add(field('sataPorts','SATA data ports'));
  return fields;
 }
-export function fieldValue(c:Component,key:string):unknown{if(key==='manufacturer'||key==='source')return c[key];if(key==='sataPorts'&&c.specs.sataDataPorts!==undefined)return c.specs.sataDataPorts.filter(p=>!p.disabled).length;if(key==='sataPower'&&c.specs.sataPowerConnectors!==undefined)return c.specs.sataPowerConnectors.length;if(['usbA','usbC','ethernet'].includes(key)&&c.specs.ports!==undefined)return c.specs.ports.filter(port=>port.kind===({usbA:'USB-A',usbC:'USB-C',ethernet:'Ethernet'} as Record<string,string>)[key]).length;if(key==='m2Slots'&&c.category==='Motherboard'&&c.specs.driveTargets!==undefined)return c.specs.driveTargets.filter(target=>target.driveSizes?.includes('M.2')).length;return (c.specs as Record<string,unknown>)[key];}
+export function fieldValue(c:Component,key:string):unknown{if(['manufacturer','source','model','family'].includes(key))return c[key as 'manufacturer'|'source'|'model'|'family'];if(key==='sataPorts'&&c.specs.sataDataPorts!==undefined)return c.specs.sataDataPorts.filter(p=>!p.disabled).length;if(key==='sataPower'&&c.specs.sataPowerConnectors!==undefined)return c.specs.sataPowerConnectors.length;if(['usbA','usbC','ethernet'].includes(key)&&c.specs.ports!==undefined)return c.specs.ports.filter(port=>port.kind===({usbA:'USB-A',usbC:'USB-C',ethernet:'Ethernet'} as Record<string,string>)[key]).length;if(key==='m2Slots'&&c.category==='Motherboard'&&c.specs.driveTargets!==undefined)return c.specs.driveTargets.filter(target=>target.driveSizes?.includes('M.2')).length;return (c.specs as Record<string,unknown>)[key];}
 export function isMissing(value:unknown){return value===undefined||value===null||typeof value==='string'&&!value.trim()||Array.isArray(value)&&!value.length;}
-export function missingFields(c:Component){return catalogFields(c).filter(f=>isMissing(fieldValue(c,f.key)));}
+export function missingFields(c:Component){return catalogFields(c).filter(f=>!f.optional&&isMissing(fieldValue(c,f.key)));}
 export function patchMissing(c:Component,patch:Record<string,unknown>,db:Pick<Database,'components'>={components:[c]}):Component {
  const result:Component={...c,specs:{...c.specs}},allowed=new Map(catalogFields(c).map(f=>[f.key,f]));let changed=false;
  for(const [key,raw] of Object.entries(patch)){
@@ -37,10 +37,10 @@ export function patchMissing(c:Component,patch:Record<string,unknown>,db:Pick<Da
   if(isMissing(value))throw Error(`Provide a value for ${f.label}.`);
   if(!isMissing(fieldValue(c,key)))continue;
   if(f.kind==='number'&&(typeof value!=='number'||!Number.isFinite(value)||value<0)||f.kind==='text'&&typeof value!=='string'||f.kind==='array'&&(!Array.isArray(value)||value.some(v=>typeof v!=='string'))||f.kind==='boolean'&&typeof value!=='boolean')throw Error(`Invalid value for ${f.label}.`);
-  if(f.kind==='array')value=normalizeCatalogValues(value,catalogSuggestions(db,key));else if(f.kind==='text'&&key!=='source')value=normalizeCatalogValue(value,catalogSuggestions(db,key));
+  if(f.kind==='array')value=normalizeCatalogValues(value,catalogSuggestions(db,key));else if(f.kind==='text'&&!['source','model'].includes(key))value=normalizeCatalogValue(value,catalogSuggestions(db,key));
   if(isMissing(value))throw Error(`Provide a value for ${f.label}.`);
   if(f.choices&&!f.choices.includes(String(value)))throw Error(`Unsupported ${f.label}.`);
-  if(key==='manufacturer'||key==='source')result[key]=String(value).trim();else (result.specs as Record<string,unknown>)[key]=value;
+  if(['manufacturer','source','model','family'].includes(key))result[key as 'manufacturer'|'source'|'model'|'family']=String(value).trim();else (result.specs as Record<string,unknown>)[key]=value;
   changed=true;
  }
  if(changed)result.verified=false;

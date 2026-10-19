@@ -3,7 +3,7 @@ import {computed,ref,watch,onBeforeUnmount,onMounted,nextTick} from 'vue';
 import type {Database} from '../shared/types';
 import type {BulkRequest} from '../shared/bulk-records';
 import BulkRecordEditor from './BulkRecordEditor.vue';
-const props=withDefaults(defineProps<{items:Record<string,any>[];headers:{title:string;key:string;sortable?:boolean}[];label:string;db?:Database;collection?:BulkRequest['collection'];itemValue?:string;searchable?:boolean}>(),{searchable:true});
+const props=withDefaults(defineProps<{items:Record<string,any>[];headers:{title:string;key:string;sortable?:boolean}[];label:string;db?:Database;collection?:BulkRequest['collection'];itemValue?:string;searchable?:boolean;groupBy?:{key:string;order?:'asc'|'desc'}[]}>(),{searchable:true});
 const emit=defineEmits<{reload:[];notify:[message:string]}>();
 const search=ref('');
 const tableItems=computed(()=>props.items.filter(item=>props.headers.map(header=>String(item[header.key]??'')).join(' ').toLowerCase().includes(search.value.toLowerCase())));
@@ -34,7 +34,7 @@ defineExpose({confirmDiscard,hasUnsavedChanges,getContext,restoreContext});
 <v-btn v-if="collection!=='inventory'" color="error" variant="outlined" :disabled="!selection.length||selection.length>500" @click="open('delete')">Delete selected</v-btn>
 <p role="status">{{selection.length}} selected · {{hidden}} hidden by filters. Header checkbox selects the current page; up to 500 records per action.</p>
 </div>
-<v-data-table v-model="selection" v-model:page="page" :headers="headers" :items="tableItems" :item-value="key" :show-select="bulkMode" select-strategy="page" :items-per-page="25" :items-per-page-options="[10,25,50,100]" :mobile="false" :aria-label="label" no-data-text="No matching records.">
+<v-data-table v-model="selection" v-model:page="page" :headers="headers" :items="tableItems" :group-by="groupBy" :item-value="key" :show-select="bulkMode" select-strategy="page" :items-per-page="25" :items-per-page-options="[10,25,50,100]" :mobile="false" :aria-label="label" no-data-text="No matching records.">
 <template #caption><caption class="sr-only">{{label}}</caption></template>
 <template #item.data-table-select="{item,internalItem,index,props:checkbox,toggleSelect}"><v-checkbox-btn v-bind="{...checkbox,onClick:undefined}" @click.stop="(event:MouseEvent)=>toggleSelect(internalItem,index,event)" :aria-label="`Select ${item.c0||item.name||item[key]}`" /></template>
 <template v-for="header in headers" :key="header.key" #[`item.${header.key}`]="{item}"><slot :name="header.key" :item="item">{{item[header.key]}}</slot></template>

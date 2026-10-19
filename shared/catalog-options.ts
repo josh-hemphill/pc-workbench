@@ -76,6 +76,7 @@ export function catalogSuggestions(db: Pick<Database, 'components'>, field: stri
   for (const component of db.components) {
     const specs = component.specs;
     if (field === 'manufacturer') values.push(component.manufacturer);
+    else if(field==='model'||field==='family')values.push(component[field]);
     else if (vocabulary === 'socket') values.push(specs.socket, ...specs.supportsSockets || []);
     else if (vocabulary === 'formFactor') values.push(specs.formFactor, ...specs.supportedForms || []);
     else if (vocabulary === 'm2Lengths') values.push(specs.m2Length, ...specs.m2Lengths || [], ...(specs.driveTargets || []).flatMap(target => target.m2Lengths || []));
