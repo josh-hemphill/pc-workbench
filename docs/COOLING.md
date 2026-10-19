@@ -29,3 +29,7 @@ Fan frame dimensions can be recorded under Physical. Chassis fan mount positions
 ## Quick header entry
 
 In Motherboard → Cooling, **Quick fan layout** adds a CPU fan header (only if CPU_FAN is absent) and the chosen number of system fan headers. Select 4-pin or 3-pin once for the batch. Existing records and wiring IDs are preserved; repeat use appends system headers. Board labels can be adjusted afterward. **Add pump header** and **Add other header** handle exceptions. The shortcut records connector type only: control modes, voltage and current limits remain unknown until documented. Less common header settings are under **Control modes and electrical limits**. These controls are also available in the shared bulk editor.
+
+## Research handoff
+
+Missing Data research packs support fan/pump motor records, cooling headers and shared current budgets. Agents can propose named records or fill unknown properties with documentation and evidence; known values and existing wiring IDs are preserved. Shared budget references must be included in the selected batch or already exist. Updates remain unverified and do not assign wiring. See [research handoff](CATALOG_RESEARCH.md#fans-pumps-and-cooling-headers) for supported fields and examples.

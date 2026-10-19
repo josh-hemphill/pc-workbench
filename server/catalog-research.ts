@@ -4,7 +4,7 @@ import type {Component,Database,Specs} from '../shared/types.ts';
 import {categories} from '../shared/types.ts';
 import {componentSchema,componentSpecsSchema} from '../shared/component-schema.ts';
 import {catalogFields,missingFields,fieldValue,isMissing,patchMissing} from '../shared/catalog-quality.ts';
-import {engineeringFields,mergeResearchRecords,changedResearchRecords,ResearchConflict,type ResearchCollection} from './research-engineering.ts';
+import {engineeringFields,mergeResearchRecords,changedResearchRecords,isResearchCollectionPath,validateResearchCooling,ResearchConflict,type ResearchCollection} from './research-engineering.ts';
 import {applyComponentFieldEdits,type ComponentFieldEdit,sameValue} from '../shared/component-bulk.ts';
 import {researchFormat,researchPackLimit,type ResearchFile,type ResearchRow,type ResearchPreview} from '../shared/catalog-research.ts';
 const id=z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
@@ -22,8 +22,10 @@ export function exportResearchPack(db:Database,ids:string[],revision:string):Res
   'Set proposal.value to a JSON value matching its valueSchema. Zero and false are known values. Leave null, empty strings or empty arrays for unresolved fields; do not guess.',
   'For every proposed value provide sourceUrl (HTTP/HTTPS) and evidence (a concise source quote or explanation, including page/table when useful). URLs are recorded, not fetched by the importer.',
   'Core gap checks are not a complete engineering audit. Named connector inventories override numeric counts. Unverified records with no core gaps require human review.',
-  'Named ports, slots and laneRules are optional engineering proposals: submit arrays of records with stable IDs. Reuse existing IDs for the same physical connector/slot/rule. Existing records may supply only id and missing properties; new records must supply all required properties in valueSchema. Omitted records are preserved. Do not renumber, delete, replace known values, or infer CPU/chipset source from slot width.',
+  'Named ports, slots, laneRules, coolingDevices, coolingHeaders and coolingHeaderGroups are optional engineering proposals: submit arrays of records with stable IDs. Reuse existing IDs for the same physical connector/slot/rule. Existing records may supply only id and missing properties; new records must supply all required properties in valueSchema. Omitted records are preserved. Do not renumber, delete, replace known values, or infer CPU/chipset source from slot width.',
   'Named ports are the complete physical inventory, not just rear connectors; retain known internal/front-panel ports. When converting numeric USB/Ethernet counts to a named list, match every recorded count. Lists cannot clear an explicitly empty inventory. Each collection is reviewed as one proposal; a conflicting property withholds that collection. Lane rules must reference existing or simultaneously proposed slots and named SATA endpoints.',
+  'For fans/pumps, research motor kind/count, power connector, voltage, maximum/startup current per motor, DC/PWM/fixed-speed control, separate control connector and RPM feedback. Header proposals describe connector, supported control modes, voltage, per-header current limit, documented device limit and shared-budget ID. A 4-pin connector alone does not establish PWM/DC support or current ratings; leave undocumented properties absent. Do not infer splitter capacity or startup current from typical running current.',
+  'Cooling header limitGroup must name an existing or simultaneously selected coolingHeaderGroups record on the same component. Shared budgets record the combined documented current limit. Keep motor/header IDs stable so existing configuration and installed wiring remains valid; research imports never create wiring assignments.',
   'Import fills only fields still missing on the same component identity. Existing values are kept, conflicting/invalid proposals are shown, and applied components remain unverified.'],components:ids.map(id=>{
    const component=byId.get(id);if(!component)throw Error(`Component ${id} no longer exists. Reload before exporting.`);
    const missing=[...missingFields(component),...catalogFields(component).filter(field=>field.optional&&isMissing(fieldValue(component,field.key)))],engineering=engineeringFields(component).filter(field=>field.collection||component.specs.bifurcation===undefined);
@@ -70,8 +72,9 @@ export function previewResearch(db:Database,input:ResearchFile,revision:string,s
  try{
   const selectedRows=rows.filter(row=>chosen.has(row.key));
   for(const componentId of new Set(selectedRows.map(row=>row.componentId))){
-   const current=byId.get(componentId)!,edits:ComponentFieldEdit[]=selectedRows.filter(row=>row.componentId===componentId).map(row=>({path:row.path,mode:['specs.ports','specs.slots','specs.laneRules'].includes(row.path)?'merge':'set',value:row.after}));
+   const current=byId.get(componentId)!,edits:ComponentFieldEdit[]=selectedRows.filter(row=>row.componentId===componentId).map(row=>({path:row.path,mode:isResearchCollectionPath(row.path)?'merge':'set',value:row.after}));
    const next=applyComponentFieldEdits(current,edits,db);
+   if(edits.some(edit=>['specs.coolingHeaders','specs.coolingHeaderGroups'].includes(edit.path)))validateResearchCooling(next);
    for(const row of selectedRows.filter(row=>row.componentId===componentId&&!engineeringFields(current).some(field=>`specs.${field.key}`===row.path)))if(!sameValue(fieldValue(next,row.path.replace(/^specs\./,'')),row.after))throw Error(`${row.field}: selected value disagrees with the named inventory. Deselect the conflicting count proposal.`);
    updated.set(componentId,next);
   }

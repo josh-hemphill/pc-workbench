@@ -9,7 +9,7 @@ Give the downloaded JSON file to an agent along with this request:
 The file contains:
 
 - Existing component data as read-only context, including notes and named connector inventories.
-- Category-specific missing core fields plus optional named port, slot, lane-rule and bifurcation proposals, with labels and value schemas. Known zero, false and named inventories are respected.
+- Category-specific missing core fields plus optional named port, slot, lane-rule, fan/pump, cooling-header, shared-budget and bifurcation proposals, with labels and value schemas. Known zero, false and named inventories are respected.
 - Editable proposal slots with `path`, `value`, `sourceUrl` and `evidence`.
 - Instructions embedded in the file, its format/version, export time and workspace revision.
 
@@ -100,3 +100,45 @@ Collections merge by stable ID. Omitted records and properties are retained. Kno
 `ports` is the component's complete named physical inventory, not a separate rear-panel-only list. Retain existing internal/front-panel connectors. When converting numeric-only USB/Ethernet counts to named ports, the list must exactly match every recorded count; conflicting counts require correction in the normal editor. New named ports derive the corresponding totals. Deselect a scalar count proposal if it disagrees with a simultaneously selected named inventory.
 
 Selected slots and lane rules are validated together. Deselecting a slot proposal required by a selected rule blocks the batch until the selection is corrected. Unknown slot/SATA references, incomplete new records, duplicate IDs/positions and malformed values are rejected. Existing wiring IDs remain intact. Applied changes remain unverified; notes retain only actual additions/filled properties with source evidence rather than copying unchanged inventories.
+
+## Fans, pumps and cooling headers
+
+Fan and Cooler records include optional `specs.coolingDevices` proposals. Motherboards and Bay accessories include `specs.coolingHeaders` and `specs.coolingHeaderGroups`. Existing cooling inventories on other component categories can also be researched. These optional collections do not add mandatory core gaps.
+
+Motor records support `kind` (fan/pump), motor count, power connector, voltage, maximum/startup current **per motor**, speed control (PWM, DC voltage or fixed speed), a separate control/RPM connector and RPM-feedback availability. They do not currently model numeric RPM ranges. A 4-pin connector alone does not establish supported control modes, current ratings, splitter capacity or voltage; leave undocumented properties absent. Do not substitute typical running current for a documented maximum/startup requirement.
+
+For example, to enrich an existing motor, use a proposal such as:
+
+```json
+{
+  "path": "specs.coolingDevices",
+  "value": [{"id": "FAN_1", "powerConnector": "Fan 4-pin", "voltageV": 12, "currentA": 0.25, "control": "PWM"}],
+  "sourceUrl": "https://manufacturer.example/fan-manual.pdf",
+  "evidence": "Electrical table: 12 V, maximum/startup current 0.25 A per fan, 4-pin PWM."
+}
+```
+
+Use a complete new record with a stable `id` and `kind` when adding a motor; reuse the existing ID when filling properties. Pumps may use a separate power connection, such as SATA power, and a different control/RPM connector. Assembly power wiring remains in the component/build editors; research does not assign cables or cooling connections.
+
+Headers describe connector type, supported control modes, supply voltage, per-header current limit, documented motor limit, RPM feedback and optional `limitGroup`. A shared budget records its stable ID and combined `maxCurrentA`. For example, submit these proposals together on the provider component:
+
+```json
+[
+  {
+    "path": "specs.coolingHeaders",
+    "value": [{"id": "CPU_FAN", "connector": "Fan 4-pin", "controlModes": ["PWM"], "maxCurrentA": 1, "limitGroup": "FAN_BUDGET"}],
+    "sourceUrl": "https://manufacturer.example/board-manual.pdf",
+    "evidence": "CPU_FAN supports PWM and 1 A; its shared group is limited to 2 A."
+  },
+  {
+    "path": "specs.coolingHeaderGroups",
+    "value": [{"id": "FAN_BUDGET", "maxCurrentA": 2}],
+    "sourceUrl": "https://manufacturer.example/board-manual.pdf",
+    "evidence": "Header current-budget table: FAN_BUDGET has a 2 A combined limit."
+  }
+]
+```
+
+Shared-budget references must exist on the same component or be included in the selected batch. Deselecting a required budget blocks the apply; unresolved references are not saved. The existing merge rules apply: retain omitted records, fill unknown properties only, preserve zero/false/empty declarations, and withhold a whole collection if a known property conflicts. Standard 3-pin headers cannot declare 4-pin PWM support. Collection limits remain 32 motor records, 64 headers and 32 shared budgets per component.
+
+Preview shows only actual additions and filled properties. Source evidence is retained, changed components remain unverified, and existing configuration/inventory wiring IDs are preserved. New motors and headers receive no automatic wiring assignments; review affected builds in **Connections → Fan and pump wiring**.

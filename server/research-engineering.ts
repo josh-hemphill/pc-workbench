@@ -3,12 +3,17 @@ import type {Component} from '../shared/types.ts';
 import {componentSpecsSchema} from '../shared/component-schema.ts';
 import {componentCapabilities} from '../shared/component-capabilities.ts';
 import {sameValue} from '../shared/component-bulk.ts';
-const collections={ports:'Named physical ports / back-panel connectors',slots:'PCIe / PCI slots and lane wiring',laneRules:'Lane sharing and disabled endpoints'} as const;
+const collections={ports:'Named physical ports / back-panel connectors',slots:'PCIe / PCI slots and lane wiring',laneRules:'Lane sharing and disabled endpoints',coolingDevices:'Fans and pumps',coolingHeaders:'Cooling headers',coolingHeaderGroups:'Shared cooling current budgets'} as const;
 export type ResearchCollection=keyof typeof collections;
+const collectionLimits:Record<ResearchCollection,number>={ports:1000,slots:32,laneRules:100,coolingDevices:32,coolingHeaders:64,coolingHeaderGroups:32};
+export const isResearchCollectionPath=(path:string)=>path.startsWith('specs.')&&Object.hasOwn(collections,path.slice(6));
 export function engineeringFields(component:Component){
  const cap=componentCapabilities(component),fields:{key:ResearchCollection|'bifurcation';label:string;collection:boolean}[]=[];
  if(cap.ports)fields.push({key:'ports',label:collections.ports,collection:true});
  if(component.category==='Motherboard')fields.push({key:'slots',label:collections.slots,collection:true},{key:'laneRules',label:collections.laneRules,collection:true},{key:'bifurcation',label:'Motherboard bifurcation support',collection:false});
+ if(['Fan','Cooler'].includes(component.category)||component.specs.coolingDevices!==undefined)fields.push({key:'coolingDevices',label:collections.coolingDevices,collection:true});
+ if(['Motherboard','Bay accessory'].includes(component.category)||component.specs.coolingHeaders!==undefined)fields.push({key:'coolingHeaders',label:collections.coolingHeaders,collection:true},{key:'coolingHeaderGroups',label:collections.coolingHeaderGroups,collection:true});
+ else if(component.specs.coolingHeaderGroups!==undefined)fields.push({key:'coolingHeaderGroups',label:collections.coolingHeaderGroups,collection:true});
  return fields;
 }
 export class ResearchConflict extends Error {}
@@ -18,7 +23,7 @@ export function mergeResearchRecords(component:Component,key:ResearchCollection,
  const schema=componentSpecsSchema.shape[key].unwrap(),element=schema.element;
  // Build a partial record schema; validate all complete merged records and refinements below.
  const partial=z.object({...Object.fromEntries(Object.entries(element.shape).map(([key,schema])=>[key,(schema as z.ZodType).optional()])),id:element.shape.id}).strict();
- const input=z.array(partial).max(key==='slots'?32:key==='ports'?1000:100).parse(value) as Record<string,unknown>[];
+ const input=z.array(partial).max(collectionLimits[key]).parse(value) as Record<string,unknown>[];
  if(new Set(input.map(row=>row.id)).size!==input.length)throw Error('Use unique IDs in each proposed collection.');
  const before=component.specs[key] as unknown as Record<string,unknown>[]|undefined;
  if(before?.length===0)throw new ResearchConflict('An explicitly empty named inventory is already recorded. Edit it in the component editor.');
@@ -47,4 +52,9 @@ export function changedResearchRecords(before:unknown,after:unknown){
   const changes=Object.fromEntries(Object.entries(record).filter(([key,value])=>key==='id'||!sameValue(current[key],value)));
   return Object.keys(changes).length>1?[changes]:[];
  });
+}
+
+/** Research must not introduce dangling shared-budget references in a selected cooling batch. */
+export function validateResearchCooling(component:Component){
+ for(const header of component.specs.coolingHeaders||[])if(header.limitGroup&&!component.specs.coolingHeaderGroups?.some(group=>group.id===header.limitGroup))throw Error(`Cooling header ${header.id}: shared current budget ${header.limitGroup} does not exist. Select its budget proposal too, or correct the header reference.`);
 }
