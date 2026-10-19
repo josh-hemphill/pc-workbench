@@ -9,7 +9,7 @@ const defaults: Record<string, CatalogOption[]> = {
   m2Lengths: [30, 42, 60, 80, 110],
   driveSizes: ['2.5', '3.5', 'M.2'],
   interfaces: ['SATA', 'NVMe', 'SAS'],
-  bifurcationModes: ['x16', 'x8/x8', 'x8/x4/x4', 'x4/x4/x4/x4', 'x4/x4'],
+  bifurcationModes: ['x16', 'x8', 'x4', 'x2', 'x1', 'x8/x8', 'x8/x4/x4', 'x4/x8/x4', 'x4/x4/x8', 'x4/x4/x4/x4', 'x4/x4', 'x4/x2/x2', 'x2/x2/x2/x2', 'x2/x2', 'x1/x1/x1/x1', 'x1/x1'],
 };
 const aliases: Record<string, string> = { supportsSockets: 'socket', supportedForms: 'formFactor', m2Length: 'm2Lengths', driveSize: 'driveSizes', driveInterface: 'interfaces', bifurcationMode: 'bifurcationModes' };
 function text(value: unknown): string | undefined {

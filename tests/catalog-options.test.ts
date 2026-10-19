@@ -37,11 +37,12 @@ test('parent save validation rejects invalid main and nested numeric drafts, and
 });
 
 test('nested targets and slot capabilities contribute reusable suggestions alongside common defaults', () => {
-  const db = { components: [component('board', { m2Lengths: [80], m2Length: 96, memoryType: 'ECC DDR5', slots: [{ id: 'SLOT', bus: 'PCIe', physical: 16, lanes: 16, generation: 4, position: 1, bifurcationModes: ['x4/x4/x8'] }], driveTargets: [{ id: 'BAY', mount: 'rear-sled', m2Lengths: [110], driveSizes: ['U.2'], interfaces: ['Custom bus'] }] }, 'Lab Vendor')] };
+  const db = { components: [component('board', { bifurcationMode: 'Vendor profile A', m2Lengths: [80], m2Length: 96, memoryType: 'ECC DDR5', slots: [{ id: 'SLOT', bus: 'PCIe', physical: 16, lanes: 16, generation: 4, position: 1, bifurcationModes: ['x2/x2/x4'] }], driveTargets: [{ id: 'BAY', mount: 'rear-sled', m2Lengths: [110], driveSizes: ['U.2'], interfaces: ['Custom bus'] }] }, 'Lab Vendor')] };
   assert.deepEqual(catalogSuggestions(db, 'm2Lengths'), [96, 80, 110, 30, 42, 60]);
   assert.ok(catalogSuggestions(db, 'driveSizes').includes('U.2'));
   assert.ok(catalogSuggestions(db, 'interfaces').includes('Custom bus'));
-  assert.ok(catalogSuggestions(db, 'bifurcationModes').includes('x4/x4/x8'));
+  assert.ok(catalogSuggestions(db, 'bifurcationModes').includes('x2/x2/x4'));
+  assert.ok(catalogSuggestions(db, 'bifurcationMode').includes('Vendor profile A'));
   assert.ok(catalogSuggestions(db, 'memoryType').includes('ECC DDR5'));
   assert.deepEqual(catalogSuggestions(db, 'manufacturer'), ['Lab Vendor']);
 });
