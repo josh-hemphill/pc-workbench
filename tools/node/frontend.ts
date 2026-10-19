@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {resolveRuntimeConfig} from '../../server/runtime-config.ts';
 export const root=fileURLToPath(new URL('../../',import.meta.url));
 export async function frontend(mode:string){
- const config={root,configFile:false as const,clearScreen:false,plugins:[vue()],server:{host:'127.0.0.1',port:5173,strictPort:true,proxy:{'/api':`http://127.0.0.1:${resolveRuntimeConfig({sourceRoot:root}).port}`}}};
+ const config={root,configFile:false as const,clearScreen:false,plugins:[vue()],optimizeDeps:{include:['vue','vuetify','vuetify/components','vuetify/directives','vuetify/iconsets/mdi-svg','@mdi/js','zod']},server:{warmup:{clientFiles:['./src/main.ts']},host:'127.0.0.1',port:5173,strictPort:true,proxy:{'/api':`http://127.0.0.1:${resolveRuntimeConfig({sourceRoot:root}).port}`}}};
  if(mode==='build'){await build(config);return;}
  if(mode!=='dev')throw Error('Expected build or dev.');
  const server=await createServer(config);await server.listen();server.printUrls();return server;

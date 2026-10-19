@@ -11,7 +11,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Open **http://127.0.0.1:5173**. Vue supports HMR; Node watches API source changes. Vite reads the same API-port configuration as the server. Ctrl+C stops both services. Existing hash URLs such as `/#/catalog/components` can be loaded or reloaded directly. Startup shows loading feedback; if frontend loading fails or stalls, the recovery screen offers **Reload workbench**, preserving the current hash. Include the displayed error when reporting a startup failure.
+Open **http://127.0.0.1:5173**. Vue supports HMR; Node watches API source changes. Vite reads the same API-port configuration as the server. Ctrl+C stops both services. Existing hash URLs such as `/#/catalog/components` can be loaded or reloaded directly. Startup keeps loading feedback visible while the application connects. Temporary module-load failures retry up to three times with a fresh module graph, preserving the current hash; development also warms the client graph and prebundles known dependencies. Slow loading stays a status message. Persistent failures and application errors offer **Reload workbench** with diagnostics. Include the displayed error when reporting a startup failure.
 
 ```sh
 pnpm test
