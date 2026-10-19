@@ -26,7 +26,7 @@ export function catalogFields(c:Component):CatalogField[] {
  if(c.category==='Storage adapter'&&cap.sataController)add(field('sataPorts','SATA data ports'));
  return fields;
 }
-export function fieldValue(c:Component,key:string):unknown{if(key==='manufacturer'||key==='source')return c[key];if(key==='sataPorts'&&c.specs.sataDataPorts!==undefined)return c.specs.sataDataPorts.filter(p=>!p.disabled).length;if(key==='sataPower'&&c.specs.sataPowerConnectors!==undefined)return c.specs.sataPowerConnectors.length;return (c.specs as Record<string,unknown>)[key];}
+export function fieldValue(c:Component,key:string):unknown{if(key==='manufacturer'||key==='source')return c[key];if(key==='sataPorts'&&c.specs.sataDataPorts!==undefined)return c.specs.sataDataPorts.filter(p=>!p.disabled).length;if(key==='sataPower'&&c.specs.sataPowerConnectors!==undefined)return c.specs.sataPowerConnectors.length;if(['usbA','usbC','ethernet'].includes(key)&&c.specs.ports!==undefined)return c.specs.ports.filter(port=>port.kind===({usbA:'USB-A',usbC:'USB-C',ethernet:'Ethernet'} as Record<string,string>)[key]).length;if(key==='m2Slots'&&c.category==='Motherboard'&&c.specs.driveTargets!==undefined)return c.specs.driveTargets.filter(target=>target.driveSizes?.includes('M.2')).length;return (c.specs as Record<string,unknown>)[key];}
 export function isMissing(value:unknown){return value===undefined||value===null||typeof value==='string'&&!value.trim()||Array.isArray(value)&&!value.length;}
 export function missingFields(c:Component){return catalogFields(c).filter(f=>isMissing(fieldValue(c,f.key)));}
 export function patchMissing(c:Component,patch:Record<string,unknown>,db:Pick<Database,'components'>={components:[c]}):Component {

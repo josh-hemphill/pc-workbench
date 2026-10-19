@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {missingFields,patchMissing,catalogFields} from '../shared/catalog-quality.ts';
+import {missingFields,patchMissing,catalogFields,fieldValue} from '../shared/catalog-quality.ts';
 import {extractProductDetails,pcPartPickerURL} from '../shared/product-enrichment.ts';
 import type {Component} from '../shared/types.ts';
 const part=(category:Component['category']='Motherboard'):Component=>({id:'test-part',name:'Test part',category,manufacturer:'',source:'',verified:true,specs:{}});
@@ -12,3 +12,18 @@ test('product URL validation rejects arbitrary hosts credentials ports protocols
 test('structured properties and visible spec groups produce conservative category-specific proposals',()=>{const c=part();c.specs.socket='AM5';const html='<script type="application/ld+json">'+JSON.stringify({'@type':'Product',name:'Test part',brand:{name:'Test brand'},additionalProperty:[{name:'Socket',value:'LGA1700'},{name:'Memory Max',value:'128 GB'}]})+'</script><h3 class="group__title">SATA 6.0 Gb/s</h3><div class="group__content">6</div>';const result=extractProductDetails(html,c);assert.equal(result.productName,'Test part');assert.deepEqual(result.patch,{manufacturer:'Test brand',maxMemoryGb:128,sataPorts:6});assert.equal(c.specs.maxMemoryGb,undefined);});
 test('capacity units convert safely and ambiguous PCIe protocols do not become NVMe',()=>{const c=part('Drive');const html='<tr><td>Capacity</td><td>2 TB</td></tr><tr><td>Interface</td><td>PCIe 3.0 X4</td></tr><tr><td>Form Factor</td><td>M.2</td></tr>';const result=extractProductDetails(html,c);assert.equal(result.patch.capacityGb,2000);assert.equal(result.patch.driveSize,'M.2');assert.equal(result.patch.driveInterface,undefined);assert.equal(extractProductDetails('<tr><td>Height</td><td>164.5 mm</td></tr>',part('Cooler')).patch.heightMm,undefined);assert.equal(extractProductDetails('<tr><td>Capacity</td><td>32 GB (2 x 16 GB)</td></tr>',part('Memory')).patch.capacityGb,undefined);});
 test('multiple product identities cannot silently mix proposed engineering values',()=>{const html='<script type="application/ld+json">[{"@type":"Product","name":"Part A","brand":"AMD"},{"@type":"Product","name":"Part B","brand":"Intel"}]</script>';assert.throws(()=>extractProductDetails(html,part('CPU')),/Multiple product identities/);});
+
+test('confirmed zero USB counts and complete named inventories are known data',()=>{
+ const scalar=part();scalar.specs.usbC=0;assert(!missingFields(scalar).some(field=>field.key==='usbC'));
+ const named=part();named.specs={ports:[{id:'USB_A_1',kind:'USB-A'}],usbC:9};
+ assert.equal(fieldValue(named,'usbA'),1);assert.equal(fieldValue(named,'usbC'),0);assert.equal(fieldValue(named,'ethernet'),0);
+ assert(!missingFields(named).some(field=>['usbA','usbC','ethernet'].includes(field.key)));
+ const preserved=patchMissing(named,{usbC:2,ethernet:1});assert.deepEqual(preserved,named);
+ named.specs.ports=[];for(const key of ['usbA','usbC','ethernet'])assert.equal(fieldValue(named,key),0);
+ delete named.specs.ports;delete named.specs.usbC;assert(missingFields(named).some(field=>field.key==='usbC'));
+});
+test('named motherboard M.2 positions satisfy count gaps even when the inventory is empty',()=>{
+ const c=part();c.specs.driveTargets=[{id:'M2_1',mount:'internal',driveSizes:['M.2']}];assert.equal(fieldValue(c,'m2Slots'),1);assert(!missingFields(c).some(field=>field.key==='m2Slots'));
+ c.specs.driveTargets=[];assert.equal(fieldValue(c,'m2Slots'),0);assert(!missingFields(c).some(field=>field.key==='m2Slots'));
+ delete c.specs.driveTargets;assert(missingFields(c).some(field=>field.key==='m2Slots'));
+});
