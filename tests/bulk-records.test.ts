@@ -66,3 +66,10 @@ test('shared configuration save retains earlier approvals when bulk metadata cre
  const prior=structuredClone(approved.approvalHistory),edited=saveConfigurationRecord({...approved,description:'Updated label'},db);
  assert.equal(edited.revision,approved.revision!+1);assert.deepEqual(edited.approvalHistory!.slice(0,-1),prior);assert.equal(edited.approvalHistory!.at(-1)!.configuration.description,'Updated label');assert.deepEqual(edited.placements,approved.placements);assert.deepEqual(approved.approvalHistory,prior);
 });
+
+test('bulk catalog deletion previews and atomically archives zero-count inventory references',async()=>workspace(async({store,call})=>{
+ const component={...store.db.components[0],id:'empty-import-type'};store.replace('components',[...store.db.components,component]);
+ store.replace('inventory',[{id:'empty-import-stock',componentId:component.id,tracking:'bulk',serial:'',assetTag:'EMPTY-IMPORT',quantity:0,location:'Shelf',condition:'Serviceable',notes:'',allocations:[],history:[]}]);
+ const request={collection:'components',action:'delete',ids:[component.id]},before=store.revision,preview=await(await call('/api/bulk/preview',request)).json();assert.equal(preview.valid,true);assert.equal(store.revision,before);assert.equal(store.archivedInventory().length,0);
+ assert.equal((await call('/api/bulk/apply',{request,token:preview.token},'PUT')).status,200);assert.ok(!store.db.components.some(c=>c.id===component.id));assert.equal(store.db.inventory.length,0);assert.equal(store.archivedInventory()[0].stock.id,'empty-import-stock');
+}));

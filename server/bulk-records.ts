@@ -1,3 +1,4 @@
+import {componentDeletionBlockers} from '../shared/component-usage.ts';
 import {checkConfiguration} from '../shared/compatibility.ts';
 import {saveConfigurationRecord} from './configuration-record.ts';
 import {saveStockRecord} from './inventory.ts';
@@ -53,6 +54,7 @@ export function buildBulkCandidate(input:BulkRequest,db:Database){
  }
  if(!['installationLocations','pcs'].includes(request.collection)){
   if(request.action==='delete'){
+   if(request.collection==='components'){for(const id of request.ids){const blockers=componentDeletionBlockers(id,db);if(blockers.length)throw Error(`Cannot delete ${db.components.find(c=>c.id===id)!.name}: still referenced by ${blockers.map(u=>`${u.kind} ${u.name} (${u.id})`).join(', ')}.`);}next.inventory=db.inventory.filter(stock=>!selected.has(stock.componentId)||stock.quantity!==0||stock.allocations.length>0);}
    if(request.collection==='requirementsSets'&&db.requirementsSets.some(s=>selected.has(s.id)&&s.versions.length))throw Error('Published requirement revisions cannot be deleted. Retain their history and edit metadata instead.');
    (next[request.collection] as {id:string}[])=db[request.collection].filter(r=>!selected.has(r.id));
   }else{

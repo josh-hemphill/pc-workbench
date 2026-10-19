@@ -1,7 +1,7 @@
 import {buildComponentMerge,componentMergeSchema} from './component-merge.ts';
 import {parseInventoryArchive} from './inventory-archive.ts';
 import {inventoryDeletionReason,type ArchivedInventory} from '../shared/inventory-archive.ts';
-import {componentUsage} from '../shared/component-usage.ts';
+import {componentUsage,componentDeletionBlockers} from '../shared/component-usage.ts';
 import {planInputSchema,parsePlans,type PlanSnapshot,type StoredPlan} from '../shared/transition-plans.ts';
 import {isPCInstallationKind} from '../shared/types.ts';
 import fs from 'node:fs';
@@ -148,6 +148,16 @@ export class Store {
  previewComponentMerge(input:unknown){const parsed=componentMergeSchema.parse(input);const active=this.getEnrichmentJobs().filter(j=>parsed.sourceIds.includes(j.componentId)&&['queued','fetching','review'].includes(j.state));if(active.length)throw Error('Cancel active enrichment jobs for the duplicate types before merging.');const baseline=this.backupRevision;const result=buildComponentMerge(this.db,parsed,this.plans().map(({revision:_,...plan})=>plan));const next=this.validateBackup(result.next);return {...result,next,baseline,token:createHash('sha256').update(JSON.stringify({input:parsed,revision:baseline})).digest('hex')};}
  mergeComponents(input:unknown,token:string){this.assertWritable();const result=this.previewComponentMerge(input);if(result.token!==token)throw new PlanConflict('The workspace or merge selection changed. Preview the merge again.');this.snapshot();this.commit(result.next,false,result.plans,undefined,result.baseline);this.db=result.next;return result.preview;}
  archivedInventory():ArchivedInventory[]{return parseInventoryArchive(this.sqlite.prepare('SELECT payload FROM inventory_archive ORDER BY id').all().map(row=>JSON.parse(String(row.payload))));}
+ deleteComponent(id:string){this.deleteComponents([id]);}
+ deleteComponents(ids:string[]){
+  this.assertWritable();const selected=new Set(ids);if(!ids.length||selected.size!==ids.length)throw Error('Select unique component types to delete.');
+  const components=ids.map(id=>{const component=this.db.components.find(c=>c.id===id);if(!component)throw Error('Component not found.');return component;});
+  for(const component of components){const blockers=componentDeletionBlockers(component.id,this.db);if(blockers.length)throw Error(`Cannot delete component “${component.name}” (${component.id}): still referenced by ${blockers.map(use=>`${use.kind} “${use.name}” (${use.id}): ${use.detail}`).join('; ')}`);}
+  const empty=this.db.inventory.filter(s=>selected.has(s.componentId)&&s.quantity===0&&!s.allocations.length),emptyIds=new Set(empty.map(s=>s.id));
+  const archives=empty.length?parseInventoryArchive([...this.archivedInventory(),...empty.map(stock=>({id:randomUUID(),at:new Date().toISOString(),stock:structuredClone(stock),component:structuredClone(components.find(c=>c.id===stock.componentId)!)}))]):undefined;
+  const next={...this.db,inventory:this.db.inventory.filter(s=>!emptyIds.has(s.id)),components:this.db.components.filter(c=>!selected.has(c.id))};
+  this.validateReferences(next);this.snapshot();this.commit(next,false,undefined,archives);this.db=next;
+ }
  archiveInventory(id:string){
   this.assertWritable();const stock=this.db.inventory.find(s=>s.id===id);if(!stock)throw Error('Inventory record not found.');const reason=inventoryDeletionReason(stock);if(reason)throw Error(reason);
   const component=this.db.components.find(c=>c.id===stock.componentId)!;

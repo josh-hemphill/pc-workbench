@@ -31,3 +31,13 @@ test('deleting a duplicate after repointing plans identifies leftover stock and 
   store.replace('inventory',[]);assert.deepEqual(componentUsage(duplicate.id,store.db),[]);assert.equal((await remove()).status,200);assert.ok(!store.db.components.some(c=>c.id===duplicate.id));assert.equal(store.db.pcs[0].snapshot?.components[0].id,duplicate.id);
  }finally{server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('catalog deletion archives zero-count lots atomically and retains original catalog specifications',()=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'workbench-empty-delete-')),store=new Store(dir);
+ try{
+  const component={...structuredClone(store.db.components[0]),id:'empty-only',name:'Empty imported type'};store.replace('components',[...store.db.components,component]);
+  const lot={...stock(component.id),quantity:0,history:[{id:'empty-history',at:'2026-10-19T12:00:00Z',action:'adjust' as const,quantity:-1,pcId:'',pcName:'',allocationId:'',notes:'Disposed of last unit'}]};store.replace('inventory',[lot]);const recorded=structuredClone(store.db.inventory[0]),before=store.backup(),persist=store.persist.bind(store);
+  store.persist=(collection,rows)=>{if(collection==='inventory')throw Error('Injected failure');persist(collection,rows);};assert.throws(()=>store.deleteComponent(component.id),/Injected failure/);assert.deepEqual(store.backup(),before);store.persist=persist;
+  store.deleteComponent(component.id);assert.ok(!store.db.components.some(c=>c.id===component.id));assert.ok(!store.db.inventory.some(s=>s.id===lot.id));assert.deepEqual(store.archivedInventory()[0].stock,recorded);assert.deepEqual(store.archivedInventory()[0].component,component);
+ }finally{store.close();fs.rmSync(dir,{recursive:true,force:true});}
+});
