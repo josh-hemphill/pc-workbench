@@ -16,7 +16,7 @@ Open **Catalog data → Missing data**. Filters cover category, usage in invento
 
 This is not a certification of complete engineering data. Individually mapped slots, bays, custom ports, disabled-channel rules, firmware, OS support and wiring still require component editing and manufacturer review. An otherwise complete record may still be unverified.
 
-Select up to 100 components. Hidden selected rows remain selected and are included in the displayed selection count. Bulk fill offers fields shared by all selected categories and missing on at least one selected component. Preview counts distinguish missing from populated values. Arrays use multi-select combo boxes and existing catalog vocabulary; text values reuse canonical catalog spelling. The server validates and commits the entire request atomically, preserves every populated value, and marks changed components unverified. A stale workspace revision is rejected.
+Select up to 100 components and choose **Edit selected**. Hidden selected rows remain included. The shared component editor defaults scalar changes to **Fill missing only** on Missing Data, and offers the same specification, port, storage, cooling and other controls as individual editing. Review each field’s action and the per-component before/after preview before applying. Named lists merge by ID unless explicitly replaced; spec changes mark components unverified. The server validates and commits the entire batch atomically, and rejects stale applies. See [bulk component editing](BULK_COMPONENTS.md). The missing-only `/api/catalog/bulk-fill` endpoint below remains available for integrations and enrichment.
 
 ## Queueing PCPartPicker details
 

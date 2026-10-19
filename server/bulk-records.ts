@@ -1,3 +1,4 @@
+import {componentFieldPaths,applyComponentFieldEdits,sharedComponentPaths,componentFieldValue,componentFieldLabel,sameValue} from '../shared/component-bulk.ts';
 import {sataConnectorKinds,ensureConnectors,describeConnectors} from '../shared/bulk-connectors.ts';
 import {componentDeletionBlockers} from '../shared/component-usage.ts';
 import {checkConfiguration} from '../shared/compatibility.ts';
@@ -19,7 +20,7 @@ const pcPatch=z.object({installationLocationId:reference.optional(),lifecycle:z.
 const nonempty=(p:object)=>Object.keys(p).length>0;
 const text=z.string().max(10000);
 export const bulkSchema=z.union([
- z.object({collection:z.literal('components'),action:z.literal('edit'),ids,patch:z.object({manufacturer:text.optional(),source:text.optional(),verified:z.boolean().optional(),connectors:z.object({kind:z.enum(sataConnectorKinds),minimum:z.number().int().min(1).max(1000)}).strict().optional()}).strict().refine(nonempty)}).strict(),
+ z.object({collection:z.literal('components'),action:z.literal('edit'),ids,patch:z.object({manufacturer:text.optional(),source:text.optional(),verified:z.boolean().optional(),connectors:z.object({kind:z.enum(sataConnectorKinds),minimum:z.number().int().min(1).max(1000)}).strict().optional(),fields:z.array(z.object({path:z.enum(componentFieldPaths as [string,...string[]]),mode:z.enum(['set','fill','merge','clear']),value:z.unknown().optional()}).strict()).min(1).max(componentFieldPaths.length).refine(fields=>new Set(fields.map(field=>field.path)).size===fields.length,'Choose unique fields.').optional()}).strict().refine(nonempty)}).strict(),
  z.object({collection:z.literal('inventory'),action:z.literal('edit'),ids,patch:z.object({location:text.optional(),condition:z.enum(['Serviceable','Quarantined','Repair','Retired']).optional(),supplier:text.optional(),reorderLevel:z.number().int().min(0).max(1000000).optional(),notes:notes.optional()}).strict().refine(nonempty)}).strict(),
  z.object({collection:z.literal('requirementsSets'),action:z.literal('edit'),ids,patch:z.object({description:text.optional()}).strict().refine(nonempty)}).strict(),
  z.object({collection:z.literal('configurations'),action:z.literal('edit'),ids,patch:z.object({description:text.optional(),notes:notes.optional()}).strict().refine(nonempty)}).strict(),
@@ -34,6 +35,11 @@ export function buildBulkCandidate(input:BulkRequest,db:Database){
  const request=bulkSchema.parse(input),selected=new Set(request.ids);
  if(request.ids.some(id=>!db[request.collection].some(r=>r.id===id)))throw Error('A selected record no longer exists. Reload and select again.');
  const next:Database={...db};
+ if(request.collection==='components'&&request.action==='edit'&&request.patch.fields){
+  if(Object.keys(request.patch).length!==1)throw Error('Use one component edit format per request.');
+  const allowed=sharedComponentPaths(db.components.filter(c=>selected.has(c.id)));
+  if(request.patch.fields.some(edit=>!allowed.includes(edit.path)))throw Error('Choose fields shared by all selected component categories and roles.');
+ }
  if(request.collection==='installationLocations'){
   if(request.action==='delete'){
    const children=db.installationLocations.filter(l=>!selected.has(l.id)&&selected.has(l.parentId)),pcs=db.pcs.filter(p=>selected.has(p.installationLocationId||''));
@@ -62,8 +68,9 @@ export function buildBulkCandidate(input:BulkRequest,db:Database){
    const records=db[request.collection].map(record=>{
     if(!selected.has(record.id))return record;
     const patch=request.patch as Record<string,unknown>,notes=patch.notes as NotesEdit|undefined;
-    const {connectors,...metadata}=patch;
+    const {connectors,fields,...metadata}=patch;
     const updated={...record,...metadata,...(notes?{notes:editNotes('notes' in record?String(record.notes):'',notes)}:{})};
+    if(request.collection==='components'&&request.patch.fields)return applyComponentFieldEdits(record as Database['components'][number],request.patch.fields,db);
     if(request.collection==='components'&&request.patch.connectors)return ensureConnectors(updated as Database['components'][number],request.patch.connectors);
     if(request.collection==='inventory')return saveStockRecord(updated,db);
     if(request.collection==='configurations')return saveConfigurationRecord({...updated,updatedAt:new Date().toISOString()} as Database['configurations'][number],db);
@@ -83,11 +90,12 @@ export function buildBulkCandidate(input:BulkRequest,db:Database){
    const before=db[request.collection].find(r=>r.id===id)!,after=next[request.collection].find(r=>r.id===id);
    const describe=(r:typeof before)=>{
     if('componentId' in r)return `${r.serial||r.assetTag||r.id} | ${r.quantity} units | stock location: ${r.location||'None'} | ${r.condition} | supplier: ${r.supplier||'None'} | reorder level: ${r.reorderLevel||0} | notes: ${r.notes||'None'}`;
-    if('manufacturer' in r)return `${r.name} | manufacturer: ${r.manufacturer||'None'} | source: ${r.source||'None'} | ${r.verified?'Verified':'Needs verification'}${request.collection==='components'&&request.action==='edit'&&request.patch.connectors?' | '+describeConnectors(r,request.patch.connectors.kind):''}`;
+    if('manufacturer' in r)return `${r.name} | manufacturer: ${r.manufacturer||'None'} | source: ${r.source||'None'} | ${r.verified?'Verified':'Needs verification'}${request.collection==='components'&&request.action==='edit'&&request.patch.connectors?' | '+describeConnectors(r,request.patch.connectors.kind):''}${request.collection==='components'&&request.action==='edit'&&request.patch.fields?' | '+request.patch.fields.map(edit=>`${componentFieldLabel(edit.path,r)}: ${JSON.stringify(componentFieldValue(r,edit.path))??'Unknown'}`).join(' | '):''}`;
     if('versions' in r)return `${r.name} | description: ${r.description||'None'} | ${r.versions.length} published revisions (unchanged)`;
     return `${r.name} | ${r.status} | revision ${r.revision||0} | description: ${r.description||'None'} | notes: ${r.notes||'None'} | ${r.approvalHistory?.length||0} approved revisions retained`;
    };
-   return {id,name:'name' in before?String(before.name):'componentId' in before?`${db.components.find(c=>c.id===before.componentId)?.name||before.componentId} · ${before.serial||before.assetTag||id}`:id,before:describe(before),after:after?describe(after):'Delete record'};
+   const changes=request.collection==='components'&&request.action==='edit'&&request.patch.fields&&after&&'specs' in before&&'specs' in after?[...new Set([...request.patch.fields.map(edit=>edit.path),...componentFieldPaths.filter(path=>!sameValue(componentFieldValue(before,path),componentFieldValue(after,path)))])].map(path=>({path,label:componentFieldLabel(path,before),before:componentFieldValue(before,path),after:componentFieldValue(after,path),changed:!sameValue(componentFieldValue(before,path),componentFieldValue(after,path))})):undefined;
+   return {id,changes,name:'name' in before?String(before.name):'componentId' in before?`${db.components.find(c=>c.id===before.componentId)?.name||before.componentId} · ${before.serial||before.assetTag||id}`:id,before:describe(before),after:after?describe(after):'Delete record'};
   }
   const before=db.pcs.find(p=>p.id===id)!,after=next.pcs.find(p=>p.id===id);
   const describe=(pc:InventoryPC)=>`${pc.name} | ${locationPath(pc.installationLocationId||'',db)||'Unassigned'} | ${pc.lifecycle||'Planning'} | notes: ${pc.notes||'None'}`;

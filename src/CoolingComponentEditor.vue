@@ -4,11 +4,11 @@ import type {Component,Database} from '../shared/types';
 import {coolingControls,coolingPowerConnectors} from '../shared/types';
 import {nextComponentId,componentReferences,type ComponentCollection} from '../shared/component-editor';
 import ComponentRecordList from './ComponentRecordList.vue';
-const props=defineProps<{component:Component;db:Database}>();
+const props=defineProps<{component:Component;db:Database;allowedKeys?:string[]}>();
 const selected=reactive({devices:0,headers:0,groups:0});
 const device=computed(()=>props.component.specs.coolingDevices?.[selected.devices]),header=computed(()=>props.component.specs.coolingHeaders?.[selected.headers]),group=computed(()=>props.component.specs.coolingHeaderGroups?.[selected.groups]);
-const consumer=computed(()=>['Fan','Cooler'].includes(props.component.category)||props.component.specs.coolingDevices!==undefined);
-const provider=computed(()=>['Motherboard','Bay accessory'].includes(props.component.category)||props.component.specs.coolingHeaders!==undefined);
+const consumer=computed(()=>(!props.allowedKeys||props.allowedKeys.includes('coolingDevices'))&&(['Fan','Cooler'].includes(props.component.category)||props.component.specs.coolingDevices!==undefined));
+const provider=computed(()=>(!props.allowedKeys||props.allowedKeys.includes('coolingHeaders'))&&(['Motherboard','Bay accessory'].includes(props.component.category)||props.component.specs.coolingHeaders!==undefined));
 const hasSata=computed(()=>props.component.specs.coolingDevices?.some(d=>d.powerConnector==='SATA power'));
 const refs=(key:ComponentCollection,id:string)=>componentReferences(props.component,key,id,props.db);
 function optional(row:object,key:string,value:unknown,numeric=false){const record=row as Record<string,unknown>;if(value===''||value==null)delete record[key];else record[key]=numeric?Number(value):value;}

@@ -87,3 +87,18 @@ test('bulk SATA connectors preview IDs and preserve existing definitions through
  const blocked=await(await call('/api/bulk/preview',invalid)).json();assert.equal(blocked.valid,false);assert.match(blocked.error,/not applicable/);assert.equal(store.revision,revision);
  assert.equal((await call('/api/bulk/preview',{...request,patch:{connectors:{kind:'sataDataPorts',minimum:1.5}}})).status,400);
 }));
+
+test('shared component field previews apply only explicit edits and reject unsafe or stale batches',async()=>workspace(async({store,call})=>{
+ const cpu=store.db.components.find(c=>c.category==='CPU')!,a={...cpu,id:'group-cpu-a',name:'Group CPU A',specs:{coreCount:4,threadCount:8,powerW:0}},b={...cpu,id:'group-cpu-b',name:'Group CPU B',specs:{coreCount:6}};
+ store.replace('components',[...store.db.components,a,b]);
+ const request={collection:'components',action:'edit',ids:[a.id,b.id],patch:{fields:[{path:'specs.threadCount',mode:'fill',value:16},{path:'manufacturer',mode:'set',value:'Group vendor'}]}},revision=store.revision;
+ const preview=await(await call('/api/bulk/preview',request)).json();assert.equal(preview.valid,true);assert.equal(store.revision,revision);assert.match(preview.rows[0].after,/Logical CPU threads: 8/);assert.match(preview.rows[1].after,/Logical CPU threads: 16/);
+ const altered={...request,patch:{fields:[{path:'specs.threadCount',mode:'set',value:32}]}};assert.equal((await call('/api/bulk/apply',{request:altered,token:preview.token},'PUT')).status,409);
+ assert.equal((await call('/api/bulk/apply',{request,token:preview.token},'PUT')).status,200);
+ const aa=store.db.components.find(c=>c.id===a.id)!,bb=store.db.components.find(c=>c.id===b.id)!;assert.equal(aa.specs.threadCount,8);assert.equal(bb.specs.threadCount,16);assert.equal(aa.specs.coreCount,4);assert.equal(bb.specs.coreCount,6);assert.equal(aa.name,a.name);assert.equal(aa.specs.powerW,0);assert.equal(aa.manufacturer,'Group vendor');
+ const before=store.revision;
+ for(const fields of [[{path:'name',mode:'set',value:'Unsafe identity'}],[{path:'specs.coreCount',mode:'set',value:2},{path:'specs.coreCount',mode:'clear'}]])assert.equal((await call('/api/bulk/preview',{...request,patch:{fields}})).status,400);
+ const board=store.db.components.find(c=>c.category==='Motherboard')!;
+ const mixed=await(await call('/api/bulk/preview',{...request,ids:[a.id,board.id],patch:{fields:[{path:'specs.coreCount',mode:'set',value:2}]}})).json();assert.equal(mixed.valid,false);assert.match(mixed.error,/shared/);
+ const invalid=await(await call('/api/bulk/preview',{...request,patch:{fields:[{path:'specs.coreCount',mode:'set',value:1.5}]}})).json();assert.equal(invalid.valid,false);assert.equal(store.revision,before);
+}));
