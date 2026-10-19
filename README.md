@@ -13,6 +13,8 @@ pnpm dev
 
 Open **http://127.0.0.1:5173**. Vue supports HMR; Node watches API source changes. Vite reads the same API-port configuration as the server. Ctrl+C stops both services. Existing hash URLs such as `/#/catalog/components` can be loaded or reloaded directly. Startup keeps loading feedback visible while the application connects. Temporary module-load failures retry up to three times with a fresh module graph, preserving the current hash; development also warms the client graph and prebundles known dependencies. Slow loading stays a status message. Persistent failures and application errors offer **Reload workbench** with diagnostics. Include the displayed error when reporting a startup failure.
 
+Development updates and reconnect reloads pause while there are unsaved edits or operations in progress. A notice explains the pause; save or discard edits to let the update continue. Manual reloads, closing the window and leaving with unsaved data retain their normal warnings.
+
 ```sh
 pnpm test
 pnpm build

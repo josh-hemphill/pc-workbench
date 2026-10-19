@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {installDevUpdateGuard} from './dev-update-guard';
 import {slotSummary} from '../shared/hardware-shortcuts';
 import {installNativeCloseDecision} from './native-close';
 import {createWorkspaceHistory} from './workspace-history';
@@ -237,6 +238,7 @@ const removeNativeCloseDecision=installNativeCloseDecision(()=>{
  return !hasPendingChanges()||window.confirm('Discard unsaved changes and close PC Workbench?');
 });
 onBeforeUnmount(removeNativeCloseDecision);
+if(import.meta.hot){const stopDevGuard=installDevUpdateGuard(import.meta.hot,()=>busy.value||importing.value||hasPendingChanges(),()=>toast('Development update paused. Save or discard your changes to load the update.'));onBeforeUnmount(stopDevGuard);import.meta.hot.dispose(stopDevGuard);}
 window.addEventListener('beforeunload',beforeUnload);onBeforeUnmount(()=>window.removeEventListener('beforeunload',beforeUnload));
 async function previewRestore(){try{if(!restoreFile.value)return;restoreBackup.value=JSON.parse(await restoreFile.value.text());restorePreview.value=await api('/api/restore/preview',{method:'POST',body:JSON.stringify({backup:restoreBackup.value})});}catch(e){toast(String(e));restorePreview.value=null;}}
 async function commitRestore(){if(!restorePreview.value)return;if(!window.confirm('Replace the entire workspace with this backup? A safety backup will be saved first.'))return;busy.value=true;try{const result=await api('/api/restore',{method:'POST',headers:{'If-Match':restorePreview.value.revision},body:JSON.stringify({backup:restoreBackup.value,backupRevision:restorePreview.value.backupRevision})});await load();restorePreview.value=null;restoreFile.value=null;toast(`Workspace restored. Safety backup: ${result.backupFile}`);}catch(e){toast(String(e));}finally{busy.value=false;}}
