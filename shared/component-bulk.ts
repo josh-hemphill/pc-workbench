@@ -65,7 +65,7 @@ function effectiveValue(c:Component,path:string){
  return source&&c.specs[source]!==undefined?c.specs[source]:componentFieldValue(c,path);
 }
 export function applyComponentFieldEdits(component:Component,edits:ComponentFieldEdit[],db:Database):Component{
- const next=structuredClone(component),namedTouched=new Set<string>();
+ const next=structuredClone(component),namedTouched=new Set<string>();let verificationChosen=false;
  for(const edit of edits){
   const isSpec=edit.path.startsWith('specs.'),key=isSpec?edit.path.slice(6):edit.path;
   if(!componentFieldPaths.includes(edit.path))throw Error(`Unsupported component field: ${edit.path}`);
@@ -83,6 +83,7 @@ export function applyComponentFieldEdits(component:Component,edits:ComponentFiel
    if(isSpec&&countSources[key as keyof Specs]&&effectiveValue(next,edit.path)!==before&&!edits.some(e=>e.path===`specs.${countSources[key as keyof Specs]}`))throw Error(`${component.name}: edit the named list instead of its derived ${key} count.`);
    target[key]=structuredClone(edit.value);
   }
+  if(edit.path==='verified'&&(edit.mode==='set'||edit.mode==='clear'))verificationChosen=true;
   if(collectionPath(edit.path))namedTouched.add(key);
  }
  for(const [count,source] of Object.entries(countSources))if(namedTouched.has(source)&&Array.isArray((next.specs as Record<string,unknown>)[source])){
@@ -98,6 +99,6 @@ export function applyComponentFieldEdits(component:Component,edits:ComponentFiel
  for(const key of componentCollections)for(const row of (component.specs[key]||[]) as {id:string}[])if(!((next.specs[key]||[]) as {id:string}[]).some(item=>item.id===row.id)){
   const refs=componentReferences(next,key,row.id,referenceDB);if(refs.length)throw Error(`${component.name}: keep ${row.id}; used by ${refs.join(', ')}.`);
  }
- if(!sameValue(component.specs,next.specs))next.verified=false;
+ if(!verificationChosen&&!sameValue(component.specs,next.specs))next.verified=false;
  return next;
 }

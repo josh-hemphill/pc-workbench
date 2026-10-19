@@ -102,3 +102,13 @@ test('shared component field previews apply only explicit edits and reject unsaf
  const mixed=await(await call('/api/bulk/preview',{...request,ids:[a.id,board.id],patch:{fields:[{path:'specs.coreCount',mode:'set',value:2}]}})).json();assert.equal(mixed.valid,false);assert.match(mixed.error,/shared/);
  const invalid=await(await call('/api/bulk/preview',{...request,patch:{fields:[{path:'specs.coreCount',mode:'set',value:1.5}]}})).json();assert.equal(invalid.valid,false);assert.equal(store.revision,before);
 }));
+
+test('bulk verification applies to mixed statuses and can accompany specification edits',async()=>workspace(async({store,call})=>{
+ const cpu=store.db.components.find(c=>c.category==='CPU')!,a={...cpu,id:'verify-cpu-a',verified:true,specs:{coreCount:4}},b={...cpu,id:'verify-cpu-b',verified:false,specs:{coreCount:4}};
+ store.replace('components',[...store.db.components,a,b]);
+ for(const verified of [false,true]){
+  const request={collection:'components',action:'edit',ids:[a.id,b.id],patch:{fields:[{path:'verified',mode:'set',value:verified},{path:'specs.coreCount',mode:'set',value:verified?8:6}]}},preview=await(await call('/api/bulk/preview',request)).json();
+  assert.equal(preview.valid,true);for(const row of preview.rows)assert.equal(row.changes.find((field:{path:string})=>field.path==='verified').after,verified);
+  assert.equal((await call('/api/bulk/apply',{request,token:preview.token},'PUT')).status,200);for(const c of store.db.components.filter(c=>[a.id,b.id].includes(c.id)))assert.equal(c.verified,verified);
+ }
+}));

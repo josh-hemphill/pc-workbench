@@ -67,3 +67,11 @@ test('mixed inferred roles stay blank while selecting a role is an explicit chan
  assert.equal(draft.specs.storageAdapterKind,undefined);next.specs.storageAdapterKind='controller';assert.deepEqual(changedComponentPaths(draft,next,sharedComponentPaths(parts)),['specs.storageAdapterKind']);
  const implicit=part('implicit','Storage adapter',{}),explicit=part('explicit','Storage adapter',{storageAdapterKind:'controller'});assert.equal(commonComponentDraft([implicit,explicit]).specs.storageAdapterKind,'controller');
 });
+test('an explicit verification choice overrides automatic invalidation in either edit order',()=>{
+ const c=part('cpu','CPU',{coreCount:4}),db=database([c]);
+ for(const verified of [true,false])for(const reverse of [true,false]){
+  const edits=[{path:'verified',mode:'set' as const,value:verified},{path:'specs.coreCount',mode:'set' as const,value:8}];if(reverse)edits.reverse();
+  const next=applyComponentFieldEdits(c,edits,db);assert.equal(next.verified,verified);assert.equal(next.specs.coreCount,8);
+ }
+ assert.equal(applyComponentFieldEdits(c,[{path:'specs.coreCount',mode:'set',value:8}],db).verified,false);
+});

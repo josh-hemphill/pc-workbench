@@ -4,6 +4,10 @@ Select components in either catalog view and choose **Edit selected**. The main 
 
 The bulk form reuses `ComponentDataEditor`, including the normal Basics, Ports, Cooling, Expansion, Storage, Physical and Review controls. Matching categories and hardware roles have the full editor. Other selections show the intersection of applicable fields, using the same controls. Component IDs, names and categories remain individual edits. Manufacturer, source, verification and every specification schema field are supported; specifications outside a category’s visual controls remain available through the normal Review JSON editor.
 
+## Edit, choose changes, and review
+
+The dialog has three separate steps with navigation and action buttons outside the scrolling content. **Edit** contains the component sections. **Choose changes** contains field inclusion and actions. **Review** contains the per-component before/after results. Moving back retains your draft; changing it invalidates the old preview.
+
 ## Common values and pending changes
 
 A group draft contains common values only. Different values are shown as blank and identified as mixed; no component supplies a hidden template for the rest. Inferred storage roles, drive kinds and PCIe defaults are treated as common when their meaning is the same.
@@ -15,7 +19,7 @@ Changing a field adds it to **Pending changes**. Uncheck its Apply checkbox to o
 - **Merge records by ID** updates properties of matching records and appends new IDs. Unmentioned records and optional properties are retained. To remove optional properties or records, use an explicit complete-list replacement.
 - **Clear value** removes an optional specification. It clears manufacturer/source text or resets verification to false for metadata. Clearing a named list retains any count-only capacity; clear the corresponding count separately to declare it unknown. Replacing with an empty list declares a known empty inventory.
 
-Scalar actions default to fill in Missing Data and replace in the main catalog. Named lists default to merge. Changing the scalar default affects fields without an individually chosen action. Specification changes reset verification, even when the same batch also requests verification.
+Scalar actions default to fill in Missing Data and replace in the main catalog. Named lists default to merge. Changing the scalar default affects fields without an individually chosen action. The Verification status selector explicitly offers Keep existing status, Mark all verified, and Mark all needing verification. An explicit choice applies to every included component, even alongside specification edits. Without an explicit choice, specification changes reset verification.
 
 The Review JSON editor edits the group draft. Omitted common properties become explicit clears; omitted mixed properties remain untouched. Preview validates the complete resulting component for every selected record, including cross-field references.
 
