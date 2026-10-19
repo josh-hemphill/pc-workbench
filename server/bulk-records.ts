@@ -1,3 +1,4 @@
+import {sataConnectorKinds,ensureConnectors,describeConnectors} from '../shared/bulk-connectors.ts';
 import {componentDeletionBlockers} from '../shared/component-usage.ts';
 import {checkConfiguration} from '../shared/compatibility.ts';
 import {saveConfigurationRecord} from './configuration-record.ts';
@@ -18,7 +19,7 @@ const pcPatch=z.object({installationLocationId:reference.optional(),lifecycle:z.
 const nonempty=(p:object)=>Object.keys(p).length>0;
 const text=z.string().max(10000);
 export const bulkSchema=z.union([
- z.object({collection:z.literal('components'),action:z.literal('edit'),ids,patch:z.object({manufacturer:text.optional(),source:text.optional(),verified:z.boolean().optional()}).strict().refine(nonempty)}).strict(),
+ z.object({collection:z.literal('components'),action:z.literal('edit'),ids,patch:z.object({manufacturer:text.optional(),source:text.optional(),verified:z.boolean().optional(),connectors:z.object({kind:z.enum(sataConnectorKinds),minimum:z.number().int().min(1).max(1000)}).strict().optional()}).strict().refine(nonempty)}).strict(),
  z.object({collection:z.literal('inventory'),action:z.literal('edit'),ids,patch:z.object({location:text.optional(),condition:z.enum(['Serviceable','Quarantined','Repair','Retired']).optional(),supplier:text.optional(),reorderLevel:z.number().int().min(0).max(1000000).optional(),notes:notes.optional()}).strict().refine(nonempty)}).strict(),
  z.object({collection:z.literal('requirementsSets'),action:z.literal('edit'),ids,patch:z.object({description:text.optional()}).strict().refine(nonempty)}).strict(),
  z.object({collection:z.literal('configurations'),action:z.literal('edit'),ids,patch:z.object({description:text.optional(),notes:notes.optional()}).strict().refine(nonempty)}).strict(),
@@ -61,7 +62,9 @@ export function buildBulkCandidate(input:BulkRequest,db:Database){
    const records=db[request.collection].map(record=>{
     if(!selected.has(record.id))return record;
     const patch=request.patch as Record<string,unknown>,notes=patch.notes as NotesEdit|undefined;
-    const updated={...record,...patch,...(notes?{notes:editNotes('notes' in record?String(record.notes):'',notes)}:{})};
+    const {connectors,...metadata}=patch;
+    const updated={...record,...metadata,...(notes?{notes:editNotes('notes' in record?String(record.notes):'',notes)}:{})};
+    if(request.collection==='components'&&request.patch.connectors)return ensureConnectors(updated as Database['components'][number],request.patch.connectors);
     if(request.collection==='inventory')return saveStockRecord(updated,db);
     if(request.collection==='configurations')return saveConfigurationRecord({...updated,updatedAt:new Date().toISOString()} as Database['configurations'][number],db);
     return prepareInstallationRecord(request.collection,updated,db);
@@ -80,7 +83,7 @@ export function buildBulkCandidate(input:BulkRequest,db:Database){
    const before=db[request.collection].find(r=>r.id===id)!,after=next[request.collection].find(r=>r.id===id);
    const describe=(r:typeof before)=>{
     if('componentId' in r)return `${r.serial||r.assetTag||r.id} | ${r.quantity} units | stock location: ${r.location||'None'} | ${r.condition} | supplier: ${r.supplier||'None'} | reorder level: ${r.reorderLevel||0} | notes: ${r.notes||'None'}`;
-    if('manufacturer' in r)return `${r.name} | manufacturer: ${r.manufacturer||'None'} | source: ${r.source||'None'} | ${r.verified?'Verified':'Needs verification'}`;
+    if('manufacturer' in r)return `${r.name} | manufacturer: ${r.manufacturer||'None'} | source: ${r.source||'None'} | ${r.verified?'Verified':'Needs verification'}${request.collection==='components'&&request.action==='edit'&&request.patch.connectors?' | '+describeConnectors(r,request.patch.connectors.kind):''}`;
     if('versions' in r)return `${r.name} | description: ${r.description||'None'} | ${r.versions.length} published revisions (unchanged)`;
     return `${r.name} | ${r.status} | revision ${r.revision||0} | description: ${r.description||'None'} | notes: ${r.notes||'None'} | ${r.approvalHistory?.length||0} approved revisions retained`;
    };

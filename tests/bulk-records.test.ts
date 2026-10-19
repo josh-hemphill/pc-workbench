@@ -73,3 +73,17 @@ test('bulk catalog deletion previews and atomically archives zero-count inventor
  const request={collection:'components',action:'delete',ids:[component.id]},before=store.revision,preview=await(await call('/api/bulk/preview',request)).json();assert.equal(preview.valid,true);assert.equal(store.revision,before);assert.equal(store.archivedInventory().length,0);
  assert.equal((await call('/api/bulk/apply',{request,token:preview.token},'PUT')).status,200);assert.ok(!store.db.components.some(c=>c.id===component.id));assert.equal(store.db.inventory.length,0);assert.equal(store.archivedInventory()[0].stock.id,'empty-import-stock');
 }));
+
+test('bulk SATA connectors preview IDs and preserve existing definitions through atomic apply',async()=>workspace(async({store,call})=>{
+ const original=store.db.components.find(c=>c.category==='Motherboard')!,board={...original,id:'bulk-board',verified:true,specs:{sataPorts:2,sataDataPorts:[{id:'KEEP',disabled:true},{id:'SATA_DATA_1'}]}};
+ const other={...board,id:'bulk-board-two',specs:{sataPorts:6}};
+ store.replace('components',[...store.db.components,board,other]);const before=store.revision;
+ const request={collection:'components',action:'edit',ids:[board.id,other.id],patch:{connectors:{kind:'sataDataPorts',minimum:4}}};
+ const preview=await(await call('/api/bulk/preview',request)).json();assert.equal(preview.valid,true);assert.equal(store.revision,before);
+ assert(preview.rows[0].after.includes('KEEP, SATA_DATA_1, SATA_DATA_2, SATA_DATA_3'));assert(preview.rows[1].after.includes('6 named'));
+ assert.equal((await call('/api/bulk/apply',{request,token:preview.token},'PUT')).status,200);
+ const updated=store.db.components.find(c=>c.id===board.id)!;assert.deepEqual(updated.specs.sataDataPorts!.slice(0,2),board.specs.sataDataPorts);assert.equal(updated.verified,false);assert(!('connectors' in updated));
+ const revision=store.revision,invalid={...request,ids:[board.id,store.db.components.find(c=>c.category==='CPU')!.id]};
+ const blocked=await(await call('/api/bulk/preview',invalid)).json();assert.equal(blocked.valid,false);assert.match(blocked.error,/not applicable/);assert.equal(store.revision,revision);
+ assert.equal((await call('/api/bulk/preview',{...request,patch:{connectors:{kind:'sataDataPorts',minimum:1.5}}})).status,400);
+}));

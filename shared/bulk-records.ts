@@ -1,8 +1,9 @@
+import type {ConnectorEdit} from './bulk-connectors.ts';
 import type {LocationKind} from './types.ts';
 export interface NotesEdit {mode:'replace'|'append';value:string}
 export interface LocationPatch {kind?:LocationKind;parentId?:string;targetConfigurationId?:string;requirements?:{setId:string;revision:number};notes?:NotesEdit}
 export interface PCPatch {installationLocationId?:string;lifecycle?:'Planning'|'Building'|'Maintenance'|'Parts only'|'Retired';notes?:NotesEdit}
-export interface CatalogPatch {manufacturer?:string;source?:string;verified?:boolean}
+export interface CatalogPatch {connectors?:ConnectorEdit;manufacturer?:string;source?:string;verified?:boolean}
 export interface StockPatch {location?:string;condition?:'Serviceable'|'Quarantined'|'Repair'|'Retired';supplier?:string;reorderLevel?:number;notes?:NotesEdit}
 export interface RequirementsPatch {description?:string}
 export interface ConfigurationPatch {description?:string;notes?:NotesEdit}
