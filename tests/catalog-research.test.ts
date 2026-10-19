@@ -55,3 +55,41 @@ test('research API round trip is read-only until reviewed apply and protects sta
  assert.equal((await call('/api/catalog/research/apply',{file,selected:preview.selected,token:preview.token},'PUT',preview.revision)).status,409);
  const fresh=await(await call('/api/catalog/research/preview',{file})).json();assert.equal(fresh.rows[0].status,'Unchanged');assert.deepEqual(fresh.selected,[`${cpu.id}:manufacturer`]);
 }));
+
+function engineeringFixture(){const db=fixture();const board:Component={id:'research-board',name:'Research board',category:'Motherboard',manufacturer:'Vendor',source:'',verified:true,specs:{ports:[{id:'USB_A_1',kind:'USB-A'}],slots:[{id:'PCIE_1',bus:'PCIe',physical:16,lanes:16,generation:4,position:1}],sataDataPorts:[{id:'SATA_1'}]}};db.components.push(board);return db;}
+function engineeringPack(db:Database,proposals:ResearchProposal[]){const file=exportResearchPack(db,['research-board'],'rev');file.components[0].proposals=proposals;return file;}
+test('engineering export includes named port, slot, lane-rule and bifurcation schemas on appropriate categories',()=>{
+ const db=engineeringFixture(),pack=exportResearchPack(db,['research-board'],'rev');for(const path of ['specs.ports','specs.slots','specs.laneRules','specs.bifurcation'])assert(pack.components[0].proposals.some(p=>p.path===path));assert(researchFileSchema.safeParse(pack).success);
+ assert(!exportResearchPack(db,[cpu.id],'rev').components[0].proposals.some(p=>p.path==='specs.slots'));
+});
+test('engineering proposals enrich existing IDs and add ports slots and dependent rules together',()=>{
+ const db=engineeringFixture(),file=engineeringPack(db,[
+ {path:'specs.ports',value:[{id:'USB_A_1',protocol:'USB 3.2 Gen 1',speedMbps:5000},{id:'ETHERNET_1',kind:'Ethernet',speedMbps:2500}],...evidence},
+ {path:'specs.slots',value:[{id:'PCIE_1',laneSource:'CPU',bifurcationModes:['x8/x8']},{id:'PCIE_2',bus:'PCIe',physical:16,lanes:8,generation:4,position:2,laneSource:'CPU'}],...evidence},
+ {path:'specs.laneRules',value:[{id:'CPU_LANES',slots:['PCIE_1','PCIE_2'],maxLanes:16,disableSataPortIds:['SATA_1']}],...evidence},
+ {path:'specs.bifurcation',value:true,...evidence}]);
+ const result=previewResearch(db,file,'rev');assert.equal(result.preview.valid,true,result.preview.error||'');assert.equal(result.preview.fields,4);const board=result.components.at(-1)!;
+ assert.equal(board.specs.ports![0].id,'USB_A_1');assert.equal(board.specs.ports![0].kind,'USB-A');assert.equal(board.specs.ports![0].speedMbps,5000);assert.equal(board.specs.ethernet,1);assert.equal(board.specs.slots![0].lanes,16);assert.equal(board.specs.slots![0].laneSource,'CPU');assert.equal(board.specs.laneRules![0].slots[1],'PCIE_2');assert.equal(board.verified,false);assert.match(board.specs.notes!,/CPU_LANES/);assert.equal(db.components.at(-1)!.specs.slots!.length,1);
+ const onlyRule=previewResearch(db,file,'rev',['research-board:specs.laneRules']);assert.equal(onlyRule.preview.valid,false);assert.match(onlyRule.preview.error!,/PCIE_2.*does not exist/);
+});
+test('engineering keeps all known properties including false zero and empty arrays and preserves omitted records',()=>{
+ const db=engineeringFixture(),board=db.components.at(-1)!;board.specs.ports![0].isolated=false;board.specs.ports![0].powerW=0;board.specs.slots![0].bifurcationModes=[];
+ for(const [path,value] of [
+ ['specs.ports',[{id:'USB_A_1',isolated:true},{id:'NEW_PORT',kind:'Ethernet'}]],
+ ['specs.ports',[{id:'USB_A_1',powerW:1}]],
+ ['specs.slots',[{id:'PCIE_1',bifurcationModes:['x8/x8']}]],
+ ['specs.slots',[{id:'PCIE_1',lanes:8}]],
+ ] as const){const result=previewResearch(db,engineeringPack(db,[{path,value,...evidence}]),'rev');assert.equal(result.preview.rows[0].status,'Conflict');assert.deepEqual(result.components,db.components);}
+ const next=previewResearch(db,engineeringPack(db,[{path:'specs.ports',value:[{id:'ETHERNET_1',kind:'Ethernet'}],...evidence}]),'rev');assert.equal(next.components.at(-1)!.specs.ports!.length,2);assert.deepEqual(next.components.at(-1)!.specs.ports![0],board.specs.ports![0]);
+ board.specs.ports=[];assert.equal(previewResearch(db,engineeringPack(db,[{path:'specs.ports',value:[{id:'NEW',kind:'Ethernet'}],...evidence}]),'rev').preview.rows[0].status,'Conflict');
+});
+test('engineering rejects malformed records duplicates invalid references and incomplete numeric inventories',()=>{
+ const db=engineeringFixture();
+ for(const [path,value] of [
+ ['specs.ports',[{id:'NEW',kind:'Custom'}]],['specs.ports',[{id:'USB_A_1',speedMbps:'5000'}]],['specs.ports',[{id:'NEW',kind:'Ethernet',bogus:true}]],['specs.ports',[{id:'NEW',kind:'Ethernet'},{id:'NEW',kind:'Ethernet'}]],['specs.slots',[{id:'NEW',laneSource:'CPU'}]],['specs.slots',[{id:'NEW',bus:'PCIe',physical:16,lanes:4,generation:3,position:1}]],
+ ] as const){const result=previewResearch(db,engineeringPack(db,[{path,value,...evidence}]),'rev');assert.equal(result.preview.rows[0].status,'Invalid',JSON.stringify(result.preview));assert.equal(result.preview.fields,0);}
+ const broken=previewResearch(db,engineeringPack(db,[{path:'specs.laneRules',value:[{id:'BAD',slots:['MISSING']}],...evidence}]),'rev');assert.equal(broken.preview.valid,false);
+ const board=db.components.at(-1)!;delete board.specs.ports;board.specs.usbA=2;
+ assert.equal(previewResearch(db,engineeringPack(db,[{path:'specs.ports',value:[{id:'USB_A_1',kind:'USB-A'}],...evidence}]),'rev').preview.rows[0].status,'Conflict');
+ const valid=previewResearch(db,engineeringPack(db,[{path:'specs.ports',value:[{id:'USB_A_1',kind:'USB-A'},{id:'USB_A_2',kind:'USB-A'}],...evidence}]),'rev');assert.equal(valid.preview.valid,true,valid.preview.error||'');assert.equal(valid.components.at(-1)!.specs.usbA,2);
+});
