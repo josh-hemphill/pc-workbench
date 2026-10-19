@@ -18,6 +18,10 @@ This is not a certification of complete engineering data. Individually mapped sl
 
 Select up to 100 components and choose **Edit selected**. Hidden selected rows remain included. The shared component editor defaults scalar changes to **Fill missing only** on Missing Data, and offers the same specification, port, storage, cooling and other controls as individual editing. Review each field’s action and the per-component before/after preview before applying. Named lists merge by ID unless explicitly replaced; spec changes mark components unverified. The server validates and commits the entire batch atomically, and rejects stale applies. See [bulk component editing](BULK_COMPONENTS.md). The missing-only `/api/catalog/bulk-fill` endpoint below remains available for integrations and enrichment.
 
+## Agent research handoff
+
+Use **Research handoff** on Missing Data to export selected or filtered components and import an agent’s proposals. The JSON pack carries current component context, missing-field schemas, instructions and editable proposal slots. Imported proposals require source URLs and evidence; preview keeps known values and identity conflicts intact, and only selected valid gaps are filled. See [research handoff instructions and file format](CATALOG_RESEARCH.md).
+
 ## Queueing PCPartPicker details
 
 For each selected component, enter its exact `https://pcpartpicker.com/product/…` URL. The catalog source URL is suggested when applicable. A queue URL override does not replace existing manufacturer documentation. Selected components without a supported URL are skipped with a count. The queue does not search the site or choose a product identity automatically.

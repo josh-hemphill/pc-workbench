@@ -1,0 +1,65 @@
+# Catalog research handoff
+
+In **Component catalog → Missing data**, use **Export selected research pack** or **Export filtered research pack**. Selected export includes selected rows hidden by filters. Filtered export includes every matching row across pages. If more than 1,000 components match, narrow the filters before exporting.
+
+Give the downloaded JSON file to an agent along with this request:
+
+> Follow the instructions in this research pack. Research the exact component models using manufacturer documentation. Fill only the proposal values you can establish, and provide a source URL and concise evidence for each. Keep IDs, names, categories and field paths unchanged. Leave unresolved values null. Return the updated JSON file; do not edit existing component data or claim verification.
+
+The file contains:
+
+- Existing component data as read-only context, including notes and named connector inventories.
+- Category-specific missing core fields, labels and value schemas. Known zero, false and named inventories are respected.
+- Editable proposal slots with `path`, `value`, `sourceUrl` and `evidence`.
+- Instructions embedded in the file, its format/version, export time and workspace revision.
+
+Numbers and booleans must be JSON numbers and booleans, not strings. Arrays are JSON arrays. `null`, empty strings and empty arrays mean no proposal and are ignored. No core gaps does not certify complete engineering data: an unverified component may still require a human review of ports, slots, firmware and physical wiring.
+
+The agent can return the full updated pack or a compact file:
+
+```json
+{
+  "format": "pc-workbench-component-research",
+  "version": 1,
+  "components": [
+    {
+      "id": "cpu-example",
+      "name": "Exact CPU model",
+      "category": "CPU",
+      "proposals": [
+        {
+          "path": "specs.threadCount",
+          "value": 16,
+          "sourceUrl": "https://manufacturer.example/specifications.pdf",
+          "evidence": "Page 2, processor specifications: 16 logical threads."
+        }
+      ]
+    }
+  ]
+}
+```
+
+`manufacturer` and `source` are top-level paths. Engineering values use `specs.<field>`. Use the paths and value schemas exported for each model rather than adding arbitrary fields.
+
+## Review and import
+
+Choose **Import research updates**, upload the returned JSON file (up to 8 MiB), and click **Read and preview file**. The preview is read-only and classifies each nonblank proposal:
+
+- **Fill**: the same component identity exists, its field is still missing, its proposed value is valid, and source evidence is present. These rows are initially selected.
+- **Unchanged**: the value is already recorded. No change or new evidence is written.
+- **Conflict**: an existing value differs, or the component was renamed or recategorized. Current data is preserved; identity changes require a fresh export.
+- **Invalid**: the component was deleted, the field is unsupported, its value has the wrong type, or source/evidence is missing. It cannot be selected.
+
+Select the Fill rows you accept. Header selection covers the current page; **Select all fillable proposals** covers the complete file. Changing the selection requires **Update preview** before applying. Other rows remain visible for review and are excluded from changes. A changed workspace revision or altered file/selection invalidates an old apply. Refresh the preview to review current data again.
+
+Applying writes only selected, still-missing fields. It preserves IDs, names, categories, known values, existing notes and unselected records. Context and missing-field metadata in the file never write to component records. Each changed component receives source URLs, evidence and the research date in specification notes and remains unverified. Verification, advanced topology edits, deletion and clearing values are not supported through research imports; use the component editor for them. Source URLs are recorded without fetching pages.
+
+The selected batch is validated as complete component records and committed atomically. Invalid resulting records or oversized specification notes block the apply. Shorten evidence or reduce the selection if notes would exceed their size limit. Keep the returned file as the original research artifact; imported provenance also travels with ordinary component CSV and JSON backups.
+
+## API
+
+- `POST /api/catalog/research/export` with `{ "componentIds": ["cpu-example"] }` returns the downloadable pack. It is read-only.
+- `POST /api/catalog/research/preview` with `{ "file": <research-file>, "selected": ["cpu-example:specs.threadCount"] }` returns rows, the actual selected Fill keys, workspace revision and review token. Omit `selected` to initially select all Fill rows. It is read-only.
+- `PUT /api/catalog/research/apply` requires `If-Match: <preview revision>` and `{ "file": <same-file>, "selected": <preview-selected>, "token": "<preview-token>" }`.
+
+Exports and previews do not require a write revision. Apply requires the exact reviewed file and selection and the current workspace revision. Research packs may outlive their export revision: conflicts are assessed against current values at preview time, so research does not overwrite work done in the meantime.
