@@ -1,3 +1,4 @@
+import {researchJSONSchema} from './research-reference.ts';
 import {exportResearchPack,previewResearch,researchExportSchema,researchPreviewSchema} from './catalog-research.ts';
 import {componentMergeSchema} from './component-merge.ts';
 import {previewImport,importToken} from './csv-preview.ts';
@@ -89,6 +90,7 @@ app.get('/api/inventory-archive',(_req,res)=>{res.setHeader('Cache-Control','no-
 app.post('/api/catalog/merge/preview',(req,res)=>{const result=store.previewComponentMerge(req.body);res.json({...result.preview,token:result.token});});
 app.post('/api/catalog/merge/apply',(req,res)=>{const input=z.object({input:componentMergeSchema,token:z.string().length(64),identityReviewed:z.boolean().default(false)}).strict().parse(req.body);res.json(store.mergeComponents(input.input,input.token,input.identityReviewed));});
 app.get('/api/enrichment',(_req,res)=>res.json({jobs:enrichment.jobs,running:enrichment.running}));
+app.get('/api/catalog/research/schema',(_req,res)=>{res.setHeader('Cache-Control','no-store');res.attachment('component-research.schema.json').type('application/schema+json').json(researchJSONSchema());});
 app.post('/api/catalog/research/export',(req,res)=>{const {componentIds}=researchExportSchema.parse(req.body);res.setHeader('Cache-Control','no-store');res.attachment('component-research.json').json(exportResearchPack(store.db,componentIds,store.revision));});
 app.post('/api/catalog/research/preview',(req,res)=>{const {file,selected}=researchPreviewSchema.parse(req.body),result=previewResearch(store.db,file,store.revision,selected);if(result.preview.valid)try{store.validateReplacement('components',result.components);}catch(error){result.preview.valid=false;result.preview.error=error instanceof Error?error.message:String(error);}res.json(result.preview);});
 app.put('/api/catalog/research/apply',(req,res)=>{const input=researchPreviewSchema.extend({token:z.string().regex(/^[a-f0-9]{64}$/)}).parse(req.body);if(!input.selected?.length)throw Error('Select at least one fillable proposal and preview it.');const result=previewResearch(store.db,input.file,store.revision,input.selected);if(result.preview.token!==input.token||input.selected.length!==result.preview.selected.length)return res.status(409).json({error:'The file or selection changed. Preview the proposals again.'});if(!result.preview.valid)throw Error(result.preview.error);store.replace('components',result.components);res.json({components:result.preview.components,fields:result.preview.fields});});

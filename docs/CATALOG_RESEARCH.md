@@ -6,6 +6,8 @@ Give the downloaded JSON file to an agent along with this request:
 
 > Follow the instructions in this research pack. Research the exact component models using manufacturer documentation. Fill only the proposal values you can establish, and provide a source URL and concise evidence for each. Keep IDs, names, categories and field paths unchanged. Leave unresolved values null. Return the updated JSON file; do not edit existing component data or claim verification.
 
+The file starts with `guide`, `componentIndex` and shared JSON Schema definitions in `$defs`, before the raw component context. Per-component field descriptors reference these definitions rather than repeating schemas.
+
 The file contains:
 
 - Existing component data as read-only context, including notes and named connector inventories.
@@ -56,8 +58,75 @@ Applying writes only selected, still-missing fields. It preserves IDs, names, ca
 
 The selected batch is validated as complete component records and committed atomically. Invalid resulting records or oversized specification notes block the apply. Shorten evidence or reduce the selection if notes would exceed their size limit. Keep the returned file as the original research artifact; imported provenance also travels with ordinary component CSV and JSON backups.
 
+## Schema guide and scripted navigation
+
+Read `guide` first. It describes writable fields, merge behavior, evidence requirements, unresolved values, limits, validation and examples. `componentIndex` contains ID, name, manufacturer, model, family, category, available proposal paths, mandatory core gaps and optional research paths. Each index entry points to its component, proposals and existing data; `notesRef` points directly to notes when present.
+
+`existingRecordIds` lets a script identify existing motor/header/port/slot/rule IDs. An absent collection path means its inventory is unknown; an empty array means an explicitly recorded empty inventory, which research cannot expand. The index and schemas are read-only context and never update records.
+
+For a quick view without displaying the raw component context:
+
+```sh
+jq '.guide' component-research.json
+jq '.componentIndex[] | select(.category == "Fan") | {id, model, availablePaths, notesRef}' component-research.json
+jq '."$defs".new_specs_coolingDevices' component-research.json
+```
+
+Each component's `missingFields` descriptors include:
+
+- `path`, `label`, `mode` and `optional`.
+- `valueSchemaRef`, a JSON Pointer to the proposal value schema.
+- For named collections, `newRecordSchemaRef` and `updateRecordSchemaRef`. New records require their full required fields; existing IDs can supply only the properties to fill.
+
+All schema references resolve within the pack. Schemas are generated from the same field/record definitions used by the importer and appear once per type, shared across components. Existing component data remains available under `components[*].existing`.
+
+For example, an agent can read notes for a selected model without printing the rest of the pack:
+
+```python
+import json
+
+pack = json.load(open("component-research.json"))
+def resolve(ref):
+    value = pack
+    for key in ref.removeprefix("#/").split("/"):
+        key = key.replace("~1", "/").replace("~0", "~")
+        value = value[int(key)] if isinstance(value, list) else value[key]
+    return value
+
+entry = next(row for row in pack["componentIndex"] if row["id"] == "your-component-id")
+notes = resolve(entry["notesRef"]) if "notesRef" in entry else ""
+proposals = resolve(entry["proposalsRef"])
+```
+
+## Standalone JSON Schema
+
+Choose **Download JSON Schema** in Research handoff, or request `GET /api/catalog/research/schema`. Save `component-research.schema.json` alongside the research file. The schema is self-contained JSON Schema Draft 2020-12; it does not need access to the workbench or external schema definitions.
+
+It checks the envelope, supported proposal paths, typed scalar/record values, collection limits and source/evidence for nonblank proposals. With Python's `jsonschema` package installed:
+
+```python
+import json
+from jsonschema import Draft202012Validator
+
+schema = json.load(open("component-research.schema.json"))
+returned = json.load(open("researched-components.json"))
+Draft202012Validator(schema).validate(returned)
+```
+
+A named collection permits partial updates to existing IDs. For a **new** ID, also validate the record against its `newRecordSchemaRef`; use the original index to distinguish new and existing IDs. For example:
+
+```python
+new_motor_schema = {"$defs": schema["$defs"], "$ref": "#/$defs/new_specs_coolingDevices"}
+Draft202012Validator(new_motor_schema).validate({"id": "NEW_FAN", "kind": "fan"})
+```
+
+Offline schema validation is an authoring check. Workbench preview still checks live identity/applicability, known values, ID/position uniqueness, complete merged-record constraints, references, total proposal count, note capacity and selected-batch dependencies. Validation does not establish that researched facts are correct or mark components verified.
+
+Full reference metadata can be returned unchanged or omitted in a compact response. Keep `format`, `version`, component IDs/names/categories, exported model identities when present, and proposals. Older version 1 packs containing inline `valueSchema` metadata remain importable.
+
 ## API
 
+- `GET /api/catalog/research/schema` returns the standalone schema as a downloadable file. It is read-only.
 - `POST /api/catalog/research/export` with `{ "componentIds": ["cpu-example"] }` returns the downloadable pack. It is read-only.
 - `POST /api/catalog/research/preview` with `{ "file": <research-file>, "selected": ["cpu-example:specs.threadCount"] }` returns rows, the actual selected Fill keys, workspace revision and review token. Omit `selected` to initially select all Fill rows. It is read-only.
 - `PUT /api/catalog/research/apply` requires `If-Match: <preview revision>` and `{ "file": <same-file>, "selected": <preview-selected>, "token": "<preview-token>" }`.
@@ -68,7 +137,7 @@ Exports and previews do not require a write revision. Apply requires the exact r
 
 On supported components the pack also includes `specs.ports`; motherboards include `specs.slots`, `specs.laneRules` and missing `specs.bifurcation`. These are optional research opportunities, not claims that a known inventory is incomplete. Existing version 1 files still work.
 
-Submit a nonempty JSON array for each named collection. Reuse an existing ID for the same physical port, slot or rule. For an existing record, submit `id` and only the unknown properties you can establish. New records need all required properties in the exported schema. For example:
+Submit a nonempty JSON array for each named collection. Reuse an existing ID for the same physical port, slot or rule. For an existing record, submit `id` and only the unknown properties you can establish. New records need all required properties in `newRecordSchemaRef`; existing partial records use `updateRecordSchemaRef`. For example:
 
 ```json
 [

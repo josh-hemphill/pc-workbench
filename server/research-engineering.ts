@@ -16,14 +16,18 @@ export function engineeringFields(component:Component){
  else if(component.specs.coolingHeaderGroups!==undefined)fields.push({key:'coolingHeaderGroups',label:collections.coolingHeaderGroups,collection:true});
  return fields;
 }
+export function researchCollectionSchemas(key:ResearchCollection){
+ const complete=componentSpecsSchema.shape[key].unwrap(),record=complete.element;
+ // Validate complete merged records with refinements after accepting partial existing records.
+ const update=z.object({...Object.fromEntries(Object.entries(record.shape).map(([key,schema])=>[key,(schema as z.ZodType).optional()])),id:record.shape.id}).strict();
+ return {complete,record,update,limit:collectionLimits[key]};
+}
 export class ResearchConflict extends Error {}
 /** Existing list entries are never removed, renamed or overwritten. Omitted fields remain intact. */
 export function mergeResearchRecords(component:Component,key:ResearchCollection,value:unknown){
  if(!Array.isArray(value)||!value.length)throw Error('Provide a nonempty array of named records.');
- const schema=componentSpecsSchema.shape[key].unwrap(),element=schema.element;
- // Build a partial record schema; validate all complete merged records and refinements below.
- const partial=z.object({...Object.fromEntries(Object.entries(element.shape).map(([key,schema])=>[key,(schema as z.ZodType).optional()])),id:element.shape.id}).strict();
- const input=z.array(partial).max(collectionLimits[key]).parse(value) as Record<string,unknown>[];
+ const {complete,update}=researchCollectionSchemas(key);
+ const input=z.array(update).max(collectionLimits[key]).parse(value) as Record<string,unknown>[];
  if(new Set(input.map(row=>row.id)).size!==input.length)throw Error('Use unique IDs in each proposed collection.');
  const before=component.specs[key] as unknown as Record<string,unknown>[]|undefined;
  if(before?.length===0)throw new ResearchConflict('An explicitly empty named inventory is already recorded. Edit it in the component editor.');
@@ -37,7 +41,7 @@ export function mergeResearchRecords(component:Component,key:ResearchCollection,
    if(!known)current[field]=value;
   }
  }
- const parsed=schema.parse(rows);
+ const parsed=complete.parse(rows);
  if(key==='ports'&&before===undefined)for(const [count,kind] of [['usbA','USB-A'],['usbC','USB-C'],['ethernet','Ethernet']] as const){
   const known=component.specs[count],actual=(parsed as {kind?:string}[]).filter(row=>row.kind===kind).length;
   if(known!==undefined&&actual!==known)throw new ResearchConflict(`Named ports must match the recorded ${count} count (${known}); the proposal has ${actual}. Supply the complete inventory or correct the count in the component editor.`);
