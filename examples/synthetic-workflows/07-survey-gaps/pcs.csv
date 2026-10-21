@@ -1,0 +1,5 @@
+id,name,serial,location,configurationId,notes,buildSettings,lifecycle,software,commissioning,timeline,snapshot,snapshots,installationLocationId,hardwareSurvey
+synthetic-pc-1,SYNTHETIC-PC-001,,,,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-1,"{""status"":""uninspected"",""configurationId"":"""",""evidence"":""Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station.""}"
+synthetic-pc-2,SYNTHETIC-PC-002,,,,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-2,"{""status"":""uninspected"",""configurationId"":""source-hdd"",""evidence"":""""}"
+synthetic-pc-3,SYNTHETIC-PC-003,,,,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-3,"{""status"":""complete"",""configurationId"":""source-hdd"",""evidence"":""Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station.""}"
+synthetic-pc-4,SYNTHETIC-PC-004,,,,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-4,

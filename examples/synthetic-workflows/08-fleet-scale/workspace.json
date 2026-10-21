@@ -1,0 +1,4190 @@
+{
+  "requirementsSets": [
+    {
+      "id": "archive-minimum",
+      "name": "SYNTHETIC · archive requirements",
+      "description": "Synthetic test minimum",
+      "versions": [
+        {
+          "revision": 1,
+          "at": "2026-10-21T12:00:00.000Z",
+          "name": "Synthetic archive minimum",
+          "description": "Known installation must preserve 6 TB usable data.",
+          "connections": [],
+          "constraints": {
+            "minDataGb": 6000
+          }
+        }
+      ]
+    }
+  ],
+  "installationLocations": [
+    {
+      "id": "site-a",
+      "name": "SYNTHETIC site-a",
+      "kind": "Site",
+      "parentId": "",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "site-b",
+      "name": "SYNTHETIC site-b",
+      "kind": "Site",
+      "parentId": "",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-1",
+      "name": "Bench 1",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-2",
+      "name": "Bench 2",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-3",
+      "name": "Bench 3",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-4",
+      "name": "Bench 4",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-5",
+      "name": "Bench 5",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-6",
+      "name": "Bench 6",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-7",
+      "name": "Bench 7",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-8",
+      "name": "Bench 8",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-9",
+      "name": "Bench 9",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-10",
+      "name": "Bench 10",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-11",
+      "name": "Bench 11",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-12",
+      "name": "Bench 12",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-13",
+      "name": "Bench 13",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-14",
+      "name": "Bench 14",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-15",
+      "name": "Bench 15",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-16",
+      "name": "Bench 16",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-17",
+      "name": "Bench 17",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-18",
+      "name": "Bench 18",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-19",
+      "name": "Bench 19",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-20",
+      "name": "Bench 20",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-21",
+      "name": "Bench 21",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-22",
+      "name": "Bench 22",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-23",
+      "name": "Bench 23",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-24",
+      "name": "Bench 24",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-25",
+      "name": "Bench 25",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-26",
+      "name": "Bench 26",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-27",
+      "name": "Bench 27",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-28",
+      "name": "Bench 28",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-29",
+      "name": "Bench 29",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-30",
+      "name": "Bench 30",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-31",
+      "name": "Bench 31",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-32",
+      "name": "Bench 32",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-33",
+      "name": "Bench 33",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-34",
+      "name": "Bench 34",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-35",
+      "name": "Bench 35",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-36",
+      "name": "Bench 36",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-37",
+      "name": "Bench 37",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-38",
+      "name": "Bench 38",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-39",
+      "name": "Bench 39",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-40",
+      "name": "Bench 40",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-41",
+      "name": "Bench 41",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-42",
+      "name": "Bench 42",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-43",
+      "name": "Bench 43",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-44",
+      "name": "Bench 44",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-45",
+      "name": "Bench 45",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-46",
+      "name": "Bench 46",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-47",
+      "name": "Bench 47",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-48",
+      "name": "Bench 48",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-49",
+      "name": "Bench 49",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-50",
+      "name": "Bench 50",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-51",
+      "name": "Bench 51",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-52",
+      "name": "Bench 52",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-53",
+      "name": "Bench 53",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-54",
+      "name": "Bench 54",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-55",
+      "name": "Bench 55",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-56",
+      "name": "Bench 56",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-57",
+      "name": "Bench 57",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-58",
+      "name": "Bench 58",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-59",
+      "name": "Bench 59",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-60",
+      "name": "Bench 60",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-61",
+      "name": "Bench 61",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-62",
+      "name": "Bench 62",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-63",
+      "name": "Bench 63",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-64",
+      "name": "Bench 1",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-65",
+      "name": "Bench 2",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-66",
+      "name": "Bench 3",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-67",
+      "name": "Bench 4",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-68",
+      "name": "Bench 5",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-69",
+      "name": "Bench 6",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-70",
+      "name": "Bench 7",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-71",
+      "name": "Bench 8",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-72",
+      "name": "Bench 9",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-73",
+      "name": "Bench 10",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-74",
+      "name": "Bench 11",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-75",
+      "name": "Bench 12",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-76",
+      "name": "Bench 13",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-77",
+      "name": "Bench 14",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-78",
+      "name": "Bench 15",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-79",
+      "name": "Bench 16",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-80",
+      "name": "Bench 17",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-81",
+      "name": "Bench 18",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-82",
+      "name": "Bench 19",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-83",
+      "name": "Bench 20",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-84",
+      "name": "Bench 21",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-85",
+      "name": "Bench 22",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-86",
+      "name": "Bench 23",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-87",
+      "name": "Bench 24",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-88",
+      "name": "Bench 25",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-89",
+      "name": "Bench 26",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-90",
+      "name": "Bench 27",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-91",
+      "name": "Bench 28",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-92",
+      "name": "Bench 29",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-93",
+      "name": "Bench 30",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-94",
+      "name": "Bench 31",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-95",
+      "name": "Bench 32",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-96",
+      "name": "Bench 33",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-97",
+      "name": "Bench 34",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-98",
+      "name": "Bench 35",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-99",
+      "name": "Bench 36",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-100",
+      "name": "Bench 37",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-101",
+      "name": "Bench 38",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-102",
+      "name": "Bench 39",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-103",
+      "name": "Bench 40",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-104",
+      "name": "Bench 41",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-105",
+      "name": "Bench 42",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-106",
+      "name": "Bench 43",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-107",
+      "name": "Bench 44",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-108",
+      "name": "Bench 45",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-109",
+      "name": "Bench 46",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-110",
+      "name": "Bench 47",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-111",
+      "name": "Bench 48",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-112",
+      "name": "Bench 49",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-113",
+      "name": "Bench 50",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-114",
+      "name": "Bench 51",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-115",
+      "name": "Bench 52",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-116",
+      "name": "Bench 53",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-117",
+      "name": "Bench 54",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-118",
+      "name": "Bench 55",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-119",
+      "name": "Bench 56",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-120",
+      "name": "Bench 57",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-121",
+      "name": "Bench 58",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-122",
+      "name": "Bench 59",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-123",
+      "name": "Bench 60",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-124",
+      "name": "Bench 61",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-125",
+      "name": "Bench 62",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    }
+  ],
+  "components": [
+    {
+      "id": "case-tower",
+      "name": "Research tower · 6-bay",
+      "category": "Chassis",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "supportedForms": [
+          "ATX",
+          "Micro-ATX"
+        ],
+        "rearSlots": 7,
+        "maxCardLengthMm": 330,
+        "maxCardHeightMm": 140,
+        "maxCoolerHeightMm": 170,
+        "bays25": 2,
+        "bays35": 2,
+        "hotSwapBays": 4,
+        "lengthMm": 510,
+        "heightMm": 460,
+        "widthMm": 230,
+        "bays525": 1,
+        "bayTargets": [
+          {
+            "id": "FRONT",
+            "size": "5.25"
+          }
+        ]
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "board-atx",
+      "name": "ATX workstation board · AM5",
+      "category": "Motherboard",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "socket": "AM5",
+        "formFactor": "ATX",
+        "memoryType": "DDR5",
+        "dimmSlots": 4,
+        "maxMemoryGb": 128,
+        "slots": [
+          {
+            "id": "PCIE_1",
+            "bus": "PCIe",
+            "physical": 16,
+            "lanes": 16,
+            "generation": 4,
+            "position": 1
+          },
+          {
+            "id": "PCIE_2",
+            "bus": "PCIe",
+            "physical": 16,
+            "lanes": 8,
+            "generation": 4,
+            "position": 4
+          },
+          {
+            "id": "PCIE_3",
+            "bus": "PCIe",
+            "physical": 4,
+            "lanes": 4,
+            "generation": 3,
+            "position": 6
+          }
+        ],
+        "usbA": 8,
+        "usbC": 2,
+        "ethernet": 1,
+        "sataPorts": 6,
+        "m2Slots": 2,
+        "m2Lengths": [
+          80
+        ],
+        "bifurcation": true,
+        "powerW": 45
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "cpu",
+      "name": "8-core processor · AM5",
+      "category": "CPU",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "socket": "AM5",
+        "powerW": 105
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "ram",
+      "name": "32 GB DDR5 module",
+      "category": "Memory",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "memoryType": "DDR5",
+        "capacityGb": 32,
+        "powerW": 8
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "nvme",
+      "name": "1 TB NVMe · M.2 2280",
+      "category": "Drive",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "storageMedium": "SSD",
+        "driveInterface": "NVMe",
+        "driveSize": "M.2",
+        "m2Length": 80,
+        "capacityGb": 1000,
+        "powerW": 7
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "ssd",
+      "name": "2 TB SATA SSD · 2.5-inch",
+      "category": "Drive",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "storageMedium": "SSD",
+        "driveInterface": "SATA",
+        "driveSize": "2.5",
+        "capacityGb": 2000,
+        "powerW": 5
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "hdd",
+      "name": "8 TB SATA HDD · 3.5-inch",
+      "category": "Drive",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "storageMedium": "HDD",
+        "driveInterface": "SATA",
+        "driveSize": "3.5",
+        "capacityGb": 8000,
+        "powerW": 10
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "psu",
+      "name": "750 W modular PSU",
+      "category": "PSU",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "capacityW": 750,
+        "sataPower": 8,
+        "formFactor": "ATX"
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "cooler",
+      "name": "Low-profile air cooler",
+      "category": "Cooler",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "heightMm": 115,
+        "supportsSockets": [
+          "AM5"
+        ],
+        "powerW": 4
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "cage",
+      "name": "SYNTHETIC · dual SSD bay cage",
+      "category": "Storage adapter",
+      "manufacturer": "Synthetic Test Hardware",
+      "source": "Synthetic workflow fixture",
+      "verified": true,
+      "specs": {
+        "storageAdapterKind": "bay-cage",
+        "baySize": "5.25",
+        "bayUnits": 1,
+        "sataPowerPlugs": 1,
+        "driveTargets": [
+          {
+            "id": "A",
+            "mount": "front-hot-swap",
+            "driveSizes": [
+              "2.5"
+            ],
+            "interfaces": [
+              "SATA"
+            ]
+          },
+          {
+            "id": "B",
+            "mount": "front-hot-swap",
+            "driveSizes": [
+              "2.5"
+            ],
+            "interfaces": [
+              "SATA"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ssd-large",
+      "name": "SYNTHETIC · 8 TB SATA SSD",
+      "category": "Drive",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "storageMedium": "SSD",
+        "driveInterface": "SATA",
+        "driveSize": "2.5",
+        "capacityGb": 8000,
+        "powerW": 5
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    }
+  ],
+  "systems": [],
+  "configurations": [
+    {
+      "id": "source-hdd",
+      "name": "SYNTHETIC · HDD workstation",
+      "description": "Two 8 TB HDDs in a data mirror; one 1 TB NVMe boot drive.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-21T12:00:00.000Z",
+      "placements": [
+        {
+          "id": "line-0",
+          "componentId": "case-tower",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-1",
+          "componentId": "board-atx",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-2",
+          "componentId": "cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-3",
+          "componentId": "ram",
+          "quantity": 2,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-7",
+          "componentId": "nvme",
+          "quantity": 1,
+          "slotId": "",
+          "role": "boot",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-8",
+          "componentId": "hdd",
+          "quantity": 2,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": ""
+        },
+        {
+          "id": "line-9",
+          "componentId": "psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-10",
+          "componentId": "cooler",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        }
+      ],
+      "storage": {
+        "raid": "mirror",
+        "bootMirror": false
+      },
+      "notes": "Synthetic current hardware assumption"
+    },
+    {
+      "id": "source-mixed",
+      "name": "SYNTHETIC · mixed drive workstation",
+      "description": "Two 8 TB HDDs in a data mirror; one 1 TB NVMe boot drive.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-21T12:00:00.000Z",
+      "placements": [
+        {
+          "id": "line-0",
+          "componentId": "case-tower",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-1",
+          "componentId": "board-atx",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-2",
+          "componentId": "cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-3",
+          "componentId": "ram",
+          "quantity": 2,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-7",
+          "componentId": "nvme",
+          "quantity": 1,
+          "slotId": "",
+          "role": "boot",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-8",
+          "componentId": "hdd",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": ""
+        },
+        {
+          "id": "line-9",
+          "componentId": "psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-10",
+          "componentId": "cooler",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "existing-ssd",
+          "componentId": "ssd",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": ""
+        }
+      ],
+      "storage": {
+        "raid": "none",
+        "bootMirror": false
+      },
+      "notes": "Synthetic current hardware assumption"
+    },
+    {
+      "id": "destination-ssd",
+      "name": "SYNTHETIC · SSD and bay conversion",
+      "description": "Two 8 TB HDDs in a data mirror; one 1 TB NVMe boot drive.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-21T12:00:00.000Z",
+      "placements": [
+        {
+          "id": "line-0",
+          "componentId": "case-tower",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-1",
+          "componentId": "board-atx",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-2",
+          "componentId": "cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-3",
+          "componentId": "ram",
+          "quantity": 3,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-7",
+          "componentId": "nvme",
+          "quantity": 1,
+          "slotId": "",
+          "role": "boot",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-9",
+          "componentId": "psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-10",
+          "componentId": "cooler",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "new-cage",
+          "componentId": "cage",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": "",
+          "targetId": "FRONT"
+        },
+        {
+          "id": "new-ssd-A",
+          "componentId": "ssd",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": "",
+          "adapterPlacementId": "new-cage",
+          "targetId": "A"
+        },
+        {
+          "id": "new-ssd-B",
+          "componentId": "ssd",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": "",
+          "adapterPlacementId": "new-cage",
+          "targetId": "B"
+        }
+      ],
+      "storage": {
+        "raid": "mirror",
+        "bootMirror": false
+      },
+      "notes": "Synthetic destination; engineering approval still required."
+    },
+    {
+      "id": "destination-large",
+      "name": "SYNTHETIC · high-capacity SSD conversion",
+      "description": "Two 8 TB HDDs in a data mirror; one 1 TB NVMe boot drive.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-21T12:00:00.000Z",
+      "placements": [
+        {
+          "id": "line-0",
+          "componentId": "case-tower",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-1",
+          "componentId": "board-atx",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-2",
+          "componentId": "cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-3",
+          "componentId": "ram",
+          "quantity": 3,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-7",
+          "componentId": "nvme",
+          "quantity": 1,
+          "slotId": "",
+          "role": "boot",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-9",
+          "componentId": "psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-10",
+          "componentId": "cooler",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "new-cage",
+          "componentId": "cage",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": "",
+          "targetId": "FRONT"
+        },
+        {
+          "id": "new-ssd-A",
+          "componentId": "ssd-large",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": "",
+          "adapterPlacementId": "new-cage",
+          "targetId": "A"
+        },
+        {
+          "id": "new-ssd-B",
+          "componentId": "ssd-large",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": "",
+          "adapterPlacementId": "new-cage",
+          "targetId": "B"
+        }
+      ],
+      "storage": {
+        "raid": "mirror",
+        "bootMirror": false
+      },
+      "notes": "Synthetic destination; engineering approval still required."
+    },
+    {
+      "id": "source-extra-memory",
+      "name": "SYNTHETIC · observed three-DIMM variation",
+      "description": "Two 8 TB HDDs in a data mirror; one 1 TB NVMe boot drive.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-21T12:00:00.000Z",
+      "placements": [
+        {
+          "id": "line-0",
+          "componentId": "case-tower",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-1",
+          "componentId": "board-atx",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-2",
+          "componentId": "cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-3",
+          "componentId": "ram",
+          "quantity": 3,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-7",
+          "componentId": "nvme",
+          "quantity": 1,
+          "slotId": "",
+          "role": "boot",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-8",
+          "componentId": "hdd",
+          "quantity": 2,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": ""
+        },
+        {
+          "id": "line-9",
+          "componentId": "psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-10",
+          "componentId": "cooler",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        }
+      ],
+      "storage": {
+        "raid": "mirror",
+        "bootMirror": false
+      },
+      "notes": "Synthetic current hardware assumption"
+    }
+  ],
+  "pcs": [
+    {
+      "id": "synthetic-pc-1",
+      "name": "SYNTHETIC-PC-001",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-1",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-2",
+      "name": "SYNTHETIC-PC-002",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-2",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-3",
+      "name": "SYNTHETIC-PC-003",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-3",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-4",
+      "name": "SYNTHETIC-PC-004",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-4",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-5",
+      "name": "SYNTHETIC-PC-005",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-5",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-6",
+      "name": "SYNTHETIC-PC-006",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-6",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-7",
+      "name": "SYNTHETIC-PC-007",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-7",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-8",
+      "name": "SYNTHETIC-PC-008",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-8",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-9",
+      "name": "SYNTHETIC-PC-009",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-9",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-10",
+      "name": "SYNTHETIC-PC-010",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-10",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-11",
+      "name": "SYNTHETIC-PC-011",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-11",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-12",
+      "name": "SYNTHETIC-PC-012",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-12",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-13",
+      "name": "SYNTHETIC-PC-013",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-13",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-14",
+      "name": "SYNTHETIC-PC-014",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-14",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-15",
+      "name": "SYNTHETIC-PC-015",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-15",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-16",
+      "name": "SYNTHETIC-PC-016",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-16",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-17",
+      "name": "SYNTHETIC-PC-017",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-17",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-18",
+      "name": "SYNTHETIC-PC-018",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-18",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-19",
+      "name": "SYNTHETIC-PC-019",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-19",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-20",
+      "name": "SYNTHETIC-PC-020",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-20",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-21",
+      "name": "SYNTHETIC-PC-021",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-21",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-22",
+      "name": "SYNTHETIC-PC-022",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-22",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-23",
+      "name": "SYNTHETIC-PC-023",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-23",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-24",
+      "name": "SYNTHETIC-PC-024",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-24",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-25",
+      "name": "SYNTHETIC-PC-025",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-25",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-26",
+      "name": "SYNTHETIC-PC-026",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-26",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-27",
+      "name": "SYNTHETIC-PC-027",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-27",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-28",
+      "name": "SYNTHETIC-PC-028",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-28",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-29",
+      "name": "SYNTHETIC-PC-029",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-29",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-30",
+      "name": "SYNTHETIC-PC-030",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-30",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-31",
+      "name": "SYNTHETIC-PC-031",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-31",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-32",
+      "name": "SYNTHETIC-PC-032",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-32",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-33",
+      "name": "SYNTHETIC-PC-033",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-33",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-34",
+      "name": "SYNTHETIC-PC-034",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-34",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-35",
+      "name": "SYNTHETIC-PC-035",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-35",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-36",
+      "name": "SYNTHETIC-PC-036",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-36",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-37",
+      "name": "SYNTHETIC-PC-037",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-37",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-38",
+      "name": "SYNTHETIC-PC-038",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-38",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-39",
+      "name": "SYNTHETIC-PC-039",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-39",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-40",
+      "name": "SYNTHETIC-PC-040",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-40",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-41",
+      "name": "SYNTHETIC-PC-041",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-41",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-42",
+      "name": "SYNTHETIC-PC-042",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-42",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-43",
+      "name": "SYNTHETIC-PC-043",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-43",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-44",
+      "name": "SYNTHETIC-PC-044",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-44",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-45",
+      "name": "SYNTHETIC-PC-045",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-45",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-46",
+      "name": "SYNTHETIC-PC-046",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-46",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-47",
+      "name": "SYNTHETIC-PC-047",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-47",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-48",
+      "name": "SYNTHETIC-PC-048",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-48",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-49",
+      "name": "SYNTHETIC-PC-049",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-49",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-50",
+      "name": "SYNTHETIC-PC-050",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-50",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-51",
+      "name": "SYNTHETIC-PC-051",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-51",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-52",
+      "name": "SYNTHETIC-PC-052",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-52",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-53",
+      "name": "SYNTHETIC-PC-053",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-53",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-54",
+      "name": "SYNTHETIC-PC-054",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-54",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-55",
+      "name": "SYNTHETIC-PC-055",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-55",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-56",
+      "name": "SYNTHETIC-PC-056",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-56",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-57",
+      "name": "SYNTHETIC-PC-057",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-57",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-58",
+      "name": "SYNTHETIC-PC-058",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-58",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-59",
+      "name": "SYNTHETIC-PC-059",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-59",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-60",
+      "name": "SYNTHETIC-PC-060",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-60",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-61",
+      "name": "SYNTHETIC-PC-061",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-61",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-62",
+      "name": "SYNTHETIC-PC-062",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-62",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-63",
+      "name": "SYNTHETIC-PC-063",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-63",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-64",
+      "name": "SYNTHETIC-PC-064",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-64",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-65",
+      "name": "SYNTHETIC-PC-065",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-65",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-66",
+      "name": "SYNTHETIC-PC-066",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-66",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-67",
+      "name": "SYNTHETIC-PC-067",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-67",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-68",
+      "name": "SYNTHETIC-PC-068",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-68",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-69",
+      "name": "SYNTHETIC-PC-069",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-69",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-70",
+      "name": "SYNTHETIC-PC-070",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-70",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-71",
+      "name": "SYNTHETIC-PC-071",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-71",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-72",
+      "name": "SYNTHETIC-PC-072",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-72",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-73",
+      "name": "SYNTHETIC-PC-073",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-73",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-74",
+      "name": "SYNTHETIC-PC-074",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-74",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-75",
+      "name": "SYNTHETIC-PC-075",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-75",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-76",
+      "name": "SYNTHETIC-PC-076",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-76",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-77",
+      "name": "SYNTHETIC-PC-077",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-77",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-78",
+      "name": "SYNTHETIC-PC-078",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-78",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-79",
+      "name": "SYNTHETIC-PC-079",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-79",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-80",
+      "name": "SYNTHETIC-PC-080",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-80",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-81",
+      "name": "SYNTHETIC-PC-081",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-81",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-82",
+      "name": "SYNTHETIC-PC-082",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-82",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-83",
+      "name": "SYNTHETIC-PC-083",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-83",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-84",
+      "name": "SYNTHETIC-PC-084",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-84",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-85",
+      "name": "SYNTHETIC-PC-085",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-85",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-86",
+      "name": "SYNTHETIC-PC-086",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-86",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-87",
+      "name": "SYNTHETIC-PC-087",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-87",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-88",
+      "name": "SYNTHETIC-PC-088",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-88",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-89",
+      "name": "SYNTHETIC-PC-089",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-89",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-90",
+      "name": "SYNTHETIC-PC-090",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-90",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-91",
+      "name": "SYNTHETIC-PC-091",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-91",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-92",
+      "name": "SYNTHETIC-PC-092",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-92",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-93",
+      "name": "SYNTHETIC-PC-093",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-93",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-94",
+      "name": "SYNTHETIC-PC-094",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-94",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-95",
+      "name": "SYNTHETIC-PC-095",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-95",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-96",
+      "name": "SYNTHETIC-PC-096",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-96",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-97",
+      "name": "SYNTHETIC-PC-097",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-97",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-98",
+      "name": "SYNTHETIC-PC-098",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-98",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-99",
+      "name": "SYNTHETIC-PC-099",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-99",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-100",
+      "name": "SYNTHETIC-PC-100",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-100",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-101",
+      "name": "SYNTHETIC-PC-101",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-101",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-102",
+      "name": "SYNTHETIC-PC-102",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-102",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-103",
+      "name": "SYNTHETIC-PC-103",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-103",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-104",
+      "name": "SYNTHETIC-PC-104",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-104",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-105",
+      "name": "SYNTHETIC-PC-105",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-105",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-106",
+      "name": "SYNTHETIC-PC-106",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-106",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-107",
+      "name": "SYNTHETIC-PC-107",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-107",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-108",
+      "name": "SYNTHETIC-PC-108",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-108",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-109",
+      "name": "SYNTHETIC-PC-109",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-109",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-110",
+      "name": "SYNTHETIC-PC-110",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-110",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-111",
+      "name": "SYNTHETIC-PC-111",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-111",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-112",
+      "name": "SYNTHETIC-PC-112",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-112",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-113",
+      "name": "SYNTHETIC-PC-113",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-113",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-114",
+      "name": "SYNTHETIC-PC-114",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-114",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-115",
+      "name": "SYNTHETIC-PC-115",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-115",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-116",
+      "name": "SYNTHETIC-PC-116",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-116",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-117",
+      "name": "SYNTHETIC-PC-117",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-117",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-118",
+      "name": "SYNTHETIC-PC-118",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-118",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-119",
+      "name": "SYNTHETIC-PC-119",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-119",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-120",
+      "name": "SYNTHETIC-PC-120",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-120",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-121",
+      "name": "SYNTHETIC-PC-121",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-121",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Retired",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-122",
+      "name": "SYNTHETIC-PC-122",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-122",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Parts only",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-123",
+      "name": "SYNTHETIC-PC-123",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-123",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Retired",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-124",
+      "name": "SYNTHETIC-PC-124",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-124",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Parts only",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-mixed",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-125",
+      "name": "SYNTHETIC-PC-125",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-125",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Retired",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    }
+  ],
+  "inventory": [],
+  "transitionPlans": [
+    {
+      "id": "plan-08-fleet-scale",
+      "scenario": {
+        "version": 1,
+        "mode": "configuration",
+        "destinationIds": {
+          "{\"source\":\"source-hdd\",\"survey\":\"uninspected\",\"provisional\":true,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"hdd\",\"quantity\":2,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"}],\"storage\":{\"raid\":\"mirror\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": "destination-ssd",
+          "{\"source\":\"source-mixed\",\"survey\":\"uninspected\",\"provisional\":true,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"hdd\",\"quantity\":1,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ssd\",\"quantity\":1,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"}],\"storage\":{\"raid\":\"none\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": "destination-ssd"
+        },
+        "name": "SYNTHETIC · 08-fleet-scale",
+        "sourceIds": [],
+        "locationId": "",
+        "onlyHDD": false,
+        "pcIds": [
+          "synthetic-pc-1",
+          "synthetic-pc-2",
+          "synthetic-pc-3",
+          "synthetic-pc-4",
+          "synthetic-pc-5",
+          "synthetic-pc-6",
+          "synthetic-pc-7",
+          "synthetic-pc-8",
+          "synthetic-pc-9",
+          "synthetic-pc-10",
+          "synthetic-pc-11",
+          "synthetic-pc-12",
+          "synthetic-pc-13",
+          "synthetic-pc-14",
+          "synthetic-pc-15",
+          "synthetic-pc-16",
+          "synthetic-pc-17",
+          "synthetic-pc-18",
+          "synthetic-pc-19",
+          "synthetic-pc-20",
+          "synthetic-pc-21",
+          "synthetic-pc-22",
+          "synthetic-pc-23",
+          "synthetic-pc-24",
+          "synthetic-pc-25",
+          "synthetic-pc-26",
+          "synthetic-pc-27",
+          "synthetic-pc-28",
+          "synthetic-pc-29",
+          "synthetic-pc-30",
+          "synthetic-pc-31",
+          "synthetic-pc-32",
+          "synthetic-pc-33",
+          "synthetic-pc-34",
+          "synthetic-pc-35",
+          "synthetic-pc-36",
+          "synthetic-pc-37",
+          "synthetic-pc-38",
+          "synthetic-pc-39",
+          "synthetic-pc-40",
+          "synthetic-pc-41",
+          "synthetic-pc-42",
+          "synthetic-pc-43",
+          "synthetic-pc-44",
+          "synthetic-pc-45",
+          "synthetic-pc-46",
+          "synthetic-pc-47",
+          "synthetic-pc-48",
+          "synthetic-pc-49",
+          "synthetic-pc-50",
+          "synthetic-pc-51",
+          "synthetic-pc-52",
+          "synthetic-pc-53",
+          "synthetic-pc-54",
+          "synthetic-pc-55",
+          "synthetic-pc-56",
+          "synthetic-pc-57",
+          "synthetic-pc-58",
+          "synthetic-pc-59",
+          "synthetic-pc-60",
+          "synthetic-pc-61",
+          "synthetic-pc-62",
+          "synthetic-pc-63",
+          "synthetic-pc-64",
+          "synthetic-pc-65",
+          "synthetic-pc-66",
+          "synthetic-pc-67",
+          "synthetic-pc-68",
+          "synthetic-pc-69",
+          "synthetic-pc-70",
+          "synthetic-pc-71",
+          "synthetic-pc-72",
+          "synthetic-pc-73",
+          "synthetic-pc-74",
+          "synthetic-pc-75",
+          "synthetic-pc-76",
+          "synthetic-pc-77",
+          "synthetic-pc-78",
+          "synthetic-pc-79",
+          "synthetic-pc-80",
+          "synthetic-pc-81",
+          "synthetic-pc-82",
+          "synthetic-pc-83",
+          "synthetic-pc-84",
+          "synthetic-pc-85",
+          "synthetic-pc-86",
+          "synthetic-pc-87",
+          "synthetic-pc-88",
+          "synthetic-pc-89",
+          "synthetic-pc-90",
+          "synthetic-pc-91",
+          "synthetic-pc-92",
+          "synthetic-pc-93",
+          "synthetic-pc-94",
+          "synthetic-pc-95",
+          "synthetic-pc-96",
+          "synthetic-pc-97",
+          "synthetic-pc-98",
+          "synthetic-pc-99",
+          "synthetic-pc-100",
+          "synthetic-pc-101",
+          "synthetic-pc-102",
+          "synthetic-pc-103",
+          "synthetic-pc-104",
+          "synthetic-pc-105",
+          "synthetic-pc-106",
+          "synthetic-pc-107",
+          "synthetic-pc-108",
+          "synthetic-pc-109",
+          "synthetic-pc-110",
+          "synthetic-pc-111",
+          "synthetic-pc-112",
+          "synthetic-pc-113",
+          "synthetic-pc-114",
+          "synthetic-pc-115",
+          "synthetic-pc-116",
+          "synthetic-pc-117",
+          "synthetic-pc-118",
+          "synthetic-pc-119",
+          "synthetic-pc-120"
+        ],
+        "growthPercent": 20,
+        "freePercent": 20,
+        "sparePercent": 0,
+        "rollout": {
+          "pilotPCIds": [],
+          "waveSize": 10,
+          "method": "Backup and restore",
+          "maintenanceWindow": "",
+          "rollbackNotes": ""
+        },
+        "policies": {
+          "{\"source\":\"source-hdd\",\"survey\":\"uninspected\",\"provisional\":true,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"hdd\",\"quantity\":2,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"}],\"storage\":{\"raid\":\"mirror\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": {
+            "data:default": {
+              "usedGb": 1000,
+              "evidence": "Synthetic filesystem usage: maximum 1000 GB per PC, 2026-10-21"
+            }
+          },
+          "{\"source\":\"source-mixed\",\"survey\":\"uninspected\",\"provisional\":true,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"hdd\",\"quantity\":1,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ssd\",\"quantity\":1,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"}],\"storage\":{\"raid\":\"none\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": {
+            "data:default": {
+              "usedGb": 1000,
+              "evidence": "Synthetic filesystem usage: maximum 1000 GB per PC, 2026-10-21"
+            }
+          }
+        }
+      },
+      "draft": null,
+      "workspaceRevision": "synthetic-import-review-required",
+      "draftWorkspaceRevision": "",
+      "updatedAt": "2026-10-21T12:00:00.000Z"
+    }
+  ]
+}

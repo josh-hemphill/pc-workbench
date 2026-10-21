@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "scenario": {
+    "version": 1,
+    "mode": "configuration",
+    "destinationIds": {},
+    "name": "SYNTHETIC · 01-locations-only",
+    "sourceIds": [],
+    "locationId": "",
+    "onlyHDD": false,
+    "pcIds": [],
+    "growthPercent": 20,
+    "freePercent": 20,
+    "sparePercent": 0,
+    "rollout": {
+      "pilotPCIds": [],
+      "waveSize": 10,
+      "method": "Backup and restore",
+      "maintenanceWindow": "",
+      "rollbackNotes": ""
+    },
+    "policies": {}
+  },
+  "workspaceRevision": "synthetic-import-review-required"
+}

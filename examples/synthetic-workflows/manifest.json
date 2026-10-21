@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "synthetic": true,
+  "generatedAt": "2026-10-21T12:00:00.000Z",
+  "scenarios": [
+    {
+      "id": "01-locations-only",
+      "description": "Imported hierarchy; known devices have not yet been registered.",
+      "expected": {
+        "active": 0,
+        "blocked": 0
+      },
+      "selected": 0,
+      "steps": [
+        "Import locations; grouping locations stay empty.",
+        "Select only benches with confirmed devices and register awaiting inspection.",
+        "Document a current configuration assumption; review a transition."
+      ]
+    },
+    {
+      "id": "02-legacy-plans",
+      "description": "Older PC CSVs have linked plans but no survey or installed records.",
+      "expected": {
+        "active": 4,
+        "blocked": 0
+      },
+      "selected": 4,
+      "steps": [
+        "Import legacy PCs without hardwareSurvey.",
+        "Review provisional planning; possible assumed reuse stays zero.",
+        "Bulk-record a documented current assumption to make conditional reuse available."
+      ]
+    },
+    {
+      "id": "03-assumed-fleet",
+      "description": "Six inaccessible PCs with documented HDD and mixed-drive assumptions.",
+      "expected": {
+        "active": 6,
+        "blocked": 0
+      },
+      "selected": 6,
+      "steps": [
+        "Filter by both source configurations and by site.",
+        "Review SSD + bay + memory conversion and both procurement estimates.",
+        "Save and reopen the plan; confirm no stock or PC assignment changes."
+      ]
+    },
+    {
+      "id": "04-partial-conflict",
+      "description": "Two partial surveys agree with assumptions; one records extra RAM.",
+      "expected": {
+        "active": 3,
+        "blocked": 1
+      },
+      "selected": 3,
+      "steps": [
+        "Review: the extra-RAM PC blocks, and its demand is excluded.",
+        "Change its assumption to the observed three-DIMM configuration.",
+        "Enumerate remaining parts, complete the survey and commission through normal actions."
+      ]
+    },
+    {
+      "id": "05-stock-pressure",
+      "description": "Two recorded PCs, outside-scope reservations, unusable stock and inactive PCs.",
+      "expected": {
+        "active": 3,
+        "blocked": 0
+      },
+      "selected": 2,
+      "steps": [
+        "Select the first two PCs; inspect full procurement.",
+        "Expect 2 SSDs, 1 cage and 2 RAM modules to order.",
+        "Explicitly selecting Parts only / Retired PCs blocks them; their stock is not free."
+      ]
+    },
+    {
+      "id": "06-unknown-capacity",
+      "description": "Unknown source drive capacity, one missing measurement, and a pinned 6 TB minimum.",
+      "expected": {
+        "active": 3,
+        "blocked": 2
+      },
+      "selected": 3,
+      "steps": [
+        "Review: pinned capacity and missing usage evidence block two PCs.",
+        "Add measured usage to the unknown cohort.",
+        "Choose the high-capacity destination; all three become plannable."
+      ]
+    },
+    {
+      "id": "07-survey-gaps",
+      "description": "Known device presence with missing assumptions, evidence, or supposedly complete hardware.",
+      "expected": {
+        "active": 4,
+        "blocked": 4
+      },
+      "selected": 4,
+      "steps": [
+        "Confirm all four remain explicit blockers despite location targets.",
+        "Bulk-set uninspected, the current HDD assumption, and evidence.",
+        "Review again: all four are provisional and plannable."
+      ]
+    },
+    {
+      "id": "08-fleet-scale",
+      "description": "125 devices across two sites; 120 active and five inactive.",
+      "expected": {
+        "active": 120,
+        "blocked": 0
+      },
+      "selected": 120,
+      "steps": [
+        "Use source and hierarchy filters; duplicate bench labels must resolve by ID.",
+        "Select matching PCs across multiple pages; hidden selections remain explicit.",
+        "Review all 120 active PCs; save/reload a plan without changing inventory."
+      ]
+    }
+  ],
+  "rejectedImports": [
+    {
+      "file": "duplicate-locations.csv",
+      "collection": "installationLocations",
+      "error": "duplicate record ID"
+    },
+    {
+      "file": "missing-parent.csv",
+      "collection": "installationLocations",
+      "error": "parent installation location not found"
+    },
+    {
+      "file": "invalid-survey.csv",
+      "collection": "pcs",
+      "error": "Invalid option"
+    },
+    {
+      "file": "overallocated-stock.csv",
+      "collection": "inventory",
+      "error": "Allocations exceed stock quantity"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "scenario": {
+    "version": 1,
+    "mode": "configuration",
+    "destinationIds": {
+      "{\"source\":\"source-hdd\",\"provisional\":true,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"hdd\",\"quantity\":2,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"}],\"storage\":{\"raid\":\"mirror\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": "destination-ssd",
+      "{\"source\":\"source-mixed\",\"provisional\":true,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"hdd\",\"quantity\":1,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ssd\",\"quantity\":1,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"}],\"storage\":{\"raid\":\"none\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": "destination-ssd"
+    },
+    "name": "SYNTHETIC · 02-legacy-plans",
+    "sourceIds": [],
+    "locationId": "",
+    "onlyHDD": false,
+    "pcIds": [
+      "synthetic-pc-1",
+      "synthetic-pc-2",
+      "synthetic-pc-3",
+      "synthetic-pc-4"
+    ],
+    "growthPercent": 20,
+    "freePercent": 20,
+    "sparePercent": 0,
+    "rollout": {
+      "pilotPCIds": [],
+      "waveSize": 10,
+      "method": "Backup and restore",
+      "maintenanceWindow": "",
+      "rollbackNotes": ""
+    },
+    "policies": {
+      "{\"source\":\"source-hdd\",\"provisional\":true,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"hdd\",\"quantity\":2,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"}],\"storage\":{\"raid\":\"mirror\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": {
+        "data:default": {
+          "usedGb": 1000,
+          "evidence": "Synthetic filesystem usage: maximum 1000 GB per PC, 2026-10-21"
+        }
+      },
+      "{\"source\":\"source-mixed\",\"provisional\":true,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"hdd\",\"quantity\":1,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ssd\",\"quantity\":1,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"}],\"storage\":{\"raid\":\"none\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": {
+        "data:default": {
+          "usedGb": 1000,
+          "evidence": "Synthetic filesystem usage: maximum 1000 GB per PC, 2026-10-21"
+        }
+      }
+    }
+  },
+  "workspaceRevision": "synthetic-import-review-required"
+}

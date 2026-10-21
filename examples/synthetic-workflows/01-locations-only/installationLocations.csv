@@ -1,0 +1,7 @@
+id,name,kind,parentId,requirementSetId,requirementRevision,targetConfigurationId,notes,requirementSnapshot
+site-a,SYNTHETIC site-a,Site,,,0,,Synthetic location; device presence must be explicitly recorded.,
+site-b,SYNTHETIC site-b,Site,,,0,,Synthetic location; device presence must be explicitly recorded.,
+bench-1,Bench 1,Bench,site-a,,0,destination-ssd,Synthetic location; device presence must be explicitly recorded.,
+bench-2,Bench 2,Bench,site-a,,0,destination-ssd,Synthetic location; device presence must be explicitly recorded.,
+bench-3,Bench 1,Bench,site-b,,0,destination-ssd,Synthetic location; device presence must be explicitly recorded.,
+bench-4,Bench 2,Bench,site-b,,0,destination-ssd,Synthetic location; device presence must be explicitly recorded.,

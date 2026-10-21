@@ -1,0 +1,2 @@
+id,name,kind,parentId,requirementSetId,requirementRevision,targetConfigurationId,notes,requirementSnapshot
+bench-1,Bench 1,Bench,nonexistent-parent,,0,destination-ssd,Synthetic location; device presence must be explicitly recorded.,

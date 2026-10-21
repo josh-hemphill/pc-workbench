@@ -1,0 +1,919 @@
+{
+  "requirementsSets": [
+    {
+      "id": "archive-minimum",
+      "name": "SYNTHETIC · archive requirements",
+      "description": "Synthetic test minimum",
+      "versions": [
+        {
+          "revision": 1,
+          "at": "2026-10-21T12:00:00.000Z",
+          "name": "Synthetic archive minimum",
+          "description": "Known installation must preserve 6 TB usable data.",
+          "connections": [],
+          "constraints": {
+            "minDataGb": 6000
+          }
+        }
+      ]
+    }
+  ],
+  "installationLocations": [
+    {
+      "id": "site-a",
+      "name": "SYNTHETIC site-a",
+      "kind": "Site",
+      "parentId": "",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "site-b",
+      "name": "SYNTHETIC site-b",
+      "kind": "Site",
+      "parentId": "",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-1",
+      "name": "Bench 1",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-2",
+      "name": "Bench 2",
+      "kind": "Bench",
+      "parentId": "site-a",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-3",
+      "name": "Bench 1",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    },
+    {
+      "id": "bench-4",
+      "name": "Bench 2",
+      "kind": "Bench",
+      "parentId": "site-b",
+      "requirementSetId": "",
+      "requirementRevision": 0,
+      "targetConfigurationId": "destination-ssd",
+      "notes": "Synthetic location; device presence must be explicitly recorded."
+    }
+  ],
+  "components": [
+    {
+      "id": "case-tower",
+      "name": "Research tower · 6-bay",
+      "category": "Chassis",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "supportedForms": [
+          "ATX",
+          "Micro-ATX"
+        ],
+        "rearSlots": 7,
+        "maxCardLengthMm": 330,
+        "maxCardHeightMm": 140,
+        "maxCoolerHeightMm": 170,
+        "bays25": 2,
+        "bays35": 2,
+        "hotSwapBays": 4,
+        "lengthMm": 510,
+        "heightMm": 460,
+        "widthMm": 230,
+        "bays525": 1,
+        "bayTargets": [
+          {
+            "id": "FRONT",
+            "size": "5.25"
+          }
+        ]
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "board-atx",
+      "name": "ATX workstation board · AM5",
+      "category": "Motherboard",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "socket": "AM5",
+        "formFactor": "ATX",
+        "memoryType": "DDR5",
+        "dimmSlots": 4,
+        "maxMemoryGb": 128,
+        "slots": [
+          {
+            "id": "PCIE_1",
+            "bus": "PCIe",
+            "physical": 16,
+            "lanes": 16,
+            "generation": 4,
+            "position": 1
+          },
+          {
+            "id": "PCIE_2",
+            "bus": "PCIe",
+            "physical": 16,
+            "lanes": 8,
+            "generation": 4,
+            "position": 4
+          },
+          {
+            "id": "PCIE_3",
+            "bus": "PCIe",
+            "physical": 4,
+            "lanes": 4,
+            "generation": 3,
+            "position": 6
+          }
+        ],
+        "usbA": 8,
+        "usbC": 2,
+        "ethernet": 1,
+        "sataPorts": 6,
+        "m2Slots": 2,
+        "m2Lengths": [
+          80
+        ],
+        "bifurcation": true,
+        "powerW": 45
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "cpu",
+      "name": "8-core processor · AM5",
+      "category": "CPU",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "socket": "AM5",
+        "powerW": 105
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "ram",
+      "name": "32 GB DDR5 module",
+      "category": "Memory",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "memoryType": "DDR5",
+        "capacityGb": 32,
+        "powerW": 8
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "nvme",
+      "name": "1 TB NVMe · M.2 2280",
+      "category": "Drive",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "storageMedium": "SSD",
+        "driveInterface": "NVMe",
+        "driveSize": "M.2",
+        "m2Length": 80,
+        "capacityGb": 1000,
+        "powerW": 7
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "ssd",
+      "name": "2 TB SATA SSD · 2.5-inch",
+      "category": "Drive",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "storageMedium": "SSD",
+        "driveInterface": "SATA",
+        "driveSize": "2.5",
+        "capacityGb": 2000,
+        "powerW": 5
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "hdd",
+      "name": "8 TB SATA HDD · 3.5-inch",
+      "category": "Drive",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "storageMedium": "HDD",
+        "driveInterface": "SATA",
+        "driveSize": "3.5",
+        "capacityGb": 8000,
+        "powerW": 10
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "psu",
+      "name": "750 W modular PSU",
+      "category": "PSU",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "capacityW": 750,
+        "sataPower": 8,
+        "formFactor": "ATX"
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "cooler",
+      "name": "Low-profile air cooler",
+      "category": "Cooler",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "heightMm": 115,
+        "supportsSockets": [
+          "AM5"
+        ],
+        "powerW": 4
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    },
+    {
+      "id": "cage",
+      "name": "SYNTHETIC · dual SSD bay cage",
+      "category": "Storage adapter",
+      "manufacturer": "Synthetic Test Hardware",
+      "source": "Synthetic workflow fixture",
+      "verified": true,
+      "specs": {
+        "storageAdapterKind": "bay-cage",
+        "baySize": "5.25",
+        "bayUnits": 1,
+        "sataPowerPlugs": 1,
+        "driveTargets": [
+          {
+            "id": "A",
+            "mount": "front-hot-swap",
+            "driveSizes": [
+              "2.5"
+            ],
+            "interfaces": [
+              "SATA"
+            ]
+          },
+          {
+            "id": "B",
+            "mount": "front-hot-swap",
+            "driveSizes": [
+              "2.5"
+            ],
+            "interfaces": [
+              "SATA"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ssd-large",
+      "name": "SYNTHETIC · 8 TB SATA SSD",
+      "category": "Drive",
+      "manufacturer": "Synthetic Test Hardware",
+      "specs": {
+        "storageMedium": "SSD",
+        "driveInterface": "SATA",
+        "driveSize": "2.5",
+        "capacityGb": 8000,
+        "powerW": 5
+      },
+      "source": "Synthetic workflow fixture — not manufacturer evidence",
+      "verified": true
+    }
+  ],
+  "systems": [],
+  "configurations": [
+    {
+      "id": "source-hdd",
+      "name": "SYNTHETIC · HDD workstation",
+      "description": "Two 8 TB HDDs in a data mirror; one 1 TB NVMe boot drive.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-21T12:00:00.000Z",
+      "placements": [
+        {
+          "id": "line-0",
+          "componentId": "case-tower",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-1",
+          "componentId": "board-atx",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-2",
+          "componentId": "cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-3",
+          "componentId": "ram",
+          "quantity": 2,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-7",
+          "componentId": "nvme",
+          "quantity": 1,
+          "slotId": "",
+          "role": "boot",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-8",
+          "componentId": "hdd",
+          "quantity": 2,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": ""
+        },
+        {
+          "id": "line-9",
+          "componentId": "psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-10",
+          "componentId": "cooler",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        }
+      ],
+      "storage": {
+        "raid": "mirror",
+        "bootMirror": false
+      },
+      "notes": "Synthetic current hardware assumption"
+    },
+    {
+      "id": "source-mixed",
+      "name": "SYNTHETIC · mixed drive workstation",
+      "description": "Two 8 TB HDDs in a data mirror; one 1 TB NVMe boot drive.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-21T12:00:00.000Z",
+      "placements": [
+        {
+          "id": "line-0",
+          "componentId": "case-tower",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-1",
+          "componentId": "board-atx",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-2",
+          "componentId": "cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-3",
+          "componentId": "ram",
+          "quantity": 2,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-7",
+          "componentId": "nvme",
+          "quantity": 1,
+          "slotId": "",
+          "role": "boot",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-8",
+          "componentId": "hdd",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": ""
+        },
+        {
+          "id": "line-9",
+          "componentId": "psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-10",
+          "componentId": "cooler",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "existing-ssd",
+          "componentId": "ssd",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": ""
+        }
+      ],
+      "storage": {
+        "raid": "none",
+        "bootMirror": false
+      },
+      "notes": "Synthetic current hardware assumption"
+    },
+    {
+      "id": "destination-ssd",
+      "name": "SYNTHETIC · SSD and bay conversion",
+      "description": "Two 8 TB HDDs in a data mirror; one 1 TB NVMe boot drive.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-21T12:00:00.000Z",
+      "placements": [
+        {
+          "id": "line-0",
+          "componentId": "case-tower",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-1",
+          "componentId": "board-atx",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-2",
+          "componentId": "cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-3",
+          "componentId": "ram",
+          "quantity": 3,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-7",
+          "componentId": "nvme",
+          "quantity": 1,
+          "slotId": "",
+          "role": "boot",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-9",
+          "componentId": "psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-10",
+          "componentId": "cooler",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "new-cage",
+          "componentId": "cage",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": "",
+          "targetId": "FRONT"
+        },
+        {
+          "id": "new-ssd-A",
+          "componentId": "ssd",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": "",
+          "adapterPlacementId": "new-cage",
+          "targetId": "A"
+        },
+        {
+          "id": "new-ssd-B",
+          "componentId": "ssd",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": "",
+          "adapterPlacementId": "new-cage",
+          "targetId": "B"
+        }
+      ],
+      "storage": {
+        "raid": "mirror",
+        "bootMirror": false
+      },
+      "notes": "Synthetic destination; engineering approval still required."
+    },
+    {
+      "id": "destination-large",
+      "name": "SYNTHETIC · high-capacity SSD conversion",
+      "description": "Two 8 TB HDDs in a data mirror; one 1 TB NVMe boot drive.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-21T12:00:00.000Z",
+      "placements": [
+        {
+          "id": "line-0",
+          "componentId": "case-tower",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-1",
+          "componentId": "board-atx",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-2",
+          "componentId": "cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-3",
+          "componentId": "ram",
+          "quantity": 3,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-7",
+          "componentId": "nvme",
+          "quantity": 1,
+          "slotId": "",
+          "role": "boot",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-9",
+          "componentId": "psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-10",
+          "componentId": "cooler",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "new-cage",
+          "componentId": "cage",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": "",
+          "targetId": "FRONT"
+        },
+        {
+          "id": "new-ssd-A",
+          "componentId": "ssd-large",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": "",
+          "adapterPlacementId": "new-cage",
+          "targetId": "A"
+        },
+        {
+          "id": "new-ssd-B",
+          "componentId": "ssd-large",
+          "quantity": 1,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": "",
+          "adapterPlacementId": "new-cage",
+          "targetId": "B"
+        }
+      ],
+      "storage": {
+        "raid": "mirror",
+        "bootMirror": false
+      },
+      "notes": "Synthetic destination; engineering approval still required."
+    },
+    {
+      "id": "source-extra-memory",
+      "name": "SYNTHETIC · observed three-DIMM variation",
+      "description": "Two 8 TB HDDs in a data mirror; one 1 TB NVMe boot drive.",
+      "systemId": "",
+      "status": "Draft",
+      "updatedAt": "2026-10-21T12:00:00.000Z",
+      "placements": [
+        {
+          "id": "line-0",
+          "componentId": "case-tower",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-1",
+          "componentId": "board-atx",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-2",
+          "componentId": "cpu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-3",
+          "componentId": "ram",
+          "quantity": 3,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-7",
+          "componentId": "nvme",
+          "quantity": 1,
+          "slotId": "",
+          "role": "boot",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-8",
+          "componentId": "hdd",
+          "quantity": 2,
+          "slotId": "",
+          "role": "data",
+          "mount": "front-hot-swap",
+          "group": ""
+        },
+        {
+          "id": "line-9",
+          "componentId": "psu",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        },
+        {
+          "id": "line-10",
+          "componentId": "cooler",
+          "quantity": 1,
+          "slotId": "",
+          "role": "general",
+          "mount": "auto",
+          "group": ""
+        }
+      ],
+      "storage": {
+        "raid": "mirror",
+        "bootMirror": false
+      },
+      "notes": "Synthetic current hardware assumption"
+    }
+  ],
+  "pcs": [
+    {
+      "id": "synthetic-pc-1",
+      "name": "SYNTHETIC-PC-001",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-1",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-2",
+      "name": "SYNTHETIC-PC-002",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-2",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "uninspected",
+        "configurationId": "source-hdd",
+        "evidence": ""
+      }
+    },
+    {
+      "id": "synthetic-pc-3",
+      "name": "SYNTHETIC-PC-003",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-3",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning",
+      "hardwareSurvey": {
+        "status": "complete",
+        "configurationId": "source-hdd",
+        "evidence": "Synthetic site owner report, 2026-10-21; current hardware inferred from adjacent station."
+      }
+    },
+    {
+      "id": "synthetic-pc-4",
+      "name": "SYNTHETIC-PC-004",
+      "serial": "",
+      "location": "",
+      "installationLocationId": "bench-4",
+      "configurationId": "",
+      "notes": "Fictional device, safe for isolated workflow testing.",
+      "buildSettings": null,
+      "lifecycle": "Planning"
+    }
+  ],
+  "inventory": [],
+  "transitionPlans": [
+    {
+      "id": "plan-07-survey-gaps",
+      "scenario": {
+        "version": 1,
+        "mode": "configuration",
+        "destinationIds": {
+          "{\"survey\":\"uninspected\",\"provisional\":true,\"requirements\":null,\"minimumBoot\":0,\"minimumData\":0}": "destination-ssd",
+          "{\"source\":\"source-hdd\",\"survey\":\"uninspected\",\"provisional\":true,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"hdd\",\"quantity\":2,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"}],\"storage\":{\"raid\":\"mirror\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": "destination-ssd",
+          "{\"source\":\"\",\"survey\":\"complete\",\"provisional\":false,\"placements\":[],\"storage\":{\"raid\":\"none\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": "destination-ssd",
+          "{\"provisional\":true,\"requirements\":null,\"minimumBoot\":0,\"minimumData\":0}": "destination-ssd"
+        },
+        "name": "SYNTHETIC · 07-survey-gaps",
+        "sourceIds": [],
+        "locationId": "",
+        "onlyHDD": false,
+        "pcIds": [
+          "synthetic-pc-1",
+          "synthetic-pc-2",
+          "synthetic-pc-3",
+          "synthetic-pc-4"
+        ],
+        "growthPercent": 20,
+        "freePercent": 20,
+        "sparePercent": 0,
+        "rollout": {
+          "pilotPCIds": [],
+          "waveSize": 10,
+          "method": "Backup and restore",
+          "maintenanceWindow": "",
+          "rollbackNotes": ""
+        },
+        "policies": {
+          "{\"source\":\"source-hdd\",\"survey\":\"uninspected\",\"provisional\":true,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"hdd\",\"quantity\":2,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\"}],\"storage\":{\"raid\":\"mirror\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": {
+            "data:default": {
+              "usedGb": 1000,
+              "evidence": "Synthetic filesystem usage: maximum 1000 GB per PC, 2026-10-21"
+            }
+          }
+        }
+      },
+      "draft": null,
+      "workspaceRevision": "synthetic-import-review-required",
+      "draftWorkspaceRevision": "",
+      "updatedAt": "2026-10-21T12:00:00.000Z"
+    }
+  ]
+}

@@ -47,6 +47,7 @@
     "test:desktop-package": "node tools/node/sea-smoke.mjs --desktop-shell",
     "stage:tauri-sidecar": "node tools/node/stage-tauri-sidecar.mjs",
     "probe:runtime": "node tools/node/runtime-compatibility-probe.ts",
-    "test:desktop-native": "node tools/node/native-webview-smoke.ts"
+    "test:desktop-native": "node tools/node/native-webview-smoke.ts",
+    "fixtures:workflows": "node tools/synthetic-workflows/generate.ts"
   }
 }

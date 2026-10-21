@@ -1,0 +1,3 @@
+id,name,kind,parentId,requirementSetId,requirementRevision,targetConfigurationId,notes,requirementSnapshot
+bench-1,Bench 1,Bench,site-a,,0,destination-ssd,Synthetic location; device presence must be explicitly recorded.,
+bench-1,"Duplicate ID, different label",Bench,site-a,,0,destination-ssd,Synthetic location; device presence must be explicitly recorded.,

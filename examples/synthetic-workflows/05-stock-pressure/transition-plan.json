@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "scenario": {
+    "version": 1,
+    "mode": "configuration",
+    "destinationIds": {
+      "{\"source\":\"source-hdd\",\"survey\":\"complete\",\"provisional\":false,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"hdd\",\"quantity\":2,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"}],\"storage\":{\"raid\":\"mirror\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": "destination-ssd"
+    },
+    "name": "SYNTHETIC · 05-stock-pressure",
+    "sourceIds": [],
+    "locationId": "",
+    "onlyHDD": false,
+    "pcIds": [
+      "synthetic-pc-1",
+      "synthetic-pc-2"
+    ],
+    "growthPercent": 20,
+    "freePercent": 20,
+    "sparePercent": 0,
+    "rollout": {
+      "pilotPCIds": [],
+      "waveSize": 10,
+      "method": "Backup and restore",
+      "maintenanceWindow": "",
+      "rollbackNotes": ""
+    },
+    "policies": {
+      "{\"source\":\"source-hdd\",\"survey\":\"complete\",\"provisional\":false,\"placements\":[{\"componentId\":\"case-tower\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"board-atx\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"cpu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"ram\",\"quantity\":2,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"nvme\",\"quantity\":1,\"slotId\":\"\",\"role\":\"boot\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"hdd\",\"quantity\":2,\"slotId\":\"\",\"role\":\"data\",\"mount\":\"front-hot-swap\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"psu\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"},{\"componentId\":\"cooler\",\"quantity\":1,\"slotId\":\"\",\"role\":\"general\",\"mount\":\"auto\",\"group\":\"\",\"targetId\":\"\",\"adapterPlacementId\":\"\",\"controllerPlacementId\":\"\"}],\"storage\":{\"raid\":\"mirror\",\"bootMirror\":false},\"systemId\":\"\",\"minimumBoot\":0,\"minimumData\":0}": {
+        "data:default": {
+          "usedGb": 1000,
+          "evidence": "Synthetic filesystem usage: maximum 1000 GB per PC, 2026-10-21"
+        }
+      }
+    }
+  },
+  "workspaceRevision": "synthetic-import-review-required"
+}

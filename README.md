@@ -91,6 +91,10 @@ Nested structures, including specifications, connections, placements, storage, b
 
 The backup contains all seven collections, saved transition plans and deleted inventory records when present. Legacy backups with the original five collections are supported and get empty requirements/location collections. In **Data & imports**, choose a JSON backup, validate the replacement counts, then restore it. Every collection and reference is checked together, a safety backup is saved first, and a single SQLite transaction protects the entire restore. If SQLite rollback cannot be confirmed, the server blocks edits with a recovery-required message until restart. Keep independent backup copies outside the application folder. Spreadsheet-safe exports prefix formula-like text with an apostrophe; disable that option for exact CSV round trips.
 
+## Synthetic workflow testing
+
+Eight reusable [synthetic import scenarios](examples/synthetic-workflows/README.md) cover empty locations, legacy plans, assumptions, partial surveys, stock shortages, unknown capacities, incomplete data and a 125-device fleet. Each includes a complete workspace, staged CSVs, a planning file and expected results. Run `pnpm fixtures:workflows --check` to verify fixtures, `pnpm test` for import/recovery regressions, or the documented optional Chromium replay. See the [workflow review findings](docs/SYNTHETIC-WORKFLOW-REVIEW.md).
+
 ## Incomplete hardware surveys
 
 For imported locations where a PC is known to exist but cannot yet be inspected, open **Installations → Installation locations** and choose **Register known PC awaiting inspection**. Bulk actions can register one PC at each explicitly selected empty Station, Bench or System location. Grouping and occupied locations are excluded; existing PCs can be updated in their editor or through bulk PC edits. Record how device presence is known, the date, and an optional assumed current configuration. A location’s desired target is never silently used as current hardware.
