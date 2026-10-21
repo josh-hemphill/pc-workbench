@@ -42,3 +42,11 @@ The tested recovery paths complete. This is functional coverage of these inputs,
 - `pnpm test`: 461 passed, zero failed and one existing skip; the synthetic import suite contributes 15 tests, with six additional input-reuse regression tests.
 - `pnpm build`: type checking, frontend and backend builds pass. The existing frontend chunk-size warning remains.
 - Optional Chromium replay: scenario review/export paths, import/registration, navigation, blocker recovery and draft reload pass. Artifacts are written to the runner's temporary output folder.
+
+## Installation editor follow-up
+
+Location operations now exposes PC operations and Distribution review as separate counted views above the tables, sharing the location scope. Distribution review uses `#/installations/distribution`; existing `#/installations/operations` links continue to open PC operations. Browser history retains operation filters, selection and table context.
+
+Requirements sets and equipment systems share an instrument editor. Add instrument is available even when no equipment exists, and each instrument has its own Add interface requirement action. Names, interface quantities, Custom interface names and stable reference IDs are validated. Optional connector, protocol, speed, power and isolation constraints sit behind an expandable section; existing recorded constraints are expanded. Publishing the next requirements revision preserves the previous revision and existing interface IDs.
+
+After `pnpm build`, run `python tools/synthetic-workflows/installation-editors-browser.py` with Node 26 on PATH, Python Playwright and Chromium installed. The replay creates a temporary 100-PC workspace, checks section discovery and URL/history behavior, creates structured Serial and Custom requirements, checks required inputs, publishes a second revision and exercises the shared equipment editor. It never changes the active workspace.

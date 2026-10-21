@@ -44,6 +44,8 @@ test("page and subpage URLs preserve record IDs views and editor addresses", () 
       "#/stock/stock-1/allocations",
       "#/catalog/queue",
       "#/installations/locations/loc-child",
+      "#/installations/operations",
+      "#/installations/distribution",
       "#/transitions/plan-1",
       "#/catalog/components?edit=component&record=ssd",
     ]
