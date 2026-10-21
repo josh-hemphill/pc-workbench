@@ -25,19 +25,28 @@ const disk=(component?:Component)=>!!component&&component.category==='Drive'&&!c
 export const ssdCandidates=(db:Database)=>db.components.filter(c=>disk(c)&&c.specs.storageMedium==='SSD'&&(c.specs.capacityGb||0)>0);
 export function transitionBaseline(pc:InventoryPC,db:Database):Baseline {
  const installed=pcAllocations(pc.id,db).filter(r=>r.allocation.state==='installed');
- const provisional=!installed.length;
- const configuration=provisional?db.configurations.find(c=>c.id===pc.configurationId)||null:installedConfiguration(pc,db);
+ const survey=pc.hardwareSurvey;
+ const provisional=survey?survey.status!=='complete':!installed.length;
+ const sourceId=survey&&provisional?survey.configurationId:pc.configurationId;
+ const configuration=provisional?db.configurations.find(c=>c.id===sourceId)||null:installedConfiguration(pc,db);
  const issues:string[]=[];
- if(!configuration)issues.push('No linked configuration or installed hardware to plan from.');
+ if(!configuration)issues.push(survey?'Choose an assumed current configuration for this incomplete survey.':'No linked configuration or installed hardware to plan from.');
+ if(survey&&provisional&&configuration&&!survey.evidence.trim())issues.push('Document the source/date of the hardware assumption before planning.');
+ if(survey?.status==='complete'&&!installed.length)issues.push('Survey is marked complete but no installed hardware is recorded.');
+ if(survey&&provisional&&configuration){
+  const known=new Map<string,number>();for(const row of installed)known.set(row.stock.componentId,(known.get(row.stock.componentId)||0)+row.allocation.quantity);
+  for(const [id,count] of known)if(count>configuration.placements.filter(p=>p.componentId===id).reduce((n,p)=>n+p.quantity,0))issues.push(`${db.components.find(c=>c.id===id)?.name||id}: recorded hardware exceeds the assumed configuration. Revise the assumption or complete the survey.`);
+ }
  if(!provisional&&!pc.buildSettings)issues.push('Installed storage settings are not recorded. Capture RAID and boot settings before planning.');
  const own=configuration&&resolveRequirementVersion(configuration,db)?.constraints;
+ const recorded=pc.buildSettings&&resolveRequirementVersion(pc.buildSettings,db)?.constraints;
  const location=db.installationLocations.find(l=>l.id===pc.installationLocationId);
  const located=location&&resolveRequirementVersion(location,db)?.constraints;
- return {pc,configuration:configuration?clone(configuration):null,provisional,issues,minimumBoot:Math.max(own?.minBootGb||0,located?.minBootGb||0),minimumData:Math.max(own?.minDataGb||0,located?.minDataGb||0)};
+ return {pc,configuration:configuration?clone(configuration):null,provisional,issues,minimumBoot:Math.max(own?.minBootGb||0,recorded?.minBootGb||0,located?.minBootGb||0),minimumData:Math.max(own?.minDataGb||0,recorded?.minDataGb||0,located?.minDataGb||0)};
 }
 export function transitionMatches(db:Database,scenario:TransitionScenario){
  const scope=scenario.locationId?installationLocationIds(scenario.locationId,db):null;
- return db.pcs.filter(pc=>!['Retired','Parts only'].includes(pc.lifecycle||'')&&(!scenario.sourceIds.length||scenario.sourceIds.includes(pc.configurationId))&&(!scope||scope.has(pc.installationLocationId||''))&&(!scenario.onlyHDD||transitionBaseline(pc,db).configuration?.placements.some(p=>db.components.find(c=>c.id===p.componentId)?.specs.storageMedium==='HDD')));
+ return db.pcs.filter(pc=>!['Retired','Parts only'].includes(pc.lifecycle||'')&&(!scenario.sourceIds.length||scenario.sourceIds.includes(pc.hardwareSurvey&&pc.hardwareSurvey.status!=='complete'?pc.hardwareSurvey.configurationId:pc.configurationId))&&(!scope||scope.has(pc.installationLocationId||''))&&(!scenario.onlyHDD||transitionBaseline(pc,db).configuration?.placements.some(p=>db.components.find(c=>c.id===p.componentId)?.specs.storageMedium==='HDD')));
 }
 /** Decimal usable GB; RAID parity and mirroring consume physical capacity. Unknowns stay unknown. */
 export function transitionCapacity(raid:Raid,sizes:(number|undefined)[]):number|null {
@@ -71,8 +80,8 @@ export function transitionCohorts(db:Database,scenario:TransitionScenario):Trans
   const baseline=transitionBaseline(pc,db),cfg=baseline.configuration;
   const placementIndex=new Map(cfg?.placements.map((p,i)=>[p.id,`position-${i}`])||[]);
   const normalize=(value:unknown):string=>JSON.stringify(value,(key,value)=>typeof value==='string'&&(key==='providerPlacementId'||key==='controllerPlacementId'||key==='cablePlacementId'||key==='powerProviderPlacementId'||key==='adapterPlacementId'||key==='placementId')?(placementIndex.get(value)||value):value);
-  const signature=normalize({locationRequirements:resolveRequirementVersion(db.installationLocations.find(l=>l.id===pc.installationLocationId)||{},db),source:pc.configurationId,provisional:baseline.provisional,placements:cfg?.placements.map(({id:_,...p})=>p),storage:cfg?.storage,systemId:cfg?.systemId,software:cfg?.software,portMappings:cfg?.portMappings,requirements:cfg&&resolveRequirementVersion(cfg,db),minimumBoot:baseline.minimumBoot,minimumData:baseline.minimumData});
-  if(!groups.has(signature))groups.set(signature,{id:signature,name:db.configurations.find(c=>c.id===pc.configurationId)?.name||'Unlinked installed hardware',members:[],segments:segmentsFor(baseline,db)});
+  const signature=normalize({locationRequirements:resolveRequirementVersion(db.installationLocations.find(l=>l.id===pc.installationLocationId)||{},db),source:baseline.provisional?cfg?.id:pc.configurationId,survey:pc.hardwareSurvey?.status,recordedRequirements:pc.hardwareSurvey&&baseline.provisional?resolveRequirementVersion(pc.buildSettings||{},db):undefined,provisional:baseline.provisional,placements:cfg?.placements.map(({id:_,...p})=>p),storage:cfg?.storage,systemId:cfg?.systemId,software:cfg?.software,portMappings:cfg?.portMappings,requirements:cfg&&resolveRequirementVersion(cfg,db),minimumBoot:baseline.minimumBoot,minimumData:baseline.minimumData});
+  if(!groups.has(signature))groups.set(signature,{id:signature,name:(baseline.provisional?cfg?.name:db.configurations.find(c=>c.id===pc.configurationId)?.name)||'Unlinked installed hardware',members:[],segments:segmentsFor(baseline,db)});
   groups.get(signature)!.members.push(baseline);
  }
  return [...groups.values()];
@@ -93,6 +102,11 @@ function targetFindings(target:Configuration,member:Baseline,db:Database){
  if(source?.requirementSetId){
   const captured={...target,requirementSetId:source.requirementSetId,requirementRevision:source.requirementRevision,requirementSnapshot:source.requirementSnapshot};
   findings.push(...checkConfiguration(captured,db).findings.map(f=>({...f,title:`Captured PC requirements: ${f.title}`})));
+ }
+ if(member.provisional&&member.pc.hardwareSurvey&&member.pc.buildSettings?.requirementSetId){
+  const settings=member.pc.buildSettings;
+  const captured={...target,requirementSetId:settings.requirementSetId,requirementRevision:settings.requirementRevision,requirementSnapshot:settings.requirementSnapshot};
+  findings.push(...checkConfiguration(captured,db).findings.map(f=>({...f,title:`Recorded PC requirements: ${f.title}`})));
  }
  const location=db.installationLocations.find(l=>l.id===member.pc.installationLocationId);
  if(location?.requirementSetId){
@@ -121,7 +135,7 @@ export function transitionOptions(cohort:TransitionCohort,segment:Segment,scenar
  }).sort((a,b)=>Number(b.retained>0)-Number(a.retained>0)||a.capacityGb-b.capacityGb||b.free-a.free||a.name.localeCompare(b.name));
 }
 function proposalId(id:string){let hash=14695981039346656037n;for(const char of id){hash=BigInt.asUintN(64,(hash^BigInt(char.charCodeAt(0)))*1099511628211n);}return `transition-${id.slice(0,45)}-${hash.toString(16)}`;}
-export interface ProcurementRow {id:string;name:string;interface:string;size:string;category:string;capacityGb:number|null;target:number;retained:number;reserved:number;spares:number;free:number;order:number}
+export interface ProcurementRow {id:string;name:string;interface:string;size:string;category:string;capacityGb:number|null;target:number;retained:number;assumedRetained:number;reserved:number;spares:number;free:number;order:number;orderIfConfirmed:number}
 export interface PCTransition {id:string;name:string;source:string;destination:string;location:string;provisional:boolean;status:'Blocked'|'Review';issues:string[];warnings:string[];beforeBoot:number|null;beforeData:number|null;afterBoot:number|null;afterData:number|null;removed:number;changes:{name:string;target:number;retained:number;added:number;removed:number}[];target:Configuration|null}
 export function planTransition(db:Database,input:TransitionScenario){
  const scenario=transitionScenarioSchema.parse(input),cohorts=transitionCohorts(db,scenario),pcs:PCTransition[]=[],demand=new Map<string,ProcurementRow>();
@@ -133,7 +147,7 @@ export function planTransition(db:Database,input:TransitionScenario){
   if(['Retired','Parts only'].includes(member.pc.lifecycle||''))issues.push('Inactive PC: remove it from this plan.');
   const segments=segmentsFor(member,db);
   if(!segments.length&&scenario.mode==='ssd')issues.push('No disk storage is recorded.');
-  if(member.provisional)warnings.push('Uses the linked configuration as a planning assumption; installed hardware has not been recorded.');
+  if(member.provisional)warnings.push(member.pc.hardwareSurvey?`Hardware survey ${member.pc.hardwareSurvey.status}: assumes ${cfg?.name||'unknown configuration'}. ${member.pc.hardwareSurvey.evidence}`:'Uses the linked configuration as a planning assumption; installed hardware has not been recorded.');
   if(pcAllocations(member.pc.id,db).some(r=>r.allocation.state==='installed'&&r.stock.condition!=='Serviceable'))issues.push('Installed stock needs repair or retirement review.');
   for(const segment of segments){
    const policy=scenario.policies[cohort.id]?.[segment.id],required=requiredSegmentGb(segment,policy,scenario);
@@ -173,16 +187,22 @@ export function planTransition(db:Database,input:TransitionScenario){
   if(target&&!issues.length){
    const owned=pcAllocations(member.pc.id,db).filter(r=>r.allocation.state==='installed'&&r.stock.condition==='Serviceable').map(r=>({...r,left:r.allocation.quantity}));
    const reservations=pcAllocations(member.pc.id,db).filter(r=>r.allocation.state==='reserved'&&r.stock.condition==='Serviceable').map(r=>({...r,left:r.allocation.quantity}));
+   // Possible reuse is a separate estimate. It never credits real stock, reservations or removals.
+   const assumed=new Map<string,number>();
+   if(member.provisional&&member.pc.hardwareSurvey?.configurationId&&member.pc.hardwareSurvey.evidence.trim()){
+    for(const p of cfg?.placements||[])assumed.set(p.componentId,(assumed.get(p.componentId)||0)+p.quantity);
+    for(const row of pcAllocations(member.pc.id,db).filter(r=>r.allocation.state==='installed'))assumed.set(row.stock.componentId,Math.max(0,(assumed.get(row.stock.componentId)||0)-row.allocation.quantity));
+   }
    const totals=new Map<string,{target:number;retained:number;added:number;removed:number}>();
    for(const p of target.placements){
     const component=db.components.find(c=>c.id===p.componentId);if(!component)continue;
     if(scenario.mode==='ssd'&&!disk(component))continue;
     let needed=p.quantity,retained=0,reserved=0;
-    const candidates=owned.filter(r=>r.stock.componentId===p.componentId&&(scenario.mode==='configuration'||r.allocation.id===p.id)).sort((a,b)=>Number(b.allocation.id===p.id)-Number(a.allocation.id===p.id));
+    const candidates=owned.filter(r=>r.stock.componentId===p.componentId&&(scenario.mode==='configuration'||(r.allocation.id===p.id||member.provisional&&r.allocation.plannedPlacementId===p.id))).sort((a,b)=>Number(b.allocation.id===p.id)-Number(a.allocation.id===p.id));
     for(const unit of candidates){const used=Math.min(needed,unit.left);unit.left-=used;needed-=used;retained+=used;}
     for(const held of reservations.filter(r=>r.stock.componentId===p.componentId&&(scenario.mode==='configuration'||r.allocation.role===p.role&&(r.allocation.group||'')===(p.group||'')))){const used=Math.min(needed,held.left);held.left-=used;needed-=used;reserved+=used;}
-    if(!demand.has(component.id))demand.set(component.id,{id:component.id,name:component.name,category:component.category,interface:component.specs.driveInterface||'—',size:component.specs.driveSize||'—',capacityGb:component.specs.capacityGb??null,target:0,retained:0,reserved:0,spares:0,free:db.inventory.filter(s=>s.componentId===component.id).reduce((n,s)=>n+stockCounts(s).available,0),order:0});
-    const row=demand.get(component.id)!;row.target+=p.quantity;row.retained+=retained;row.reserved+=reserved;
+    if(!demand.has(component.id))demand.set(component.id,{id:component.id,name:component.name,category:component.category,interface:component.specs.driveInterface||'—',size:component.specs.driveSize||'—',capacityGb:component.specs.capacityGb??null,target:0,retained:0,assumedRetained:0,reserved:0,spares:0,free:db.inventory.filter(s=>s.componentId===component.id).reduce((n,s)=>n+stockCounts(s).available,0),order:0,orderIfConfirmed:0});
+    const row=demand.get(component.id)!;row.target+=p.quantity;row.retained+=retained;row.reserved+=reserved;const possible=Math.min(needed,assumed.get(component.id)||0);row.assumedRetained+=possible;assumed.set(component.id,(assumed.get(component.id)||0)-possible);
     const total=totals.get(component.id)||{target:0,retained:0,added:0,removed:0};total.target+=p.quantity;total.retained+=retained;total.added+=p.quantity-retained;totals.set(component.id,total);
    }
    for(const unit of owned){if(scenario.mode==='ssd'&&!disk(db.components.find(c=>c.id===unit.stock.componentId)))continue;if(!unit.left)continue;removed+=unit.left;const total=totals.get(unit.stock.componentId)||{target:0,retained:0,added:0,removed:0};total.removed+=unit.left;totals.set(unit.stock.componentId,total);}
@@ -193,7 +213,7 @@ export function planTransition(db:Database,input:TransitionScenario){
   pcs.push({id:member.pc.id,name:member.pc.name,source:cohort.name,destination:scenario.mode==='configuration'?target?.name||'Not selected':'SSD replacement',location:locationPath(member.pc.installationLocationId||'',db)||member.pc.location||'Unassigned',provisional:member.provisional,status:issues.length?'Blocked':'Review',issues:[...new Set(issues)],warnings:[...new Set(warnings)],beforeBoot:segments.some(s=>s.role==='boot'&&s.originalGb===null)?null:before?.bootGb||0,beforeData:segments.some(s=>s.role==='data'&&s.originalGb===null)?null:before?.usableDataGb||0,afterBoot:issues.length||(target?segmentsFor({...member,configuration:target},db):[]).some(s=>s.role==='boot'&&s.originalGb===null)?null:after?.bootGb||0,afterData:issues.length||(target?segmentsFor({...member,configuration:target},db):[]).some(s=>s.role==='data'&&s.originalGb===null)?null:after?.usableDataGb||0,removed,changes,target:target&&!issues.length?{...target,id:proposalId(member.pc.id),name:`${member.pc.name} · transition proposal`,status:'Draft',revision:undefined,approvalHistory:undefined,approvalSnapshot:undefined}:null});
  }
  for(const id of scenario.pcIds.filter(id=>!db.pcs.some(p=>p.id===id)))pcs.push({id,name:id,source:'Missing',destination:'',location:'',provisional:true,status:'Blocked',issues:['Selected PC no longer exists.'],warnings:[],beforeBoot:0,beforeData:0,afterBoot:0,afterData:0,removed:0,changes:[],target:null});
- for(const row of demand.values()){row.spares=Math.ceil((row.target-row.retained)*scenario.sparePercent/100);row.order=Math.max(0,row.target-row.retained-row.reserved+row.spares-row.free);}
+ for(const row of demand.values()){row.spares=Math.ceil((row.target-row.retained)*scenario.sparePercent/100);row.order=Math.max(0,row.target-row.retained-row.reserved+row.spares-row.free);const estimatedSpares=Math.ceil((row.target-row.retained-row.assumedRetained)*scenario.sparePercent/100);row.orderIfConfirmed=Math.max(0,row.target-row.retained-row.assumedRetained-row.reserved+estimatedSpares-row.free);}
  const pilots=new Set(scenario.rollout.pilotPCIds);
  const eligible=pcs.filter(p=>p.status!=='Blocked');
  const waves:{id:string;phase:string;count:number;pcs:string;provisional:number}[]=[];

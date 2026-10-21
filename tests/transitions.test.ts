@@ -163,3 +163,42 @@ test('named array ID default remains separate from ungrouped data storage',()=>{
  const scenario=newTransitionScenario();scenario.pcIds=[db.pcs[0].id];const segments=transitionCohorts(db,scenario)[0].segments.filter(s=>s.role==='data');
  assert.equal(segments.length,2);assert.equal(segments.find(s=>s.id==='data:default')!.raid,'mirror');assert.equal(segments.find(s=>s.id==='data:named:default')!.raid,'none');assert.equal(segments[0].originalGb,8000);assert.equal(segments[1].originalGb,8000);const report=checkConfiguration(transitionBaseline(db.pcs[0],db).configuration!,db);assert.deepEqual(report.storageGroups!.map(g=>g.id),['default','default:ungrouped']);assert.equal(report.usableDataGb,16000);
 });
+
+test('documented hardware assumptions are separate from planned targets and survive a partial survey',()=>{
+ const db=fixture(),pc=db.pcs[0];pc.configurationId='older-second';pc.hardwareSurvey={status:'partial',configurationId:'imaging',evidence:'Site owner, 2026-10-20; same build as adjacent station'};
+ db.inventory=db.inventory.filter(s=>s.allocations[0].pcId===pc.id&&s.componentId==='cpu');
+ const before=JSON.stringify(db),baseline=transitionBaseline(pc,db);assert.equal(baseline.provisional,true);assert.equal(baseline.configuration?.id,'imaging');assert(baseline.configuration!.placements.some(p=>p.componentId==='hdd'));assert.deepEqual(baseline.issues,[]);
+ const scenario=newTransitionScenario();scenario.pcIds=[pc.id];scenario.sourceIds=['imaging'];assert.deepEqual(transitionMatches(db,scenario).map(p=>p.id),[pc.id]);
+ scenario.mode='configuration';const cohort=transitionCohorts(db,scenario)[0];scenario.destinationIds[cohort.id]='imaging';const report=planTransition(db,scenario);assert.equal(report.blocked,0,JSON.stringify(report.pcs[0].issues));
+ const cpu=report.procurement.find(p=>p.id==='cpu')!;assert.equal(cpu.retained,1);assert.equal(cpu.assumedRetained,0);assert.equal(cpu.orderIfConfirmed,0);
+ const memory=report.procurement.find(p=>p.id==='ram')!;assert.equal(memory.retained,0);assert.equal(memory.assumedRetained,2);assert.equal(memory.order,2);assert.equal(memory.orderIfConfirmed,0);
+ assert(report.pcs[0].warnings.some(w=>w.includes('Site owner')));assert.equal(JSON.stringify(db),before);
+});
+test('unknown undocumented contradicted and empty completed surveys block instead of silently using partial hardware',()=>{
+ const db=fixture(),pc=db.pcs[0];pc.hardwareSurvey={status:'partial',configurationId:'',evidence:'Awaiting access'};
+ assert.equal(transitionBaseline(pc,db).configuration,null);assert(transitionBaseline(pc,db).issues.length);
+ pc.hardwareSurvey.configurationId='imaging';pc.hardwareSurvey.evidence=' ';assert(transitionBaseline(pc,db).issues.some(i=>i.includes('source/date')));
+ pc.hardwareSurvey.evidence='Survey 2026-10-20';db.inventory.find(s=>s.componentId==='cpu')!.allocations[0].quantity=2;assert(transitionBaseline(pc,db).issues.some(i=>i.includes('exceeds the assumed')));
+ pc.hardwareSurvey.status='complete';db.inventory=[];const baseline=transitionBaseline(pc,db);assert.equal(baseline.provisional,false);assert.equal(baseline.configuration?.placements.length,0);assert(baseline.issues.some(i=>i.includes('no installed hardware')));
+});
+test('assumed reuse uses each missing unit once and never turns removals into free stock',()=>{
+ const db=fixture(),pc=db.pcs[0];pc.hardwareSurvey={status:'uninspected',configurationId:'imaging',evidence:'Legacy device list, 2026-10-20'};db.inventory=[];
+ const scenario=destinationScenario(db);scenario.pcIds=[pc.id];const cohort=transitionCohorts(db,scenario)[0];scenario.destinationIds[cohort.id]='destination';scenario.policies[cohort.id]={'data:default':{usedGb:1000,evidence:'Fleet usage 2026-10-20'}};
+ const destination=db.configurations.find(c=>c.id==='destination')!,ram=destination.placements.find(p=>p.componentId==='ram')!;ram.quantity=1;destination.placements.push({...ram,id:'more-ram',quantity:2});scenario.sparePercent=10;
+ const report=planTransition(db,scenario);assert.equal(report.blocked,0,JSON.stringify(report.pcs[0].issues));assert.equal(report.pcs[0].removed,0);
+ const memory=report.procurement.find(p=>p.id==='ram')!;assert.equal(memory.target,3);assert.equal(memory.assumedRetained,2);assert.equal(memory.order,4);assert.equal(memory.orderIfConfirmed,2);
+ const drives=report.procurement.find(p=>p.id==='ssd')!;assert.equal(drives.assumedRetained,0);assert.equal(drives.orderIfConfirmed,drives.order);assert.equal(drives.free,0);
+});
+test('partial survey assumptions cannot weaken separately recorded PC requirements',()=>{
+ const db=fixture(),pc=db.pcs[0],version={revision:1,at:'2026-10-20T00:00:00Z',name:'Known requirements',description:'',connections:[],constraints:{minDataGb:12000,requiredComponents:[{componentId:'hdd',quantity:2}]}};
+ db.requirementsSets.push({id:'known-needs',name:'Known requirements',description:'',versions:[version]});pc.hardwareSurvey={status:'partial',configurationId:'imaging',evidence:'Access pending 2026-10-20'};pc.buildSettings={...pc.buildSettings!,requirementSetId:'known-needs',requirementRevision:1,requirementSnapshot:version};
+ assert.equal(transitionBaseline(pc,db).minimumData,12000);const scenario=scenarioFor(db),report=planTransition(db,scenario);assert.equal(report.pcs[0].status,'Blocked');assert(report.pcs[0].issues.some(i=>i.includes('Recorded PC requirements:')));
+});
+test('conditional reuse pools shared free stock and selected reservations once across assumed PCs',()=>{
+ const db=fixture();db.inventory=[];for(const pc of db.pcs)pc.hardwareSurvey={status:'uninspected',configurationId:pc.configurationId,evidence:'Legacy records, 2026-10-20'};
+ const scenario=newTransitionScenario();scenario.pcIds=db.pcs.map(p=>p.id);const destination=structuredClone(db.configurations[0]);destination.id='more-memory';destination.placements.find(p=>p.componentId==='ram')!.quantity=3;db.configurations.push(destination);
+ for(const cohort of transitionCohorts(db,scenario))scenario.destinationIds[cohort.id]=destination.id;
+ const pool=stock('memory-pool',2);pool.componentId='ram';pool.allocations=[{id:'held-memory',pcId:db.pcs[0].id,quantity:1,state:'reserved',plannedPlacementId:'',slotId:'',role:'general',mount:'auto',notes:'',createdAt:'2026-10-20T00:00:00Z',updatedAt:'2026-10-20T00:00:00Z'}];db.inventory.push(pool);
+ const report=planTransition(db,scenario);assert.equal(report.blocked,0,JSON.stringify(report.pcs.map(p=>p.issues)));const row=report.procurement.find(p=>p.id==='ram')!;
+ assert.equal(row.target,6);assert.equal(row.assumedRetained,4);assert.equal(row.retained,0);assert.equal(row.reserved,1);assert.equal(row.free,1);assert.equal(row.order,4);assert.equal(row.orderIfConfirmed,0);assert.equal(pool.allocations.length,1);
+});

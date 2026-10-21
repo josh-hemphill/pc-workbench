@@ -49,6 +49,7 @@ export function installedConfiguration(pc: InventoryPC, db: Database): Configura
 
 export function checkInstalledPC(pc: InventoryPC, db: Database) {
   const report = checkConfiguration(installedConfiguration(pc, db), db);
+  if(pc.hardwareSurvey&&pc.hardwareSurvey.status!=='complete')report.findings.push({severity:'warning',title:'Hardware survey incomplete',detail:'This device exists, but its parts are not fully recorded. Planning assumptions do not establish installed inventory.'});
   const allocations=pcAllocations(pc.id,db),providers=providerIndex(allocations.filter(row=>row.allocation.state==='installed'));
   if (!pc.buildSettings) report.findings.push({ severity: 'warning', title: 'Installed settings not recorded', detail: 'Capture or enter equipment and storage settings for this PC. Template settings are not inherited.' });
   for (const { stock, allocation } of allocations) {

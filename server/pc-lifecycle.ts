@@ -27,7 +27,7 @@ export function savePCRecord(input: unknown, db: Database): InventoryPC {
   if (next.lifecycle === 'Commissioned' && previous?.lifecycle !== 'Commissioned') throw Error('Use Commission PC to capture a validated hardware and software snapshot.');
   if ((next.lifecycle === 'In service') && !next.commissioning) throw Error('Commission this PC before marking it in service.');
   if (next.lifecycle === 'Retired' && pcAllocations(next.id, db).length) throw Error('Remove installed components and release reservations before retiring a PC.');
-  const changed = (['name', 'serial', 'location', 'installationLocationId', 'configurationId', 'notes', 'buildSettings', 'lifecycle', 'software'] as const).filter(k => JSON.stringify(next[k]) !== JSON.stringify(previous?.[k]));
+  const changed = (['hardwareSurvey', 'name', 'serial', 'location', 'installationLocationId', 'configurationId', 'notes', 'buildSettings', 'lifecycle', 'software'] as const).filter(k => JSON.stringify(next[k]) !== JSON.stringify(previous?.[k]));
   if (!previous) timeline(next, 'register', `Registered ${next.name}.`);
   else if (changed.length) timeline(next, 'update', changed.map(k => k==='installationLocationId'?`Installation location: ${locationPath(previous.installationLocationId||'',db)||'Unassigned'} → ${locationPath(next.installationLocationId||'',db)||'Unassigned'}`:`${k}: ${JSON.stringify(previous[k])} → ${JSON.stringify(next[k])}`).join('; ').slice(0, 10000));
   if(next.lifecycle==='Parts only'&&previous?.lifecycle!=='Parts only')timeline(next,'parts-only','Marked Parts only. Installed parts and reservations remain assigned until explicitly removed or released.');
@@ -41,6 +41,7 @@ export function commissionPCRecord(original: InventoryPC, input: unknown, db: Da
   const confirmation = commissionSchema.parse(input);
   if(original.lifecycle==='Parts only')throw Error('A Parts-only PC cannot be commissioned. Return it to Building first.');
   if (original.lifecycle === 'Retired') throw Error('A retired PC cannot be commissioned. Return it to Building first.');
+  if(original.hardwareSurvey&&original.hardwareSurvey.status!=='complete')throw Error('Complete the hardware survey before commissioning.');
   if (!original.buildSettings) throw Error('Record the equipment and storage settings before commissioning.');
   if (!pcAllocations(original.id, db).some(r => r.allocation.state === 'installed')) throw Error('Record installed hardware before commissioning.');
   const report = checkInstalledPC(original, db);

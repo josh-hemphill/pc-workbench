@@ -30,7 +30,7 @@ export function previewImport(
     (store.db[collection] as { id: string }[]).map((r) => [r.id, r]),
   );
   try {
-    const inputs = decodeCSV(collection, csv, store.db.components) as {
+    const inputs = decodeCSV(collection, csv, store.db.components, store.db.pcs) as {
       id: string;
       name?: string;
     }[];

@@ -1,3 +1,4 @@
+import {hardwareSurveySchema} from '../shared/hardware-survey.ts';
 import {componentFieldPaths,applyComponentFieldEdits,sharedComponentPaths,componentFieldValue,componentFieldLabel,sameValue} from '../shared/component-bulk.ts';
 import {sataConnectorKinds,ensureConnectors,describeConnectors} from '../shared/bulk-connectors.ts';
 import {componentDeletionBlockers} from '../shared/component-usage.ts';
@@ -16,7 +17,7 @@ const id=z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),reference=z.union([id,z.liter
 const ids=z.array(id).min(1).max(500).refine(v=>new Set(v).size===v.length,'Select unique record IDs.');
 const notes=z.object({mode:z.enum(['replace','append']),value:z.string().max(10000)}).strict();
 const locationPatch=z.object({kind:z.enum(locationKinds).optional(),parentId:reference.optional(),targetConfigurationId:reference.optional(),requirements:z.object({setId:reference,revision:z.number().int().min(0).max(1000000)}).strict().optional(),notes:notes.optional()}).strict().refine(p=>Object.keys(p).length>0,'Choose at least one field to edit.');
-const pcPatch=z.object({installationLocationId:reference.optional(),lifecycle:z.enum(['Planning','Building','Maintenance','Parts only','Retired']).optional(),notes:notes.optional()}).strict().refine(p=>Object.keys(p).length>0,'Choose at least one field to edit.');
+const pcPatch=z.object({hardwareSurvey:hardwareSurveySchema.optional(),installationLocationId:reference.optional(),lifecycle:z.enum(['Planning','Building','Maintenance','Parts only','Retired']).optional(),notes:notes.optional()}).strict().refine(p=>Object.keys(p).length>0,'Choose at least one field to edit.');
 const nonempty=(p:object)=>Object.keys(p).length>0;
 const text=z.string().max(10000);
 export const bulkSchema=z.union([
@@ -98,7 +99,7 @@ export function buildBulkCandidate(input:BulkRequest,db:Database){
    return {id,changes,name:'name' in before?String(before.name):'componentId' in before?`${db.components.find(c=>c.id===before.componentId)?.name||before.componentId} · ${before.serial||before.assetTag||id}`:id,before:describe(before),after:after?describe(after):'Delete record'};
   }
   const before=db.pcs.find(p=>p.id===id)!,after=next.pcs.find(p=>p.id===id);
-  const describe=(pc:InventoryPC)=>`${pc.name} | ${locationPath(pc.installationLocationId||'',db)||'Unassigned'} | ${pc.lifecycle||'Planning'} | notes: ${pc.notes||'None'}`;
+  const describe=(pc:InventoryPC)=>`${pc.name} | ${locationPath(pc.installationLocationId||'',db)||'Unassigned'} | ${pc.lifecycle||'Planning'} | survey: ${pc.hardwareSurvey?.status||'Not recorded'} | assumed configuration: ${db.configurations.find(c=>c.id===pc.hardwareSurvey?.configurationId)?.name||'None'} | evidence: ${pc.hardwareSurvey?.evidence||'None'} | notes: ${pc.notes||'None'}`;
   return {id,name:before.name,before:describe(before),after:after?describe(after):'Delete PC record, including its timeline and commissioning snapshots'};
  });
  const affectedIds=new Set<string>();if(request.collection==='installationLocations')for(const id of request.ids)for(const child of installationLocationIds(id,db))affectedIds.add(child);
