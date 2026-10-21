@@ -23,18 +23,22 @@ The browser replay restores the datasets through Data & imports, opens their sav
 
 Duplicate location IDs, missing parents, invalid survey states and inventory overallocations fail both preview and apply. No collection or workspace revision changes on rejection. A valid location export can be reimported after all old locations are removed. Reimporting unchanged files is a no-op.
 
-## Workflow observations
+## UX improvements implemented after review
 
-- Correcting a current-hardware assumption changes its planning group. The affected group needs a destination and usage inputs again. This preserves review of the changed hardware, but adds work during a survey. The fixture guide documents that step, and the browser replay exercises it.
-- Legacy PCs receive a conservative full-parts estimate until someone records an explicit, documented hardware assumption. This is intentional: their linked build plan alone cannot establish ownership or possible reuse.
-- The procurement table is wide. At desktop widths, the conditional order columns may require horizontal scrolling. A useful future simplification would show both fleet order totals beside the review summary, so the distinction is visible before opening the full stock calculation.
-- “Only parts to order” follows the conservative order, so it can show unchanged but unrecorded hardware even when its conditional order is zero. The two columns explain the difference; a conditional-estimate filter could make review faster.
+- Both fleet order totals are visible above the table: one using confirmed stock, one conditional on hardware assumptions. The compact comparison has five columns, with expandable per-row stock arithmetic. Purchase filters can use either estimate; CSV exports retain the complete calculation.
+- Hardware corrections can reuse available group inputs with an explicit action. The preview identifies the source group, destination, usage and evidence. Existing entries are preserved. Measurements copy only for matching drive models/counts, array roles and RAID; mappings do not cross different destinations. Requirements and compatibility are still checked, and a fresh review is required.
+- Survey edits and bulk PC edits are accessible directly from the planner. Blocked PCs appear first by default, with their findings expanded, and findings can be searched. PC details remain available through the name link.
+- Missing, retired and parts-only selections can be removed together. Hidden selections have a direct review action. Export requirements are stated beside the disabled export control.
+- Registration reports which selected locations were skipped and why. Eligible locations can be unchecked before saving. Survey forms explain which missing inputs prevent planning while still allowing incomplete device records to be saved.
+- Empty fleets link to installation locations so users can register known devices before planning.
 
-No new application defect was demonstrated by these scenarios. The expected blockers remained actionable, and the tested recovery paths completed. This is functional coverage of these inputs, not a performance benchmark or validation of real manufacturer specifications. The largest exercised fleet is 125 registered PCs / 120 active PCs; the application's 500-PC planning limit was not stress-tested here.
+Legacy linked plans deliberately retain conservative full-parts estimates until a documented current-hardware assumption is recorded. Reusing a measurement is an explicit proposal: its evidence still needs to cover the receiving group. No inventory is created by estimates or copied inputs.
+
+The tested recovery paths complete. This is functional coverage of these inputs, not a performance benchmark or validation of real manufacturer specifications. The largest exercised fleet is 125 registered PCs / 120 active PCs; the application's 500-PC planning limit was not stress-tested here.
 
 ## Validation
 
 - `pnpm fixtures:workflows --check`: generated JSON and CSV files match their source definitions.
-- `pnpm test`: 455 passed, zero failed and one existing skip; the new synthetic suite contributes 15 tests.
+- `pnpm test`: 461 passed, zero failed and one existing skip; the synthetic import suite contributes 15 tests, with six additional input-reuse regression tests.
 - `pnpm build`: type checking, frontend and backend builds pass. The existing frontend chunk-size warning remains.
 - Optional Chromium replay: scenario review/export paths, import/registration, navigation, blocker recovery and draft reload pass. Artifacts are written to the runner's temporary output folder.

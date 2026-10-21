@@ -12,6 +12,7 @@ defineProps<{pc:InventoryPC;db:Database}>();
    <v-autocomplete v-model="pc.hardwareSurvey.configurationId" label="Assumed current configuration" :items="[{title:'Unknown — survey needed',value:''},...db.configurations.map(c=>({title:c.name,value:c.id}))]" />
    <p class="form-hint">Choose a best estimate of the hardware currently present. This is separate from the planned configuration and the location’s target. Duplicate a configuration to describe a different assumption if needed. Recorded parts must agree with this estimate.</p>
   </template>
+  <v-alert v-if="pc.hardwareSurvey.status!=='complete'&&(!pc.hardwareSurvey.configurationId||!pc.hardwareSurvey.evidence.trim())" type="info" variant="tonal">This PC can be saved with an incomplete survey. {{!pc.hardwareSurvey.configurationId?'Choose an assumed current configuration':'Record the assumption’s source and date'}} before using it to plan conversions.</v-alert>
   <v-textarea v-model="pc.hardwareSurvey.evidence" label="Survey / assumption evidence and date" rows="2" hint="For example: device reported by site owner, 2026-10-20; hardware inferred from adjacent station. Confirm drive capacities onsite." persistent-hint />
   <p class="form-hint">Assumptions never create stock or installed parts. Mark fully recorded after enumerating hardware in inventory; commissioning requires a completed survey.</p>
  </template>

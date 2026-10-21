@@ -55,7 +55,7 @@
       "selected": 3,
       "steps": [
         "Review: the extra-RAM PC blocks, and its demand is excluded.",
-        "Change its assumption to the observed three-DIMM configuration.",
+        "Edit its survey directly, choose the observed three-DIMM configuration and explicitly reuse matching group inputs.",
         "Enumerate remaining parts, complete the survey and commission through normal actions."
       ]
     },

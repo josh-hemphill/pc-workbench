@@ -83,6 +83,10 @@ def main():
                                 selected = scenario['selected']
                                 if not selected:
                                     expect(review).to_be_disabled()
+                                    page.get_by_role('button', name='Open installation locations', exact=True).click()
+                                    expect(page).to_have_url(base + '/#/installations/locations')
+                                    page.go_back()
+                                    expect(page).to_have_url(base + f'/#/transitions/plan-{id}')
                                 else:
                                     review.click()
                                     included = selected - scenario['expected']['blocked']
@@ -96,29 +100,44 @@ def main():
                                             export.click()
                                         download.value.save_as(str(artifacts / f'{id}-order.csv'))
                                 if id == '03-assumed-fleet':
+                                    totals = page.get_by_role('status', name='Fleet order totals', exact=True)
+                                    expect(totals.get_by_text('Using confirmed stock', exact=True)).to_be_visible()
+                                    expect(totals.get_by_text('If hardware assumptions are confirmed', exact=True)).to_be_visible()
+                                    procurement = page.locator('[data-table-name="Parts procurement estimate"]')
+                                    expect(procurement.get_by_role('columnheader')).to_have_count(5)
+                                    count_before = procurement.get_by_role('row').count()
+                                    page.get_by_label('Filter purchases using', exact=True).press('Enter')
+                                    page.get_by_role('option', name='Assumptions confirmed', exact=True).click()
+                                    expect(procurement.get_by_role('row')).to_have_count(4)
+                                    assert count_before > 4
+                                    procurement.get_by_text('Stock breakdown', exact=True).first.click()
+                                    expect(procurement.get_by_text('Free serviceable stock', exact=True).first).to_be_visible()
+                                    assert procurement.locator('.v-table__wrapper').evaluate('(el)=>el.scrollWidth<=el.clientWidth+1'), 'compact procurement table should fit the desktop viewport'
+                                    procurement.screenshot(path=str(artifacts / 'procurement-comparison.png'))
                                     scope = page.locator('section').filter(has=page.get_by_role('heading', name='1. Select the fleet', exact=True))
                                     scope.get_by_role('button', name='SYNTHETIC-PC-001', exact=True).click()
                                     expect(page).to_have_url(base + '/#/pcs/synthetic-pc-1/parts')
                                     page.go_back()
                                     expect(page).to_have_url(base + f'/#/transitions/plan-{id}')
                                     expect(page.get_by_text('6 selected · 0 hidden', exact=False)).to_be_visible()
+                                    expect(procurement.get_by_role('row')).to_have_count(4)
                                 if id == '04-partial-conflict':
                                     page.screenshot(path=str(artifacts / f'{id}-blocked.png'), full_page=True)
                                     scope = page.locator('section').filter(has=page.get_by_role('heading', name='1. Select the fleet', exact=True))
-                                    scope.get_by_role('button', name='SYNTHETIC-PC-003', exact=True).click()
-                                    page.get_by_role('button', name='Edit PC & settings', exact=True).click()
+                                    findings = page.locator('[data-table-name="Transition targets and findings"]')
+                                    expect(findings.get_by_role('row')).to_have_count(2)
+                                    expect(findings.get_by_text('recorded hardware exceeds the assumed configuration', exact=False)).to_be_visible()
+                                    scope.get_by_role('button', name='Edit survey for SYNTHETIC-PC-003', exact=True).click()
                                     dialog = page.get_by_role('dialog')
                                     dialog.get_by_label('Assumed current configuration', exact=True).fill('three-DIMM variation')
                                     page.get_by_role('option').filter(has_text='three-DIMM variation').click()
                                     dialog.get_by_role('button', name='Save PC', exact=True).click()
                                     expect(dialog).not_to_be_visible()
-                                    page.get_by_role('button', name='Back to Configuration transitions', exact=True).click()
                                     changed = page.locator('.transition-cohort').filter(has_text='three-DIMM variation')
-                                    changed.get_by_label('Destination configuration for this group', exact=True).press('Enter')
-                                    page.get_by_role('option').filter(has_text='SSD and bay conversion').click()
+                                    changed.get_by_role('button', name='Reuse available group inputs', exact=True).click()
+                                    expect(changed.get_by_text('SYNTHETIC · SSD and bay conversion · Draft', exact=True)).to_be_visible()
                                     segment = changed.locator('.transition-segment').filter(has=page.get_by_role('heading', name='Data · default array', exact=False))
-                                    segment.get_by_label('Largest measured used capacity per PC (GB)', exact=True).fill('1000')
-                                    segment.get_by_label('Usage evidence / date', exact=True).fill('Synthetic filesystem usage, 2026-10-21')
+                                    expect(segment.get_by_label('Largest measured used capacity per PC (GB)', exact=True)).to_have_value('1000')
                                     page.get_by_role('button', name='Review transition plan', exact=True).click()
                                     expect(page.get_by_text('3 PCs included in demand · 0 blocked', exact=False)).to_be_visible()
                                     after_edit = api('/api/state')
@@ -126,6 +145,24 @@ def main():
                                     assert after_edit['pcs'][2]['hardwareSurvey']['configurationId'] == 'source-extra-memory'
                                     assert after_edit['pcs'][2]['configurationId'] == baseline['pcs'][2]['configurationId']
                                     baseline = after_edit
+                                if id == '05-stock-pressure':
+                                    exported_plan = json.loads((FIXTURES / id / 'transition-plan.json').read_text())
+                                    exported_plan['scenario']['pcIds'] += ['synthetic-pc-4', 'synthetic-pc-5', 'missing-pc']
+                                    page.locator('.plan-file-button input[type=file]').set_input_files({'name': 'unavailable-PC-plan.json', 'mimeType': 'application/json', 'buffer': json.dumps(exported_plan).encode()})
+                                    page.get_by_role('button', name='Remove 3 unavailable PCs', exact=True).click()
+                                    page.get_by_role('button', name='Review transition plan', exact=True).click()
+                                    expect(page.get_by_text('2 PCs included in demand · 0 blocked', exact=False)).to_be_visible()
+                                    expect(page.get_by_role('button', name='Export order CSV', exact=True)).to_be_enabled()
+                                    expect(page.get_by_text('Draft autosaved in workspace.', exact=True)).to_be_visible()
+                                    page.goto(base + '/#/installations/locations')
+                                    page.get_by_label('Bulk actions', exact=True).check()
+                                    page.get_by_role('button', name='Add all 7 matching locations to selection', exact=True).click()
+                                    page.get_by_role('button', name='Register known PCs awaiting inspection', exact=True).click()
+                                    registration = page.get_by_role('dialog')
+                                    expect(registration.get_by_text('6 selected locations skipped:', exact=True)).to_be_visible()
+                                    expect(registration.get_by_text('Already has a PC', exact=False).first).to_be_visible()
+                                    registration.get_by_role('button', name='Cancel', exact=True).click()
+                                    expect(registration).not_to_be_visible()
                                 if id == '06-unknown-capacity':
                                     page.screenshot(path=str(artifacts / f'{id}-blocked.png'), full_page=True)
                                     page.get_by_label('One destination for all planning groups', exact=True).press('Enter')
@@ -138,6 +175,29 @@ def main():
                                     page.get_by_role('button', name='Review transition plan', exact=True).click()
                                     expect(page.get_by_text('3 PCs included in demand · 0 blocked', exact=False)).to_be_visible()
                                     expect(page.get_by_role('button', name='Export order CSV', exact=True)).to_be_enabled()
+                                if id == '07-survey-gaps':
+                                    scope = page.locator('section').filter(has=page.get_by_role('heading', name='1. Select the fleet', exact=True))
+                                    scope.get_by_role('button', name='Edit selected PCs', exact=True).click()
+                                    dialog = page.get_by_role('dialog')
+                                    dialog.get_by_role('checkbox', name='Change hardware survey / assumptions', exact=True).check()
+                                    dialog.get_by_label('Assumed current configuration', exact=True).fill('HDD workstation')
+                                    page.get_by_role('option').filter(has_text='HDD workstation').click()
+                                    dialog.get_by_label('Survey / assumption evidence and date', exact=True).fill('Synthetic group survey evidence, 2026-10-21')
+                                    dialog.get_by_role('button', name='Preview selected changes', exact=True).click()
+                                    dialog.get_by_role('button', name='Apply changes to 4 PCs', exact=True).click()
+                                    expect(dialog).not_to_be_visible()
+                                    changed = page.locator('.transition-cohort')
+                                    if changed.get_by_role('button', name='Reuse available group inputs', exact=True).count():
+                                        if changed.get_by_label('Reuse inputs from group', exact=True).count():
+                                            changed.get_by_label('Reuse inputs from group', exact=True).press('Enter')
+                                            page.get_by_role('option').filter(has_text='HDD workstation').click()
+                                        changed.get_by_role('button', name='Reuse available group inputs', exact=True).click()
+                                    page.get_by_role('button', name='Review transition plan', exact=True).click()
+                                    expect(page.get_by_text('4 PCs included in demand · 0 blocked', exact=False)).to_be_visible()
+                                    after_edit = api('/api/state')
+                                    assert all(pc['hardwareSurvey']['configurationId'] == 'source-hdd' for pc in after_edit['pcs'])
+                                    assert after_edit['inventory'] == baseline['inventory']
+                                    baseline = after_edit
                                 if id == '08-fleet-scale':
                                     scope = page.locator('section').filter(has=page.get_by_role('heading', name='1. Select the fleet', exact=True))
                                     scope.get_by_role('button', name='Clear selection', exact=True).click()
@@ -181,12 +241,16 @@ def main():
                             expect(page.get_by_role('button', name='Preview CSV changes', exact=True)).to_be_disabled()
                             assert len(api('/api/state')['installationLocations']) == 6
                             page.goto(base + '/#/installations/locations')
-                            page.get_by_label('Filter location type', exact=True).press('Enter')
-                            page.get_by_role('option', name='Bench', exact=True).click()
                             page.get_by_label('Bulk actions', exact=True).check()
-                            page.get_by_role('button', name='Add all 4 matching locations to selection', exact=True).click()
+                            page.get_by_role('button', name='Add all 6 matching locations to selection', exact=True).click()
                             page.get_by_role('button', name='Register known PCs awaiting inspection', exact=True).click()
                             dialog = page.get_by_role('dialog')
+                            expect(dialog.get_by_text('2 selected locations skipped:', exact=True)).to_be_visible()
+                            expect(dialog.get_by_text('Grouping location', exact=False).first).to_be_visible()
+                            first_location = dialog.locator('input[aria-label^="Register a PC at"]').first
+                            first_location.uncheck()
+                            expect(dialog.get_by_text('3 locations selected.', exact=False)).to_be_visible()
+                            first_location.check()
                             dialog.get_by_label('Assumed current configuration', exact=True).fill('HDD workstation')
                             page.get_by_role('option').filter(has_text='HDD workstation').click()
                             dialog.get_by_label('Device presence / assumption evidence and date', exact=True).fill('Synthetic owner report 2026-10-21')
