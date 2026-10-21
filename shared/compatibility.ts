@@ -124,6 +124,7 @@ export function checkConfiguration(config: Configuration, db: Database): Report 
   if(config.requirementSnapshot&&config.requirementSnapshot.revision!==config.requirementRevision)add('error','Requirements snapshot revision mismatch','The captured requirements snapshot does not match the selected revision.');
   const rows: {p:Placement;c:Component}[] = [];
   for(const p of config.placements) { if(!Number.isInteger(p.quantity)||p.quantity<1||p.quantity>32){add('error','Invalid component quantity','Enter a whole number from 1 to 32 for each component.');continue;}const c = db.components.find(c=>c.id===p.componentId); if(c) rows.push({p,c}); else add('error','Missing component',`Catalog entry ${p.componentId} no longer exists.`); }
+  for(const {c} of rows)if(c.identityKind==='placeholder')add('error','Component identity needed',`${c.name}: identify this placeholder before approval, commissioning or model-specific procurement.`);
   for(const row of rows)if(row.c.category==='Drive'&&row.p.mount==='auto'&&row.p.targetId) {
     const provider=row.p.adapterPlacementId?rows.find(r=>r.p.id===row.p.adapterPlacementId):rows.find(r=>r.c.category===(row.c.specs.driveSize==='M.2'?'Motherboard':'Chassis'));
     const target=provider?.c.specs.driveTargets?.find(t=>t.id===row.p.targetId);

@@ -282,6 +282,7 @@ const specs = z.object({
 });
 export const componentSpecsSchema = specs;
 export const componentSchema = z.object({
+  identityKind: z.enum(['model','placeholder']).optional(),
   model: z.string().trim().max(200).optional(),
   family: z.string().trim().max(200).optional(),
   id,
@@ -294,4 +295,4 @@ export const componentSchema = z.object({
   specs,
   source: str,
   verified: z.boolean(),
-}).strict();
+}).strict().refine(c=>c.identityKind!=='placeholder'||!c.verified,{path:['verified'],message:'Identify the model before marking a placeholder verified.'});

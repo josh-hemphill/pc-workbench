@@ -11,6 +11,8 @@ export function buildComponentMerge(db:Database,input:ComponentMergeInput,plans:
  const target=db.components.find(c=>c.id===input.targetId);if(!target)throw Error('Canonical component type not found.');
  const selected=new Set(input.sourceIds);if(selected.has(target.id))throw Error('The canonical component cannot also be a duplicate.');
  const sources=input.sourceIds.map(id=>{const c=db.components.find(c=>c.id===id);if(!c)throw Error(`Duplicate component ${id} not found.`);if(c.category!==target.category)throw Error(`Cannot merge ${c.name}: its category differs from ${target.name}.`);return c;});
+ if(target.identityKind==='placeholder')throw Error('Identify the canonical component before merging types into it.');
+ if(sources.some(c=>c.identityKind==='placeholder')&&!target.model?.trim())throw Error('Merging a placeholder requires an exact canonical model / part number and confirmation that every use is that model.');
  // Immutable baselines must never be silently rewritten by a catalog correction.
  for(const set of db.requirementsSets)for(const v of set.versions)if(v.constraints?.requiredComponents?.some(c=>selected.has(c.componentId))||['drivers','firmware'].some(k=>Object.keys(v.software?.[k as 'drivers'|'firmware']||{}).some(id=>selected.has(id))))throw Error(`Cannot merge: ${set.name} revision ${v.revision} names a duplicate component in immutable requirements. Retain that component type.`);
  const collections:ComponentCollection[]=['ports','slots','bayTargets','driveTargets','sataDataPorts','sataPowerConnectors','sataDataInputs','sataPowerInputs','sffPorts','sffInputs','coolingDevices','coolingHeaders','coolingHeaderGroups','laneRules'];

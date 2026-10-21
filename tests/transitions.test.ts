@@ -202,3 +202,11 @@ test('conditional reuse pools shared free stock and selected reservations once a
  const report=planTransition(db,scenario);assert.equal(report.blocked,0,JSON.stringify(report.pcs.map(p=>p.issues)));const row=report.procurement.find(p=>p.id==='ram')!;
  assert.equal(row.target,6);assert.equal(row.assumedRetained,4);assert.equal(row.retained,0);assert.equal(row.reserved,1);assert.equal(row.free,1);assert.equal(row.order,4);assert.equal(row.orderIfConfirmed,0);assert.equal(pool.allocations.length,1);
 });
+
+test('placeholder destinations cannot produce procurement and unknown baselines remain provisional',()=>{
+ const db=fixture(),ssd=db.components.find(c=>c.id==='ssd')!;ssd.identityKind='placeholder';ssd.verified=false;
+ const scenario=scenarioFor(db),blocked=planTransition(db,scenario);assert.equal(blocked.blocked,2);assert.equal(blocked.procurement.length,0);
+ // Known common constraints may describe a placeholder baseline, but resolving to a known SSD never credits its identity as reusable stock.
+ delete ssd.identityKind;ssd.verified=true;const hdd=db.components.find(c=>c.id==='hdd')!;hdd.identityKind='placeholder';hdd.verified=false;
+ const report=planTransition(db,scenarioFor(db));assert.equal(report.blocked,0);assert.equal(report.provisional,2);assert(report.pcs.every(pc=>pc.warnings.some(w=>w.includes('placeholder identities'))));assert.equal(report.procurement.find(r=>r.id==='ssd')!.retained,0);
+});

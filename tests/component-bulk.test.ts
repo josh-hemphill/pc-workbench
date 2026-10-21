@@ -8,7 +8,7 @@ const part=(id:string,category:Component['category']='Motherboard',specs:Compone
 const database=(components:Component[]):Database=>({...structuredClone(seed),components,configurations:[],inventory:[],pcs:[],requirementsSets:[],installationLocations:[],systems:[]});
 test('bulk field coverage follows the complete component schema and excludes record IDs names and categories',()=>{
  const keys=Object.keys(componentSpecsSchema.shape).map(key=>`specs.${key}`);
- assert.deepEqual(componentFieldPaths,['manufacturer','model','family','source','verified',...keys]);assert.deepEqual(sharedComponentPaths([part('one'),part('two')]),componentFieldPaths);
+ assert.deepEqual(componentFieldPaths,['manufacturer','model','family','identityKind','source','verified',...keys]);assert.deepEqual(sharedComponentPaths([part('one'),part('two')]),componentFieldPaths);
  for(const path of ['id','name','category','specs.__proto__'])assert(!componentFieldPaths.includes(path));
 });
 test('the common draft never copies mixed values or lists from the first component',()=>{
