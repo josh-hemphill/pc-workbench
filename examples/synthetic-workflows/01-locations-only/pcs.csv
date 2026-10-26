@@ -1,1 +1,1 @@
-id,name,serial,location,configurationId,notes,buildSettings,lifecycle,software,commissioning,timeline,snapshot,snapshots,installationLocationId,hardwareSurvey
+id,name,serial,location,configurationId,notes,buildSettings,lifecycle,software,commissioning,timeline,snapshot,snapshots,installationLocationId,hardwareSurvey,inspections,locationHistory

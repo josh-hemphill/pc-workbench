@@ -15,9 +15,11 @@ function timeline(pc: InventoryPC, kind: string, summary: string, actor = '') {
 export function savePCRecord(input: unknown, db: Database): InventoryPC {
   const next = schemas.pcs.parse(input), previous = db.pcs.find(p => p.id === next.id);
   if(next.buildSettings)next.buildSettings=captureRequirementBinding(next.buildSettings,db);
-  for (const key of ['timeline', 'commissioning', 'snapshot', 'snapshots'] as const) {
-    if (JSON.stringify(next[key] ?? (key === 'timeline' || key === 'snapshots' ? [] : null)) !== JSON.stringify(previous?.[key] ?? (key === 'timeline' || key === 'snapshots' ? [] : null))) throw Error('PC commissioning and history are managed by lifecycle actions. Reload before saving.');
+  for (const key of ['inspections','locationHistory','timeline', 'commissioning', 'snapshot', 'snapshots'] as const) {
+    if (JSON.stringify(next[key] ?? (['timeline','snapshots','inspections','locationHistory'].includes(key) ? [] : null)) !== JSON.stringify(previous?.[key] ?? (['timeline','snapshots','inspections','locationHistory'].includes(key) ? [] : null))) throw Error('PC commissioning and history are managed by lifecycle actions. Reload before saving.');
   }
+  const latestInspection=previous?.inspections?.filter(s=>s.method!=='historical').at(-1);
+  if(latestInspection&&(!next.hardwareSurvey||next.hardwareSurvey.status==='complete'&&!latestInspection.finished))throw Error('Use Inspection coverage to finish this survey; recorded inspection status cannot be cleared through ordinary editing.');
   if(previous?.lifecycle==='Parts only'&&!['Parts only','Building','Retired'].includes(next.lifecycle||''))throw Error('Return a Parts-only PC to Building before commissioning or putting it into service.');
   if(next.lifecycle==='In service'&&previous?.timeline){
     let lastParts=-1,lastCommission=-1;
@@ -27,6 +29,7 @@ export function savePCRecord(input: unknown, db: Database): InventoryPC {
   if (next.lifecycle === 'Commissioned' && previous?.lifecycle !== 'Commissioned') throw Error('Use Commission PC to capture a validated hardware and software snapshot.');
   if ((next.lifecycle === 'In service') && !next.commissioning) throw Error('Commission this PC before marking it in service.');
   if (next.lifecycle === 'Retired' && pcAllocations(next.id, db).length) throw Error('Remove installed components and release reservations before retiring a PC.');
+  if(previous&&next.installationLocationId!==previous.installationLocationId){next.locationHistory??=[];next.locationHistory.push({id:randomUUID(),at:new Date().toISOString(),fromId:previous?.installationLocationId||'',fromPath:locationPath(previous?.installationLocationId||'',db),toId:next.installationLocationId||'',toPath:locationPath(next.installationLocationId||'',db),actor:''});}
   const changed = (['hardwareSurvey', 'name', 'serial', 'location', 'installationLocationId', 'configurationId', 'notes', 'buildSettings', 'lifecycle', 'software'] as const).filter(k => JSON.stringify(next[k]) !== JSON.stringify(previous?.[k]));
   if (!previous) timeline(next, 'register', `Registered ${next.name}.`);
   else if (changed.length) timeline(next, 'update', changed.map(k => k==='installationLocationId'?`Installation location: ${locationPath(previous.installationLocationId||'',db)||'Unassigned'} → ${locationPath(next.installationLocationId||'',db)||'Unassigned'}`:`${k}: ${JSON.stringify(previous[k])} → ${JSON.stringify(next[k])}`).join('; ').slice(0, 10000));

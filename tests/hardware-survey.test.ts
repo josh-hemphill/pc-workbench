@@ -1,3 +1,5 @@
+import {parse as parseCSV} from 'csv-parse/sync';
+import {stringify as stringifyCSV} from 'csv-stringify/sync';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -24,7 +26,7 @@ test('explicit device registration leaves installation targets build plans and i
 test('survey data round trips portable CSV and SQLite and configuration dependencies remain protected',()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'survey-store-'));let store=new Store(dir);
  try{const pc=savePCRecord({...store.db.pcs[0],hardwareSurvey:survey},store.db);store.replace('pcs',[pc]);assert.deepEqual(decodeCSV('pcs',encodeCSV('pcs',[pc])),[pc]);
- const legacy=encodeCSV('pcs',[{...pc,hardwareSurvey:undefined}]).split('\n').map(line=>line.replace(/,hardwareSurvey\r?$/,'').replace(/,\r?$/,'')).join('\n');assert.deepEqual((decodeCSV('pcs',legacy,[],[pc])[0] as typeof pc).hardwareSurvey,survey);
+ const legacyRows=parseCSV(encodeCSV('pcs',[{...pc,hardwareSurvey:undefined}]),{columns:true}) as Record<string,string>[];for(const row of legacyRows)delete row.hardwareSurvey;const legacy=stringifyCSV(legacyRows,{header:true});assert.deepEqual((decodeCSV('pcs',legacy,[],[pc])[0] as typeof pc).hardwareSurvey,survey);
  assert.throws(()=>store.replace('configurations',store.db.configurations.filter(c=>c.id!==survey.configurationId)),/configuration not found/);
  store.close();store=new Store(dir);assert.deepEqual(store.db.pcs[0].hardwareSurvey,survey);
  }finally{store.close();fs.rmSync(dir,{recursive:true,force:true});}

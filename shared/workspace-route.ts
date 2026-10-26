@@ -35,7 +35,7 @@ const views: Partial<Record<RoutePage, string[]>> = {
   "Configurations": ["components", "connections", "storage", "checks"],
   "Component catalog": ["components", "gaps", "queue"],
   "Component inventory": ["allocations", "history"],
-  "PC inventory": ["parts", "readiness", "report", "history"],
+  "PC inventory": ["parts", "readiness", "report", "history", "inspection"],
   "Installations": ["locations", "requirements", "operations", "distribution"],
 };
 export function workspaceRoute(

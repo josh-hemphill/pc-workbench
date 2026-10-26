@@ -41,6 +41,7 @@ test("page and subpage URLs preserve record IDs views and editor addresses", () 
     const hash of [
       "#/configurations/cfg-1/storage",
       "#/pcs/pc-1/history",
+      "#/pcs/pc-1/inspection",
       "#/stock/stock-1/allocations",
       "#/catalog/queue",
       "#/installations/locations/loc-child",

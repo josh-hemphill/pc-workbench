@@ -1,3 +1,4 @@
+import type {InspectionRecord,LocationHistory} from './inspection.ts';
 import type {HardwareSurvey} from './hardware-survey.ts';
 export type Category = 'Chassis'|'Motherboard'|'CPU'|'Memory'|'GPU'|'Scientific card'|'Network card'|'Storage adapter'|'Bay accessory'|'Drive'|'PSU'|'Cooler'|'Fan'|'Cable'|'Consumable';
 export const categories: Category[] = ['Chassis','Motherboard','CPU','Memory','GPU','Scientific card','Network card','Storage adapter','Bay accessory','Drive','PSU','Cooler','Fan','Cable','Consumable'];
@@ -63,7 +64,7 @@ export interface PCBuildSettings { requirementSetId?:string;requirementRevision?
 export interface InstalledStockIdentity extends StorageBindings { stockId:string;componentId:string;serial:string;assetTag:string;allocationId:string;quantity:number;role:Placement['role'];mount:Placement['mount'];slotId:string;group?:string;targetId?:string }
 export interface InstallationSnapshot { locationId:string;path:string;requirementSetId:string;requirementRevision:number;targetConfigurationId:string;requirementSnapshot?:RequirementVersion }
 export interface CommissionedSnapshot { installation?:InstallationSnapshot; at:string;configuration:Configuration;components:Component[];system:System|null;installedStock?:InstalledStockIdentity[] }
-export interface InventoryPC { hardwareSurvey?:HardwareSurvey; installationLocationId?:string; id: string; name: string; serial: string; location: string; configurationId: string; notes: string; buildSettings: PCBuildSettings | null; lifecycle?: 'Planning'|'Building'|'Commissioned'|'In service'|'Maintenance'|'Parts only'|'Retired'; software?: SoftwareSettings; commissioning?: {at:string;by:string;checks:string[];notes:string}; timeline?: {id:string;at:string;kind:string;summary:string;actor:string}[]; snapshots?: CommissionedSnapshot[]; snapshot?: CommissionedSnapshot }
+export interface InventoryPC { inspections?:InspectionRecord[];locationHistory?:LocationHistory; hardwareSurvey?:HardwareSurvey; installationLocationId?:string; id: string; name: string; serial: string; location: string; configurationId: string; notes: string; buildSettings: PCBuildSettings | null; lifecycle?: 'Planning'|'Building'|'Commissioned'|'In service'|'Maintenance'|'Parts only'|'Retired'; software?: SoftwareSettings; commissioning?: {at:string;by:string;checks:string[];notes:string}; timeline?: {id:string;at:string;kind:string;summary:string;actor:string}[]; snapshots?: CommissionedSnapshot[]; snapshot?: CommissionedSnapshot }
 export interface StockAllocation extends StorageBindings {
   id: string; pcId: string; quantity: number; state: 'reserved'|'installed';
   plannedPlacementId: string; slotId: string; role: Placement['role']; mount: Placement['mount'];

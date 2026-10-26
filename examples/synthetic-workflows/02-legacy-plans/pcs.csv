@@ -1,5 +1,5 @@
-id,name,serial,location,configurationId,notes,buildSettings,lifecycle,software,commissioning,timeline,snapshot,snapshots,installationLocationId,hardwareSurvey
-synthetic-pc-1,SYNTHETIC-PC-001,,,source-hdd,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-1,
-synthetic-pc-2,SYNTHETIC-PC-002,,,source-mixed,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-2,
-synthetic-pc-3,SYNTHETIC-PC-003,,,source-hdd,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-3,
-synthetic-pc-4,SYNTHETIC-PC-004,,,source-mixed,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-4,
+id,name,serial,location,configurationId,notes,buildSettings,lifecycle,software,commissioning,timeline,snapshot,snapshots,installationLocationId,hardwareSurvey,inspections,locationHistory
+synthetic-pc-1,SYNTHETIC-PC-001,,,source-hdd,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-1,,,
+synthetic-pc-2,SYNTHETIC-PC-002,,,source-mixed,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-2,,,
+synthetic-pc-3,SYNTHETIC-PC-003,,,source-hdd,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-3,,,
+synthetic-pc-4,SYNTHETIC-PC-004,,,source-mixed,"Fictional device, safe for isolated workflow testing.",null,Planning,,,,,,bench-4,,,

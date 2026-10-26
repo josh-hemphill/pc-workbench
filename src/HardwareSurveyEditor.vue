@@ -5,7 +5,7 @@ defineProps<{pc:InventoryPC;db:Database}>();
 </script>
 <template>
 <section class="control-stack my-5">
- <h3>Hardware survey</h3>
+ <h3>Hardware survey</h3><p>Use the PC’s Inspection tab to record discoveries, category coverage and dated evidence. This field summarizes survey status; part identity and tested condition are separate.</p>
  <template v-if="pc.hardwareSurvey">
   <v-select v-model="pc.hardwareSurvey.status" :items="surveyChoices" @update:model-value="v=>{if(v==='complete')pc.hardwareSurvey!.configurationId=''}" label="Hardware recording status" />
   <template v-if="pc.hardwareSurvey.status!=='complete'">
