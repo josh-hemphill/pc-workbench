@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {useErrorFeedback} from './form-feedback';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import AppearanceSettings from './AppearanceSettings.vue';
 import { appearanceDirty, cancelAppearancePreview, cloneSettings, settingsRequest } from './appearance';
@@ -39,6 +40,7 @@ function confirmDiscard(){
 defineExpose({hasUnsavedChanges,confirmDiscard});
 onMounted(reload);
 onBeforeUnmount(cancelAppearancePreview);
+useErrorFeedback(error);
 </script>
 
 <template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {focusInvalidControl} from './form-feedback';
 import {useEnrichmentQueue} from './use-enrichment-queue';
 import {needsCatalogAttention} from '../shared/catalog-quality';
 import HardwareSurveyEditor from './HardwareSurveyEditor.vue';
@@ -88,7 +89,7 @@ const dialogOpeners=new Map<string,HTMLElement>();
 const componentForm=ref<InstanceType<typeof VForm>|null>(null),systemForm=ref<InstanceType<typeof VForm>|null>(null),pcForm=ref<InstanceType<typeof VForm>|null>(null),configurationForm=ref<InstanceType<typeof VForm>|null>(null);
 const requiredRule=(value:unknown)=>!!String(value??'').trim()||'A value is required.';
 const quantityRule=(value:unknown)=>Number.isInteger(Number(value))&&Number(value)>=1&&Number(value)<=32||'Enter a whole quantity from 1 to 32.';
-async function validateRootForm(form:InstanceType<typeof VForm>|null,event?:PromiseLike<{valid:boolean}>){if(!form)return false;const {valid}=event?await event:await form.validate();if(!valid){await nextTick();const input=(form.$el as HTMLElement).querySelector<HTMLElement>('.v-input--error input, .v-input--error textarea, .v-input--error button');const panel=input?.closest('[role=tabpanel]');if(panel?.id.startsWith('configuration-panel-')){detailTab.value=panel.id.slice('configuration-panel-'.length);await nextTick();}input?.focus();}return valid;}
+async function validateRootForm(form:InstanceType<typeof VForm>|null,event?:PromiseLike<{valid:boolean}>){if(!form)return false;const {valid}=event?await event:await form.validate();if(!valid){await nextTick();const input=(form.$el as HTMLElement).querySelector<HTMLElement>('.v-input--error input, .v-input--error textarea, .v-input--error button');const panel=input?.closest('[role=tabpanel]');if(panel?.id.startsWith('configuration-panel-')){detailTab.value=panel.id.slice('configuration-panel-'.length);await nextTick();}focusInvalidControl(form.$el as HTMLElement);}return valid;}
 function restoreDialogFallback(name:string){if(!dialogOpeners.get(name)?.isConnected)document.getElementById('main-content')?.focus();dialogOpeners.delete(name);}
 for(const [name,draft] of Object.entries({componentDraft,systemDraft,pcDraft}))watch(draft,(value,old)=>{if(value&&!old&&document.activeElement instanceof HTMLElement&&document.activeElement!==document.body&&document.activeElement!==document.documentElement)dialogOpeners.set(name,document.activeElement);},{flush:'sync'});
 const confirmDelete=ref<{collection:string;id:string;name:string}|null>(null);

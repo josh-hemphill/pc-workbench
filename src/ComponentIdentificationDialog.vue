@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {useErrorFeedback} from './form-feedback';
 import {computed,ref,watch} from 'vue';
 import type {Component,Database} from '../shared/types';
 import type {IdentificationInput,IdentificationPreview} from '../shared/component-identification';
@@ -25,6 +26,7 @@ function hasUnsavedChanges(){return busy.value||!!draft.value&&(JSON.stringify(d
 function confirmDiscard(){if(busy.value)return false;if(hasUnsavedChanges()&&!window.confirm('Discard the identification selection?'))return false;emit('close');return true;}
 defineExpose({hasUnsavedChanges,confirmDiscard});
 async function request(apply=false){if(busy.value||!input.value)return;if(createNew.value&&targetEditor.value&&!targetEditor.value.canChangeSection())return;busy.value=true;error.value='';try{const r=await fetch(`/api/catalog/identify/${apply?'apply':'preview'}`,{method:'POST',headers:{'Content-Type':'application/json','If-Match':expected},body:JSON.stringify(apply?{input:input.value,token:preview.value?.token}:input.value)});const body=await r.json();if(!r.ok)throw Error(body.error||'Identification failed.');if(apply){emit('reload');emit('notify','Selected uses identified. Review changed configurations and installed-PC compatibility.');emit('close');}else{preview.value=body;expected=r.headers.get('X-Workspace-Revision')||expected;}}catch(e){error.value=e instanceof Error?e.message:String(e);preview.value=null;}finally{busy.value=false;}}
+useErrorFeedback(error);
 </script>
 <template>
 <v-dialog :model-value="!!draft" persistent scrollable max-width="1100" aria-labelledby="identification-title" @keydown.esc.stop.prevent="confirmDiscard">

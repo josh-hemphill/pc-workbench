@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {useErrorFeedback} from './form-feedback';
 import {computed,ref,watch,nextTick} from 'vue';
 import {researchPackLimit,type ResearchFile,type ResearchPreview,type ResearchRow} from '../shared/catalog-research';
 const props=defineProps<{selectedIds:string[];filteredIds:string[]}>();
@@ -24,6 +25,7 @@ async function apply(){if(!ready.value||!packet.value||!preview.value)return;con
 const display=(value:unknown)=>value===undefined?'Unknown':typeof value==='string'?value:JSON.stringify(value,null,2);
 function source(row:ResearchRow){try{const url=new URL(row.sourceUrl);return ['http:','https:'].includes(url.protocol)&&!url.username&&!url.password?url.href:'';}catch{return '';}}
 function restoreFocus(){void nextTick(()=>{if(opener?.isConnected)opener.focus();else document.getElementById('main-content')?.focus();});}
+useErrorFeedback(error);
 </script>
 <template>
 <section class="panel build-notes control-stack"><h2>Research handoff</h2><p>Export a JSON research pack for an agent. It starts with a schema guide, component index and shared field definitions, followed by existing data and editable proposals. Have the agent fill proposals with source URLs and evidence, then import the returned file here. Fill missing fields or merge named ports, PCIe slots, lane rules, fans/pumps, cooling headers and shared current budgets by stable ID. Known properties and omitted records are preserved; updated components need verification.</p><div class="d-flex flex-wrap ga-3"><v-btn variant="outlined" :disabled="busy||!selectedIds.length||selectedIds.length>researchPackLimit" @click="exportPack([...selectedIds])">Export selected research pack ({{selectedIds.length}})</v-btn><v-btn variant="outlined" :disabled="busy||!filteredIds.length||filteredIds.length>researchPackLimit" @click="exportPack([...filteredIds])">Export filtered research pack ({{filteredIds.length}})</v-btn><v-btn variant="outlined" href="/api/catalog/research/schema" download="component-research.schema.json">Download JSON Schema</v-btn><v-btn color="primary" :disabled="busy" @click="begin">Import research updates</v-btn></div><p class="form-hint">Filtered export includes every matching row, across pages. Selected export includes hidden selections. Up to {{researchPackLimit}} components per pack.</p><v-alert v-if="error&&!open" type="error" role="alert">{{error}}</v-alert></section>

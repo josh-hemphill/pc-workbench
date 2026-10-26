@@ -50,3 +50,25 @@ Location operations now exposes PC operations and Distribution review as separat
 Requirements sets and equipment systems share an instrument editor. Add instrument is available even when no equipment exists, and each instrument has its own Add interface requirement action. Names, interface quantities, Custom interface names and stable reference IDs are validated. Optional connector, protocol, speed, power and isolation constraints sit behind an expandable section; existing recorded constraints are expanded. Publishing the next requirements revision preserves the previous revision and existing interface IDs.
 
 After `pnpm build`, run `python tools/synthetic-workflows/installation-editors-browser.py` with Node 26 on PATH, Python Playwright and Chromium installed. The replay creates a temporary 100-PC workspace, checks section discovery and URL/history behavior, creates structured Serial and Custom requirements, checks required inputs, publishes a second revision and exercises the shared equipment editor. It never changes the active workspace.
+
+## UX process review — 2026-10-26
+
+Design guidance: [Anthropic frontend-design](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md), read from the official repository. The audience is inventory and hardware staff moving between records, evidence, previews and physical work. The review prioritizes finding the next action, retaining context and recovering from errors.
+
+Design plan before implementation: retain the user's theme system. Default reference tokens are background `#f6f7f4`, surface `#ffffff`, text `#26322b`, action `#284d37`, focus `#175d88`, error `#922f28`. Keep DM Sans for operational text and Manrope for headings. Keep controls left aligned and table columns comparable. Use existing spacing tokens and restrained error/focus emphasis. Optional detail stays expandable, but validation must reveal it. Long action labels must wrap on narrow screens. Do not add animation or decorative panels.
+
+Layout intent: `context → inputs → preview/review → fixed actions`; error recovery returns focus to the failing input or visible error. Table navigation restores the user's search, sort, page size, page and selection. Critique against the brief: a visual redesign would add relearning without improving these processes, so this pass changes interaction and recovery rather than introducing a new palette or page chrome.
+
+Confirmed findings and fixes:
+
+| Finding | Evidence / impact | Fix |
+| --- | --- | --- |
+| Hidden validation failure | Invalid requirement ID inside closed Reference ID details stayed hidden after Save, with focus left on the action | Shared validation recovery opens ancestor details, scrolls to the field and focuses it; used by root, installation and bulk forms |
+| Lost table working context | Shared table history stored search/page/selection but omitted sort and page size | Store controlled sort and rows-per-page alongside existing context; browser verified a descending catalog sort, 10 rows per page and second-page position through navigation away and Back |
+| Long-form server failure out of view | Requirements form could be submitted while scrolled past the alert at its top | Reveal and focus matching visible error feedback after rendering; shared by requirements, bulk, research, identification, merge and settings flows |
+| No-result table recovery | Empty shared table results gave no direct action near the result | Show the actual search text and a Clear search action; preserve selection |
+| Inconsistent error wording | Installation handlers rendered JavaScript's `Error:` prefix while other forms rendered the message | Display the error message consistently |
+
+The suspected mobile action overflow was **not** reproduced: at 390 px the 100-PC bulk selection label already wraps and its action stays within the viewport. Existing mobile action styling was retained. Screenshot critique confirmed that error recovery keeps the fixed header/actions visible and brings the failure into the scrollable body without adding page chrome.
+
+Validation: `ux-review-browser.py` reproduces the collapsed-field case, verifies table history and empty-search recovery, injects a stale-workspace response into a long requirements form, and checks narrow-screen action access in an isolated 100-PC workspace. The existing eight-scenario fleet replay covers fresh imports, registration, missing surveys/capacities, stock pressure, blocked transitions, measured-usage recovery, exports, selection and draft persistence. Identification and installation-editor browser replays cover stock splitting, shared configuration copies, instrument creation and immutable revision publication. These are synthetic workspaces, not an observation of live operator sessions.

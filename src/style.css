@@ -179,3 +179,6 @@ body{background:var(--bench-background)}
 .transition-order-totals strong{font-size:24px}.transition-stock-breakdown{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 16px;margin-top:12px}.transition-stock-breakdown dd{margin:0;text-align:right}
 .transition-reuse .v-alert__content{display:flex;flex-direction:column;gap:16px}.transition-reuse .v-btn{align-self:flex-start}
 @media(max-width:700px){.transition-order-totals{grid-template-columns:1fr}}
+
+.record-table-empty{align-items:center;text-align:center}
+.record-table-empty>.v-btn{align-self:center}

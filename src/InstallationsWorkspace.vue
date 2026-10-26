@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {focusInvalidControl,useErrorFeedback} from './form-feedback';
 import type {RelatedRecord} from '../shared/record-navigation';
 import RecordTable from './RecordTable.vue';
 import {isPCInstallationKind} from '../shared/types';
@@ -67,13 +68,13 @@ function registerHere(ids:string[]){
 async function registerPCs(){if(busy.value||!registration.value)return;busy.value=true;error.value='';try{
  const draft=registration.value;const response=await fetch('/api/pcs/register-unsurveyed',{method:'POST',headers:{'Content-Type':'application/json','If-Match':revisions.get('registration')||props.revision},body:JSON.stringify({locationIds:draft.locationIds,survey:{status:'uninspected',configurationId:draft.configurationId,evidence:draft.evidence}})});
  const body=await response.json();if(!response.ok)throw Error(body.error||'Registration failed');registration.value=null;selection.value=[];emit('reload');emit('notify',`${body.created} PCs registered awaiting hardware inspection.`);
- }catch(e){error.value=String(e);}finally{busy.value=false;}}
+ }catch(e){error.value=e instanceof Error?e.message:String(e);}finally{busy.value=false;}}
 function addEquipmentHere(){if(selectedLocation.value)emit('editSystem',{id:crypto.randomUUID(),name:'',installationLocationId:selectedLocation.value.id,location:'',description:'',connections:[]});}
 function editRequirements(set?:RequirementsSet){requirementsDraft.value=set?structuredClone(JSON.parse(JSON.stringify(set))):{id:crypto.randomUUID(),name:'',description:'',versions:[]};const last=requirementsDraft.value!.versions.at(-1);versionDraft.value=last?{...JSON.parse(JSON.stringify(last)),revision:last.revision+1,at:new Date().toISOString()}:{revision:1,at:new Date().toISOString(),name:'',description:'',connections:[],constraints:{},software:{}};versionOriginal.value=JSON.stringify(versionDraft.value);error.value='';}
 function editLocation(location?:InstallationLocation){locationDraft.value=location?structuredClone(JSON.parse(JSON.stringify(location))):{id:crypto.randomUUID(),name:'',kind:'Bench',parentId:'',requirementSetId:'',requirementRevision:0,targetConfigurationId:'',notes:''};error.value='';}
 function addRequired(){if(versionDraft.value)((versionDraft.value.constraints??={}).requiredComponents??=[]).push({componentId:'',quantity:1});}
 function optionalNumber(key:'minCpuCores'|'minCpuThreads'|'minMemoryGb'|'minDataGb'|'minBootGb'|'minScientificCards',value:unknown){if(!versionDraft.value)return;const constraints=versionDraft.value.constraints??={};if(value===''||value==null)delete constraints[key];else constraints[key]=Number(value);}
-async function save<T extends {id:string}>(collection:string,record:T,dialog:keyof typeof dialogs){busy.value=true;error.value='';try{const response=await fetch(`/api/${collection}/${record.id}`,{method:'PUT',headers:{'Content-Type':'application/json','If-Match':revisions.get(dialog)||props.revision},body:JSON.stringify(record)});const body=await response.json();if(!response.ok)throw Error(body.error||'Save failed');emit('reload');return true;}catch(e){error.value=String(e);return false;}finally{busy.value=false;}}
+async function save<T extends {id:string}>(collection:string,record:T,dialog:keyof typeof dialogs){busy.value=true;error.value='';try{const response=await fetch(`/api/${collection}/${record.id}`,{method:'PUT',headers:{'Content-Type':'application/json','If-Match':revisions.get(dialog)||props.revision},body:JSON.stringify(record)});const body=await response.json();if(!response.ok)throw Error(body.error||'Save failed');emit('reload');return true;}catch(e){error.value=e instanceof Error?e.message:String(e);return false;}finally{busy.value=false;}}
 async function publishRequirements(event?:PromiseLike<{valid:boolean}>){if(busy.value||!await validateForm('requirementsDraft',event)||busy.value)return;if(!requirementsDraft.value||!versionDraft.value)return;versionDraft.value.at=new Date().toISOString();const set={...requirementsDraft.value,versions:[...requirementsDraft.value.versions,{...versionDraft.value,name:versionDraft.value.name||requirementsDraft.value.name}]};if(await save('requirementsSets',set,'requirementsDraft')){requirementsDraft.value=null;versionDraft.value=null;emit('notify','Requirements revision published. Existing configurations and installations keep their pinned revisions.');}}
 async function saveLocation(event?:PromiseLike<{valid:boolean}>){if(busy.value||!await validateForm('locationDraft',event)||busy.value)return;if(locationDraft.value&&await save('installationLocations',locationDraft.value,'locationDraft')){locationId.value=locationDraft.value.id;locationDraft.value=null;emit('notify','Installation location saved.');}}
 async function assignPC(event?:PromiseLike<{valid:boolean}>){if(busy.value||!await validateForm('assignment',event)||busy.value)return;const pc=props.db.pcs.find(p=>p.id===assignment.value?.pcId);if(!pc||!assignment.value)return;if(await save('pcs',{...pc,installationLocationId:assignment.value.locationId},'assignment')){assignment.value=null;emit('notify','PC location assignment recorded. Installed parts follow this PC.');}}
@@ -90,7 +91,8 @@ function setForm(name:string,form:unknown){forms[name]=form as EditorForm|null;}
 const requiredValue=(v:unknown)=>v!==null&&v!==undefined&&String(v).trim()!==''||'A value is required.';
 const nonnegativeIntegerValue=(v:unknown)=>v===null||v===undefined||v===''||Number.isInteger(Number(v))&&Number(v)>=0&&Number(v)<=10000||'Enter a whole number from 0 to 10000.';
 const nonnegativeValue=(v:unknown)=>v===null||v===undefined||v===''||Number.isFinite(Number(v))&&Number(v)>=0||'Enter a non-negative number.';
-async function validateForm(name:string,event?:PromiseLike<{valid:boolean}>){const form=forms[name];if(!form)return false;const {valid}=event?await event:await form.validate();if(!valid){await nextTick();form.$el?.querySelector<HTMLElement>('.v-input--error input, .v-input--error textarea, .v-input--error button')?.focus();}return valid;}
+async function validateForm(name:string,event?:PromiseLike<{valid:boolean}>){const form=forms[name];if(!form)return false;const {valid}=event?await event:await form.validate();if(!valid){await nextTick();focusInvalidControl(form.$el);}return valid;}
+useErrorFeedback(error);
 </script>
 <template>
  <div class="installations-workspace">
